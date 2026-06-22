@@ -1,0 +1,821 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Space Simulations — Rockets, Trajectories &amp; the Road to the Moon</title>
+<meta name="description" content="Interactive launch physics, an Earth–Moon trajectory simulator, and detailed mission breakdowns for Apollo and Artemis." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+
+<style>
+:root{
+  --void:#05060d;--cloud:#0b1020;--cloud-2:#111a30;--cloud-3:#16223e;--line:#243353;
+  --cold:#6f8fd6;--ice:#a9dcff;--warm:#f3ad5e;--ir:#e0653f;--sim:#5fd0a0;
+  --text:#eaeefb;--muted:#93a0c2;--muted-2:#6b769a;--ok:#5fd0a0;
+  --shadow:0 18px 50px -20px rgba(0,0,0,.8);--r:16px;--maxw:1120px;
+  --display:"Space Grotesk",system-ui,sans-serif;--body:"Inter",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--void);color:var(--text);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(1100px 700px at 82% -8%, rgba(95,208,160,.08), transparent 60%),
+    radial-gradient(1000px 800px at 6% 2%, rgba(111,143,214,.12), transparent 60%),
+    radial-gradient(900px 900px at 50% 120%, rgba(243,173,94,.05), transparent 60%);}
+a{color:var(--ice);text-decoration:none}
+h1,h2,h3,h4{font-family:var(--display);font-weight:600;line-height:1.12;letter-spacing:-.01em;margin:0}
+p{margin:0 0 1em}.mono{font-family:var(--mono)}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+section{padding:90px 0;position:relative}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--warm);margin:0 0 14px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:26px;height:1px;background:linear-gradient(90deg,var(--warm),transparent)}
+.sec-title{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:14px}
+.lede{color:var(--muted);font-size:1.06rem;max-width:64ch}
+#progress{position:fixed;top:0;left:0;height:2px;width:0;z-index:70;background:linear-gradient(90deg,var(--cold),var(--ice),var(--sim),var(--warm))}
+
+.nav{position:sticky;top:0;z-index:60;backdrop-filter:blur(14px);background:rgba(5,6,13,.72);border-bottom:1px solid var(--line)}
+.nav-inner{max-width:var(--maxw);margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:18px}
+.brand{display:flex;align-items:center;gap:11px;font-family:var(--display);font-weight:700;letter-spacing:-.02em;font-size:1.05rem;white-space:nowrap}
+.brand a{color:inherit}
+.brand .dot{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 32% 32%,var(--ice),var(--sim) 50%,var(--cold) 95%);box-shadow:0 0 16px var(--sim);flex:none}
+.nav-links{display:flex;gap:4px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-links a{color:var(--muted);font-size:.84rem;padding:7px 11px;border-radius:9px;white-space:nowrap;transition:.18s;font-weight:500}
+.nav-links a:hover{color:var(--text);background:var(--cloud-2)}
+.nav-links a.active{color:var(--ice);background:rgba(169,220,255,.1)}
+
+.hero{min-height:84vh;display:flex;align-items:center;padding-top:36px;position:relative;overflow:hidden}
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:-1;opacity:.95}
+.hero-inner{max-width:var(--maxw);margin:0 auto;padding:0 24px;width:100%}
+.hero .kick{font-family:var(--mono);font-size:.78rem;letter-spacing:.24em;text-transform:uppercase;color:var(--sim);margin-bottom:22px}
+.hero h1{font-size:clamp(2.6rem,7vw,5.2rem);font-weight:700;max-width:16ch;letter-spacing:-.025em}
+.hero h1 .grad{background:linear-gradient(100deg,var(--ice),var(--sim) 45%,var(--warm) 78%,var(--ir));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .sub{color:var(--muted);font-size:1.18rem;max-width:58ch;margin-top:22px}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:34px}
+.btn{font-family:var(--body);font-weight:600;font-size:.95rem;border-radius:12px;padding:13px 22px;border:1px solid var(--line);background:var(--cloud-2);color:var(--text);cursor:pointer;transition:transform .15s,border-color .2s;text-decoration:none;display:inline-flex;align-items:center;gap:9px}
+.btn:hover{transform:translateY(-2px);border-color:var(--sim)}
+.btn.primary{background:linear-gradient(100deg,rgba(95,208,160,.2),rgba(111,143,214,.2));border-color:rgba(95,208,160,.45)}
+.scroll-hint{margin-top:42px;color:var(--muted-2);font-size:.8rem;font-family:var(--mono);letter-spacing:.1em;display:flex;align-items:center;gap:8px}
+.scroll-hint .a{animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+@media (prefers-reduced-motion:reduce){.scroll-hint .a{animation:none}}
+
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1!important;transform:none!important}}
+
+.panel{background:linear-gradient(180deg,var(--cloud-2),var(--cloud));border:1px solid var(--line);border-radius:var(--r);padding:26px;box-shadow:var(--shadow)}
+.card{background:var(--cloud-2);border:1px solid var(--line);border-radius:14px;padding:20px;transition:transform .18s,border-color .2s}
+.card:hover{transform:translateY(-3px);border-color:var(--sim)}
+.card h3{font-size:1.1rem;margin-bottom:8px}.card p{color:var(--muted);font-size:.93rem;margin:0}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:820px){.split{grid-template-columns:1fr}}
+.lab{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+@media (max-width:860px){.lab{grid-template-columns:1fr}}
+
+/* tooltips */
+.term{border-bottom:1px dashed var(--sim);cursor:help;color:var(--ice);text-underline-offset:3px}
+.term:focus{outline:2px solid var(--sim);outline-offset:2px;border-radius:3px}
+#tip{position:fixed;z-index:200;max-width:300px;background:#0a1326;border:1px solid var(--sim);border-radius:11px;padding:12px 14px;font-size:.86rem;color:var(--text);line-height:1.5;box-shadow:0 18px 40px -12px rgba(0,0,0,.85);opacity:0;pointer-events:none;transition:opacity .14s}
+#tip.show{opacity:1}#tip b{color:var(--warm)}
+.help-chip{width:20px;height:20px;border-radius:50%;border:1px solid var(--sim);color:var(--sim);font-size:.72rem;font-family:var(--mono);display:inline-flex;align-items:center;justify-content:center;cursor:help;background:rgba(95,208,160,.1);font-weight:600;vertical-align:middle}
+.help-chip:hover{background:rgba(95,208,160,.25)}
+
+/* formulas */
+.formula{background:var(--cloud);border:1px solid var(--line);border-left:3px solid var(--warm);border-radius:12px;padding:16px 18px;margin:14px 0;overflow-x:auto}
+.formula .katex{font-size:1.18em}
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px;margin-top:12px}
+.term-row{display:flex;gap:10px;align-items:flex-start;font-size:.85rem;color:var(--muted)}
+.term-row .sym{font-family:var(--mono);color:var(--ice);min-width:30px;font-weight:600}
+
+/* controls */
+.ctrl{margin-bottom:16px}
+.ctrl-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;gap:8px}
+.ctrl-head label{font-size:.9rem;font-weight:600;display:flex;align-items:center;gap:7px}
+.ctrl-head .val{font-family:var(--mono);font-size:.9rem;color:var(--warm)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:99px;background:linear-gradient(90deg,var(--cold),var(--sim));outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;border-radius:50%;background:var(--ice);border:3px solid var(--void);box-shadow:0 0 0 1px var(--sim),0 0 14px var(--sim);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:19px;height:19px;border-radius:50%;background:var(--ice);border:3px solid var(--void);box-shadow:0 0 0 1px var(--sim);cursor:pointer}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:11px;margin-top:6px}
+.stat{background:var(--cloud);border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+.stat .k{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-2);font-family:var(--mono);margin-bottom:5px}
+.stat .v{font-family:var(--mono);font-size:1.12rem;font-weight:600;color:var(--ice)}
+.stat .u{color:var(--muted);font-size:.76rem}
+.verdict{margin-top:14px;border-radius:12px;padding:14px 16px;font-weight:600;border:1px solid var(--line);display:flex;align-items:center;gap:12px;transition:.25s;font-size:.95rem}
+.verdict .icon{font-size:1.3rem}
+.verdict.go{background:rgba(95,208,160,.13);border-color:var(--sim);color:#bff0db}
+.verdict.no{background:rgba(224,101,63,.13);border-color:var(--ir);color:#ffd0bf}
+canvas.plot{width:100%;display:block;border-radius:12px;background:var(--cloud);border:1px solid var(--line)}
+
+/* mission simulator */
+.seg{display:inline-flex;background:var(--cloud);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;flex-wrap:wrap}
+.seg button{font-family:var(--body);font-weight:600;font-size:.86rem;color:var(--muted);background:transparent;border:none;border-radius:9px;padding:9px 15px;cursor:pointer;transition:.18s}
+.seg button.on{background:var(--cloud-3);color:var(--ice);box-shadow:inset 0 0 0 1px var(--sim)}
+.seg button:hover{color:var(--text)}
+.simwrap{display:grid;grid-template-columns:1.35fr .85fr;gap:22px;align-items:start;margin-top:22px}
+@media (max-width:920px){.simwrap{grid-template-columns:1fr}}
+#traj-canvas{width:100%;display:block;border-radius:14px;background:radial-gradient(ellipse at 70% 30%,rgba(95,208,160,.04),transparent 60%),var(--void);border:1px solid var(--line)}
+.simbar{display:flex;align-items:center;gap:12px;margin-top:14px}
+.playbtn{width:46px;height:46px;border-radius:12px;border:1px solid var(--sim);background:rgba(95,208,160,.14);color:var(--ice);font-size:1.1rem;cursor:pointer;flex:none}
+.playbtn:hover{background:rgba(95,208,160,.28)}
+#scrub{flex:1}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+.chip-ph{font-family:var(--mono);font-size:.74rem;color:var(--muted);background:var(--cloud);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;transition:.18s}
+.chip-ph:hover{border-color:var(--sim);color:var(--text)}
+.chip-ph.on{background:rgba(95,208,160,.16);border-color:var(--sim);color:var(--ice)}
+.phasecard{background:var(--cloud);border:1px solid var(--line);border-left:3px solid var(--sim);border-radius:14px;padding:20px}
+.phasecard .met{font-family:var(--mono);font-size:.78rem;color:var(--sim);margin-bottom:4px}
+.phasecard h4{font-size:1.25rem;margin-bottom:8px}
+.phasecard p{color:var(--muted);font-size:.93rem;margin:0 0 12px}
+.phasecard .dv{font-family:var(--mono);font-size:.82rem;color:var(--warm);background:rgba(243,173,94,.1);border:1px solid rgba(243,173,94,.3);border-radius:8px;padding:7px 11px;display:inline-block}
+.live{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:16px}
+
+/* stage rows */
+.stages{display:grid;gap:12px;margin-top:18px}
+.stage{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;background:var(--cloud-2);border:1px solid var(--line);border-radius:13px;padding:16px 18px;cursor:pointer;transition:.2s}
+.stage:hover{border-color:var(--sim)}
+.stage .badge{font-family:var(--mono);font-weight:600;font-size:.8rem;color:var(--void);background:linear-gradient(135deg,var(--sim),var(--cold));border-radius:9px;padding:6px 10px;white-space:nowrap;flex:none}
+.stage h4{font-size:1.02rem;margin-bottom:3px}
+.stage .sub{color:var(--muted);font-size:.86rem;margin-bottom:8px}
+.stage .specs{display:flex;gap:8px;flex-wrap:wrap}
+.stage .sp{font-family:var(--mono);font-size:.72rem;color:var(--muted);background:var(--cloud-3);border:1px solid var(--line);border-radius:7px;padding:3px 8px}
+
+/* comparison table */
+.cmp{width:100%;border-collapse:collapse;margin-top:18px;font-size:.9rem}
+.cmp th,.cmp td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+.cmp th{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2);font-weight:500}
+.cmp td:first-child{color:var(--muted);font-weight:500}
+.cmp .a{color:var(--warm)}.cmp .b{color:var(--sim)}
+.cmp tr:hover td{background:rgba(95,208,160,.04)}
+@media (max-width:680px){.cmp{font-size:.82rem}.cmp th,.cmp td{padding:9px 8px}}
+
+/* mission cards + modal */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.mcard{background:var(--cloud-2);border:1px solid var(--line);border-radius:14px;padding:18px;cursor:pointer;transition:.18s;text-align:left;color:inherit;font:inherit;width:100%;position:relative}
+.mcard:hover{transform:translateY(-3px);border-color:var(--sim)}
+.mcard .tag{position:absolute;top:14px;right:14px;font-size:.64rem;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted-2);border:1px solid var(--line);border-radius:99px;padding:3px 8px}
+.mcard h3{font-size:1.08rem;margin-bottom:2px;padding-right:60px}
+.mcard .yr{font-family:var(--mono);font-size:.76rem;color:var(--warm)}
+.mcard p{color:var(--muted);font-size:.85rem;margin:9px 0 0}
+.modal-bg{position:fixed;inset:0;z-index:120;background:rgba(3,4,10,.78);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:22px}
+.modal-bg.open{display:flex}
+.modal{background:linear-gradient(180deg,var(--cloud-2),var(--cloud));border:1px solid var(--sim);border-radius:18px;max-width:660px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow)}
+.modal-head{padding:22px 26px 16px;border-bottom:1px solid var(--line);display:flex;gap:14px;align-items:flex-start}
+.modal-head h3{font-size:1.45rem}.modal-head .yr{font-family:var(--mono);font-size:.82rem;color:var(--warm)}
+.modal-close{margin-left:auto;background:var(--cloud-3);border:1px solid var(--line);color:var(--text);width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:1.1rem;flex:none}
+.modal-close:hover{border-color:var(--ir)}
+.modal-body{padding:22px 26px 26px}
+.spec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px;margin:6px 0 18px}
+.spec{background:var(--cloud);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+.spec .k{font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2);font-family:var(--mono);margin-bottom:4px}
+.spec .v{font-family:var(--mono);font-weight:600;color:var(--ice);font-size:.92rem}
+.modal-body h4{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--warm);font-family:var(--mono);margin:18px 0 8px}
+.modal-body p{color:var(--muted);font-size:.93rem}
+
+.note{font-size:.82rem;color:var(--muted-2);font-style:italic;margin-top:10px}
+.gloss{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.gloss dt{font-family:var(--display);font-weight:600;color:var(--ice);margin-bottom:4px}
+.gloss dd{margin:0 0 16px;color:var(--muted);font-size:.9rem}
+footer{border-top:1px solid var(--line);padding:40px 0 60px;color:var(--muted-2);font-size:.85rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="tip" role="tooltip"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="brand"><span class="dot"></span><a href="/">newspace.live</a> <span style="color:var(--muted-2);font-weight:500">/ Simulations</span></div>
+    <div class="nav-links" id="navlinks">
+      <a href="#launch">Launch physics</a>
+      <a href="#orbits">Orbits</a>
+      <a href="#sim">Trajectory sim</a>
+      <a href="#apollo">Apollo</a>
+      <a href="#artemis">Artemis</a>
+      <a href="#missions">Other missions</a>
+      <a href="#reference">Reference</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-inner">
+    <p class="kick">Rockets · trajectories · the road to the Moon</p>
+    <h1>The math that <span class="grad">leaves the ground.</span></h1>
+    <p class="sub">From the rocket equation to a full Earth–Moon trajectory you can scrub through, with every burn, velocity and timeline annotated. Built around the two programs that defined lunar flight: Apollo and Artemis.</p>
+    <div class="hero-cta">
+      <a class="btn primary" href="#sim">Open the trajectory simulator →</a>
+      <a class="btn" href="#launch">Start with the physics</a>
+    </div>
+    <div class="scroll-hint"><span class="a">↓</span> hover anything for help</div>
+  </div>
+</header>
+
+<!-- LAUNCH PHYSICS -->
+<section id="launch">
+  <div class="wrap">
+    <p class="eyebrow reveal">How rockets work</p>
+    <h2 class="sec-title reveal">Launch physics — throwing mass to go fast</h2>
+    <p class="lede reveal">A rocket moves by throwing propellant backwards. Every result below follows from that single idea, formalised by Konstantin Tsiolkovsky in 1903.</p>
+
+    <div class="lab" style="margin-top:32px">
+      <div class="panel reveal">
+        <div class="formula"><div data-formula="\Delta v = v_e \ln\!\left(\dfrac{m_0}{m_f}\right) = I_{sp}\,g_0 \ln\!\left(\dfrac{m_0}{m_f}\right)"></div>
+          <div class="terms">
+            <div class="term-row"><span class="sym">Δv</span><span>velocity change the rocket can produce — the currency of spaceflight</span></div>
+            <div class="term-row"><span class="sym">v_e</span><span>effective exhaust velocity</span></div>
+            <div class="term-row"><span class="sym">I_sp</span><span>specific impulse (s) — engine efficiency</span></div>
+            <div class="term-row"><span class="sym">g₀</span><span>9.80665 m/s², standard gravity</span></div>
+            <div class="term-row"><span class="sym">m₀</span><span>wet mass (fuelled)</span></div>
+            <div class="term-row"><span class="sym">m_f</span><span>dry mass (empty)</span></div>
+          </div>
+        </div>
+        <p style="color:var(--muted);font-size:.92rem">The logarithm is the tyranny of the rocket equation: doubling your mass ratio adds only a fixed Δv, so reaching orbit (<span class="term" data-tip="<b>~9.4 km/s.</b> About 7.8 km/s of orbital velocity plus ~1.5–2 km/s lost to gravity and atmospheric drag during ascent.">~9.4 km/s to LEO</span>) demands either ferocious exhaust velocity or throwing away empty tanks — i.e. <span class="term" data-tip="<b>Staging.</b> Discard spent stages so you stop accelerating dead mass. Total Δv is the sum of each stage's Δv. This is why every orbital rocket has multiple stages.">staging</span>.</p>
+        <div class="formula" style="border-left-color:var(--cold)"><div data-formula="F = \dot m\, v_e \qquad \mathrm{TWR}=\dfrac{F}{m\,g}"></div>
+          <div class="terms">
+            <div class="term-row"><span class="sym">F</span><span>thrust = mass flow rate × exhaust velocity</span></div>
+            <div class="term-row"><span class="sym">ṁ</span><span>propellant mass flow rate</span></div>
+            <div class="term-row"><span class="sym">TWR</span><span>thrust-to-weight ratio — must exceed 1 to lift off</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel reveal">
+        <h3 style="font-size:1.15rem;margin-bottom:4px">Launch lab <span class="help-chip" data-tip="<b>Try it.</b> The top panel solves the rocket equation; the bottom checks whether your rocket can even leave the pad.">?</span></h3>
+        <p style="color:var(--muted);font-size:.88rem;margin-bottom:16px">Tune an engine and a rocket, see the Δv.</p>
+
+        <div class="ctrl"><div class="ctrl-head"><label>Specific impulse I_sp <span class="help-chip" data-tip="<b>Isp.</b> Solid ~250 s, kerolox (RP-1/LOX) ~300–340 s, hydrolox (LH2/LOX) ~420–450 s, ion thrusters ~3000 s but tiny thrust.">?</span></label><span class="val" id="isp-v">350 s</span></div>
+          <input type="range" id="isp" min="200" max="465" value="350" step="5"></div>
+        <div class="ctrl"><div class="ctrl-head"><label>Mass ratio m₀/m_f <span class="help-chip" data-tip="<b>Mass ratio.</b> Wet ÷ dry mass. Real stages reach ~10–20; structure and engines set a hard floor on dry mass.">?</span></label><span class="val" id="mr-v">12.0</span></div>
+          <input type="range" id="mr" min="2" max="20" value="12" step="0.5"></div>
+
+        <div class="readout">
+          <div class="stat"><div class="k">Exhaust vel.</div><div class="v" id="out-ve">—</div><div class="u">km/s</div></div>
+          <div class="stat"><div class="k">Delta-v</div><div class="v" id="out-dv">—</div><div class="u">km/s</div></div>
+        </div>
+        <div class="verdict no" id="dv-verd"><span class="icon">◐</span><span id="dv-txt">—</span></div>
+
+        <hr style="border:none;border-top:1px solid var(--line);margin:22px 0">
+        <h4 style="font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--warm);margin-bottom:12px">Will it lift off?</h4>
+        <div class="ctrl"><div class="ctrl-head"><label>Total thrust</label><span class="val" id="thr-v">35 MN</span></div>
+          <input type="range" id="thr" min="1" max="60" value="35" step="0.5"></div>
+        <div class="ctrl"><div class="ctrl-head"><label>Liftoff mass</label><span class="val" id="mass-v">2900 t</span></div>
+          <input type="range" id="mass" min="100" max="4000" value="2900" step="50"></div>
+        <div class="readout"><div class="stat"><div class="k">TWR</div><div class="v" id="out-twr">—</div><div class="u">at liftoff</div></div></div>
+        <div class="verdict go" id="twr-verd"><span class="icon">▲</span><span id="twr-txt">—</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ORBITS -->
+<section id="orbits">
+  <div class="wrap">
+    <p class="eyebrow reveal">Getting to orbit and beyond</p>
+    <h2 class="sec-title reveal">Orbital mechanics — falling, forever</h2>
+    <p class="lede reveal">Orbit is not about height; it is about sideways speed. Go fast enough horizontally and you fall <em>past</em> the planet. The vis-viva equation ties speed, distance and orbit size together.</p>
+
+    <div class="lab" style="margin-top:32px">
+      <div class="panel reveal">
+        <div class="formula"><div data-formula="v = \sqrt{\mu\left(\dfrac{2}{r}-\dfrac{1}{a}\right)}"></div>
+          <div class="terms">
+            <div class="term-row"><span class="sym">v</span><span>speed at distance r</span></div>
+            <div class="term-row"><span class="sym">μ</span><span>GM, the body's gravitational parameter</span></div>
+            <div class="term-row"><span class="sym">r</span><span>current distance from the centre</span></div>
+            <div class="term-row"><span class="sym">a</span><span>semi-major axis of the orbit</span></div>
+          </div>
+        </div>
+        <p style="color:var(--muted);font-size:.92rem;margin-bottom:4px">Two special cases drop out immediately:</p>
+        <div class="formula" style="border-left-color:var(--cold)"><div data-formula="v_{circ}=\sqrt{\dfrac{\mu}{r}}\qquad v_{esc}=\sqrt{\dfrac{2\mu}{r}}=\sqrt{2}\;v_{circ}"></div></div>
+        <p style="color:var(--muted);font-size:.92rem;margin:0">To change orbits efficiently you burn at the right point — the <span class="term" data-tip="<b>Hohmann transfer.</b> The cheapest two-burn path between two circular orbits: one burn to enter an ellipse touching both, a second to circularise at the top. Used for everything from GEO satellites to interplanetary launches.">Hohmann transfer</span>, the cheapest two-burn route between circular orbits.</p>
+      </div>
+
+      <div class="panel reveal">
+        <h3 style="font-size:1.15rem;margin-bottom:4px">Hohmann transfer <span class="help-chip" data-tip="<b>Drag the target.</b> Set a destination orbit radius and read the two burns and the travel time. Earth is the central body.">?</span></h3>
+        <p style="color:var(--muted);font-size:.88rem;margin-bottom:14px">From a 300 km parking orbit to a target altitude.</p>
+        <div class="ctrl"><div class="ctrl-head"><label>Target altitude</label><span class="val" id="ho-v">35,786 km (GEO)</span></div>
+          <input type="range" id="ho" min="500" max="384400" value="35786" step="100"></div>
+        <canvas class="plot" id="ho-canvas" height="220"></canvas>
+        <div class="readout" style="margin-top:14px">
+          <div class="stat"><div class="k">Burn 1 (Δv₁)</div><div class="v" id="ho-dv1">—</div><div class="u">km/s</div></div>
+          <div class="stat"><div class="k">Burn 2 (Δv₂)</div><div class="v" id="ho-dv2">—</div><div class="u">km/s</div></div>
+          <div class="stat"><div class="k">Transfer time</div><div class="v" id="ho-t">—</div><div class="u" id="ho-tu">hours</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRAJECTORY SIMULATOR -->
+<section id="sim">
+  <div class="wrap">
+    <p class="eyebrow reveal">The main event</p>
+    <h2 class="sec-title reveal">Earth–Moon trajectory simulator</h2>
+    <p class="lede reveal">Scrub through a full lunar mission. Watch the spacecraft climb out of Earth's gravity well, coast for days, and arrive at the Moon — with every phase, burn and number exposed. Switch programs to compare how Apollo and Artemis fly.</p>
+
+    <div class="seg reveal" id="missionSeg" style="margin-top:24px">
+      <button data-m="0" class="on">Apollo 11 · 1969</button>
+      <button data-m="1">Artemis I · 2022</button>
+      <button data-m="2">Artemis II · planned</button>
+    </div>
+
+    <div class="simwrap reveal">
+      <div>
+        <canvas id="traj-canvas" height="440"></canvas>
+        <div class="simbar">
+          <button class="playbtn" id="playBtn" aria-label="Play">▶</button>
+          <input type="range" id="scrub" min="0" max="1000" value="0">
+        </div>
+        <div class="chips" id="phaseChips"></div>
+        <p class="note">Trajectory geometry is schematic (not a numerical integration); milestones, burns and durations are representative real-mission values. Velocities/distances shown update continuously as you scrub.</p>
+      </div>
+      <div>
+        <div class="phasecard" id="phaseCard"></div>
+        <div class="live">
+          <div class="stat"><div class="k">Mission time</div><div class="v" id="lv-met">—</div></div>
+          <div class="stat"><div class="k">Phase</div><div class="v" id="lv-phase" style="font-size:.92rem">—</div></div>
+          <div class="stat"><div class="k">Speed (Earth frame)</div><div class="v" id="lv-speed">—</div><div class="u">km/s</div></div>
+          <div class="stat"><div class="k">Dist. from Earth</div><div class="v" id="lv-dist">—</div><div class="u">×1000 km</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- APOLLO -->
+<section id="apollo">
+  <div class="wrap">
+    <p class="eyebrow reveal">Program I</p>
+    <h2 class="sec-title reveal">Apollo — humans on the Moon, 1969–1972</h2>
+    <p class="lede reveal">Six crewed landings, built on the largest rocket ever flown to operational service: the Saturn V. Apollo 11 carried Armstrong, Aldrin and Collins to the Sea of Tranquility, landing on 20 July 1969 at mission-elapsed time 102:45:40.</p>
+
+    <div class="panel reveal" style="margin-top:30px">
+      <h3 style="font-size:1.2rem">Saturn V — three stages to the Moon <span class="help-chip" data-tip="<b>Tap a stage</b> for engines, propellant and burn time. Each stage is discarded once empty — pure rocket-equation economics.">?</span></h3>
+      <p style="color:var(--muted);font-size:.92rem;margin-top:6px">110.6 m tall · ~2,970 t at liftoff · ~34.5 MN sea-level thrust.</p>
+      <div class="stages" id="saturnStages"></div>
+    </div>
+
+    <div class="panel reveal" style="margin-top:22px">
+      <h3 style="font-size:1.2rem;margin-bottom:6px">Apollo 11 by the numbers</h3>
+      <div class="readout" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
+        <div class="stat"><div class="k">Launch</div><div class="v" style="font-size:.9rem">16 Jul 1969</div></div>
+        <div class="stat"><div class="k">Parking orbit</div><div class="v">~190</div><div class="u">km altitude</div></div>
+        <div class="stat"><div class="k">TLI Δv</div><div class="v">~3.1</div><div class="u">km/s</div></div>
+        <div class="stat"><div class="k">Coast</div><div class="v">~3</div><div class="u">days</div></div>
+        <div class="stat"><div class="k">Landing MET</div><div class="v" style="font-size:.9rem">102:45:40</div></div>
+        <div class="stat"><div class="k">Mission</div><div class="v">~8d 3h</div><div class="u">to splashdown</div></div>
+      </div>
+      <p style="color:var(--muted);font-size:.92rem;margin-top:14px">After surface operations the ascent stage of the Lunar Module (Eagle) lifted off, rendezvoused with the Command Module (Columbia), and a <span class="term" data-tip="<b>Trans-Earth Injection (TEI).</b> The burn (~1 km/s) that leaves lunar orbit for the return coast to Earth, ending in a high-speed (~11 km/s) atmospheric reentry.">trans-Earth injection</span> burn started the three-day coast home, ending in splashdown on 24 July 1969.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ARTEMIS -->
+<section id="artemis">
+  <div class="wrap">
+    <p class="eyebrow reveal">Program II</p>
+    <h2 class="sec-title reveal">Artemis — returning to stay</h2>
+    <p class="lede reveal">NASA's Artemis program aims for a sustainable lunar presence, targeting the south pole and building the Gateway station. It flies the Space Launch System (SLS) and the Orion spacecraft with its European Service Module.</p>
+
+    <div class="panel reveal" style="margin-top:30px">
+      <h3 style="font-size:1.2rem">SLS Block 1 — boosters, core, upper stage <span class="help-chip" data-tip="<b>Tap a stage</b> for details. Unlike Saturn V, SLS uses two solid rocket boosters strapped to a hydrogen core.">?</span></h3>
+      <p style="color:var(--muted);font-size:.92rem;margin-top:6px">~98 m tall · ~2,600 t at liftoff · ~39.1 MN liftoff thrust (~8.8 million lbf).</p>
+      <div class="stages" id="slsStages"></div>
+    </div>
+
+    <div class="panel reveal" style="margin-top:22px">
+      <h3 style="font-size:1.2rem;margin-bottom:6px">The three opening flights</h3>
+      <div class="split" style="margin-top:8px">
+        <div class="card"><h3 style="color:var(--sim)">Artemis I · 2022</h3><p>Uncrewed. Orion flew to a <span class="term" data-tip="<b>Distant Retrograde Orbit (DRO).</b> A very large, highly stable orbit around the Moon, going opposite to the Moon's spin. Artemis I reached a record ~432,000 km from Earth for a human-rated craft.">distant retrograde orbit</span>, then home — a 25.5-day, ~2.0-million-km shakedown that ended with splashdown on 11 Dec 2022.</p></div>
+        <div class="card"><h3 style="color:var(--warm)">Artemis II · planned</h3><p>First crewed flight: a <span class="term" data-tip="<b>Free-return trajectory.</b> A path shaped so that lunar gravity alone curves the spacecraft back to Earth without a capture burn — the safest profile for a first crewed flight. Apollo 8 and 13 used variants of it.">free-return</span> lunar flyby with four astronauts (Wiseman, Glover, Koch, Hansen). ~10 days; no lunar orbit.</p></div>
+      </div>
+      <div class="card" style="margin-top:16px"><h3 style="color:var(--ice)">Artemis III · planned</h3><p>The crewed landing — near the lunar south pole, using a SpaceX Starship Human Landing System. Crew transfers from Orion to the lander in a near-rectilinear halo orbit (NRHO).</p></div>
+      <p class="note reveal">Artemis II and III dates and architecture have shifted over time. For the current schedule and crew, check up-to-date NASA sources (enable web search).</p>
+    </div>
+
+    <div class="panel reveal" style="margin-top:22px">
+      <h3 style="font-size:1.2rem">Apollo vs Artemis</h3>
+      <table class="cmp">
+        <thead><tr><th>Dimension</th><th class="a">Apollo (11)</th><th class="b">Artemis (I–III)</th></tr></thead>
+        <tbody>
+          <tr><td>Launch vehicle</td><td class="a">Saturn V</td><td class="b">SLS Block 1</td></tr>
+          <tr><td>Liftoff thrust</td><td class="a">~34.5 MN</td><td class="b">~39.1 MN</td></tr>
+          <tr><td>Crew capsule</td><td class="a">Apollo CM · 3 crew</td><td class="b">Orion + ESM · 4 crew</td></tr>
+          <tr><td>Lunar orbit</td><td class="a">Low lunar orbit (~110 km)</td><td class="b">DRO (I) / NRHO (Gateway)</td></tr>
+          <tr><td>Lander</td><td class="a">Lunar Module</td><td class="b">Starship HLS (III)</td></tr>
+          <tr><td>Return profile</td><td class="a">Direct entry, ~11 km/s</td><td class="b">Skip entry, ~11 km/s</td></tr>
+          <tr><td>Goal</td><td class="a">Reach the Moon first</td><td class="b">Sustainable presence, south pole</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- OTHER MISSIONS -->
+<section id="missions">
+  <div class="wrap">
+    <p class="eyebrow reveal">Beyond the Moon</p>
+    <h2 class="sec-title reveal">Other missions worth simulating</h2>
+    <p class="lede reveal">The same equations send probes across the Solar System and beyond. Click any mission for its key numbers and the physics trick that made it possible.</p>
+    <div class="mgrid reveal" id="missionGrid" style="margin-top:30px"></div>
+  </div>
+</section>
+
+<!-- REFERENCE -->
+<section id="reference">
+  <div class="wrap">
+    <p class="eyebrow reveal">Quick reference</p>
+    <h2 class="sec-title reveal">Formulas &amp; glossary</h2>
+    <div class="split reveal" style="margin-top:24px">
+      <div class="panel">
+        <h3 style="font-size:1.1rem;margin-bottom:12px">Key formulas</h3>
+        <div class="formula" style="margin-top:0"><div data-formula="\Delta v = I_{sp} g_0 \ln(m_0/m_f)"></div></div>
+        <div class="formula"><div data-formula="F=\dot m\,v_e,\quad \mathrm{TWR}=F/(mg)"></div></div>
+        <div class="formula"><div data-formula="v=\sqrt{\mu(2/r-1/a)}"></div></div>
+        <div class="formula"><div data-formula="v_{circ}=\sqrt{\mu/r},\quad v_{esc}=\sqrt{2\mu/r}"></div></div>
+        <div class="formula"><div data-formula="\Delta v_1=\sqrt{\tfrac{\mu}{r_1}}\!\left(\sqrt{\tfrac{2r_2}{r_1+r_2}}-1\right)"></div></div>
+        <div class="formula"><div data-formula="t_{transfer}=\pi\sqrt{a_t^3/\mu},\;\; a_t=\tfrac{r_1+r_2}{2}"></div></div>
+      </div>
+      <div class="panel">
+        <h3 style="font-size:1.1rem;margin-bottom:12px">Glossary</h3>
+        <dl class="gloss">
+          <div><dt>Δv (delta-v)</dt><dd>Total velocity change a vehicle can achieve; the budget every mission is planned around.</dd></div>
+          <div><dt>Specific impulse</dt><dd>Thrust per unit propellant weight flow (s). Higher = more efficient.</dd></div>
+          <div><dt>Staging</dt><dd>Shedding empty mass mid-flight to keep accelerating efficiently.</dd></div>
+          <div><dt>TLI</dt><dd>Trans-lunar injection — the burn that leaves Earth orbit for the Moon.</dd></div>
+          <div><dt>LOI</dt><dd>Lunar orbit insertion — braking into orbit around the Moon.</dd></div>
+          <div><dt>Free return</dt><dd>A trajectory that uses lunar gravity to swing back to Earth with no capture burn.</dd></div>
+          <div><dt>Gravity assist</dt><dd>Stealing a tiny bit of a planet's orbital momentum to change speed for free.</dd></div>
+          <div><dt>DRO / NRHO</dt><dd>Large, stable lunar orbits used by Artemis and the Gateway.</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div><strong style="color:var(--text);font-family:var(--display)">newspace.live</strong> · Space Simulations</div>
+    <div>Values are representative; geometry is schematic for teaching.</div>
+  </div>
+</footer>
+
+<!-- MISSION MODAL -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-name">
+    <div class="modal-head">
+      <div><h3 id="m-name"></h3><div class="yr" id="m-yr"></div></div>
+      <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="m-body"></div>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const g0=9.80665, MU_E=3.986004418e14, RE_km=6371, MU_M=4.9028695e12;
+
+/* ---------- tooltips ---------- */
+const tip=$('#tip');let tipTimer=null;
+function showTip(el){const t=el.getAttribute('data-tip');if(!t)return;tip.innerHTML=t;tip.classList.add('show');
+  const r=el.getBoundingClientRect();const tw=Math.min(300,window.innerWidth-24);tip.style.maxWidth=tw+'px';
+  let x=r.left+r.width/2-tw/2;x=Math.max(12,Math.min(x,window.innerWidth-tw-12));
+  let y=r.bottom+10;if(y+tip.offsetHeight>window.innerHeight-12)y=r.top-tip.offsetHeight-10;
+  tip.style.left=x+'px';tip.style.top=Math.max(12,y)+'px';}
+function hideTip(){tip.classList.remove('show');}
+function bindTips(){document.querySelectorAll('[data-tip]').forEach(el=>{if(el.dataset.tb)return;el.dataset.tb=1;
+  if(!el.hasAttribute('tabindex')&&el.classList.contains('term'))el.setAttribute('tabindex','0');
+  el.addEventListener('mouseenter',()=>showTip(el));el.addEventListener('mouseleave',hideTip);
+  el.addEventListener('focus',()=>showTip(el));el.addEventListener('blur',hideTip);
+  el.addEventListener('click',e=>{e.stopPropagation();showTip(el);clearTimeout(tipTimer);tipTimer=setTimeout(hideTip,4200);});});}
+document.addEventListener('click',hideTip);window.addEventListener('scroll',hideTip,{passive:true});
+
+/* ---------- KaTeX ---------- */
+function renderFormulas(){if(!window.katex)return;document.querySelectorAll('[data-formula]').forEach(el=>{if(el.dataset.done)return;el.dataset.done=1;try{katex.render(el.getAttribute('data-formula'),el,{throwOnError:false,displayMode:true});}catch(e){}});}
+window.addEventListener('load',()=>{renderFormulas();setTimeout(renderFormulas,300);});
+
+/* ---------- launch lab ---------- */
+const isp=$('#isp'),mr=$('#mr'),thr=$('#thr'),mass=$('#mass');
+function launchLab(){
+  const Isp=+isp.value, ratio=+mr.value;
+  const ve=Isp*g0; const dv=ve*Math.log(ratio);
+  $('#isp-v').textContent=Isp+' s';$('#mr-v').textContent=ratio.toFixed(1);
+  $('#out-ve').textContent=(ve/1000).toFixed(2);$('#out-dv').textContent=(dv/1000).toFixed(2);
+  const dvk=dv/1000, v=$('#dv-verd'),vt=$('#dv-txt');
+  if(dvk>=12.5){v.className='verdict go';v.querySelector('.icon').textContent='✦';vt.innerHTML='<b>'+dvk.toFixed(1)+' km/s</b> — beyond Earth escape; with staging this reaches the Moon and planets.';}
+  else if(dvk>=9.4){v.className='verdict go';v.querySelector('.icon').textContent='▲';vt.innerHTML='<b>'+dvk.toFixed(1)+' km/s</b> — enough for low Earth orbit (a single stage just barely).';}
+  else{v.className='verdict no';v.querySelector('.icon').textContent='◐';vt.innerHTML='<b>'+dvk.toFixed(1)+' km/s</b> — short of the ~9.4 km/s needed for orbit. Add a stage or a hotter engine.';}
+  // twr
+  const F=(+thr.value)*1e6; const m=(+mass.value)*1000; const twr=F/(m*g0);
+  $('#thr-v').textContent=(+thr.value)+' MN';$('#mass-v').textContent=(+mass.value)+' t';
+  $('#out-twr').textContent=twr.toFixed(2);
+  const tv=$('#twr-verd'),tt=$('#twr-txt');
+  if(twr<1){tv.className='verdict no';tv.querySelector('.icon').textContent='▼';tt.innerHTML='<b>TWR &lt; 1</b> — the rocket cannot lift its own weight. It sits on the pad.';}
+  else if(twr<1.2){tv.className='verdict go';tv.querySelector('.icon').textContent='▲';tt.innerHTML='<b>Lifts off slowly.</b> Workable, but high gravity losses early in flight.';}
+  else{tv.className='verdict go';tv.querySelector('.icon').textContent='▲';tt.innerHTML='<b>Healthy liftoff.</b> TWR ~1.2–1.5 is typical for first stages.';}
+}
+[isp,mr,thr,mass].forEach(e=>e.addEventListener('input',launchLab));
+
+/* ---------- Hohmann ---------- */
+const ho=$('#ho'),hoc=$('#ho-canvas'),hx=hoc.getContext('2d');
+function hohmann(){
+  const r1=(RE_km+300)*1000;
+  const altKm=+ho.value; const r2=(RE_km+altKm)*1000;
+  const at=(r1+r2)/2;
+  const dv1=Math.sqrt(MU_E/r1)*(Math.sqrt(2*r2/(r1+r2))-1);
+  const dv2=Math.sqrt(MU_E/r2)*(1-Math.sqrt(2*r1/(r1+r2)));
+  const tt=Math.PI*Math.sqrt(Math.pow(at,3)/MU_E);
+  $('#ho-v').textContent=altKm>=384400?'384,400 km (Moon)':altKm.toLocaleString()+' km'+(Math.abs(altKm-35786)<200?' (GEO)':'');
+  $('#ho-dv1').textContent=(dv1/1000).toFixed(2);$('#ho-dv2').textContent=(dv2/1000).toFixed(2);
+  const th=tt/3600;
+  if(th<48){$('#ho-t').textContent=th.toFixed(1);$('#ho-tu').textContent='hours';}
+  else{$('#ho-t').textContent=(th/24).toFixed(1);$('#ho-tu').textContent='days';}
+  drawHohmann(r1,r2);
+}
+function drawHohmann(r1,r2){
+  const w=hoc.clientWidth,h=hoc.height;hoc.width=w;hx.clearRect(0,0,w,h);
+  const cx=w*0.36,cy=h/2;const maxr=Math.max(r1,r2);const sc=(Math.min(w,h)*0.42)/maxr;
+  const R1=r1*sc,R2=r2*sc;
+  hx.strokeStyle='rgba(111,143,214,.5)';hx.lineWidth=1.4;hx.beginPath();hx.arc(cx,cy,R1,0,7);hx.stroke();
+  hx.strokeStyle='rgba(95,208,160,.5)';hx.beginPath();hx.arc(cx,cy,R2,0,7);hx.stroke();
+  // transfer ellipse: semi-major (R1+R2)/2, foci at center
+  const a=(R1+R2)/2, c=Math.abs(R2-R1)/2, b=Math.sqrt(Math.max(0,a*a-c*c));
+  const ecx=cx+(R1>R2?c:-c);
+  hx.strokeStyle='var(--warm)';hx.strokeStyle='#f3ad5e';hx.setLineDash([5,4]);hx.lineWidth=1.6;
+  hx.beginPath();
+  for(let t=-Math.PI/2;t<=Math.PI/2+0.02;t+=0.05){const x=ecx+a*Math.cos(t)*(R2>R1?-1:1);const y=cy+b*Math.sin(t);t===-Math.PI/2?hx.moveTo(x,y):hx.lineTo(x,y);}
+  hx.stroke();hx.setLineDash([]);
+  // Earth
+  const eg=hx.createRadialGradient(cx,cy,0,cx,cy,9);eg.addColorStop(0,'#a9dcff');eg.addColorStop(1,'#274a86');
+  hx.fillStyle=eg;hx.beginPath();hx.arc(cx,cy,9,0,7);hx.fill();
+  // burn points
+  hx.fillStyle='#5fd0a0';hx.beginPath();hx.arc(cx+R1*(R2>R1?1:-1),cy,4,0,7);hx.fill();
+  hx.fillStyle='#f3ad5e';hx.beginPath();hx.arc(cx-R2*(R2>R1?1:-1),cy,4,0,7);hx.fill();
+  hx.font='11px "JetBrains Mono",monospace';hx.fillStyle='#93a0c2';
+  hx.fillText('parking',cx+R1*(R2>R1?1:-1)+8,cy-6);hx.fillText('target',cx-R2*(R2>R1?1:-1)-46,cy-6);
+}
+ho.addEventListener('input',hohmann);
+
+/* ---------- trajectory simulator ---------- */
+const tc=$('#traj-canvas'),tx=tc.getContext('2d');
+const scrub=$('#scrub'),playBtn=$('#playBtn');
+let geom={}, missions=[], cur=0, playing=false;
+
+function setGeom(){
+  const w=tc.clientWidth,h=tc.height;tc.width=w;
+  geom={w,h,ex:w*0.20,ey:h*0.68,mx:w*0.80,my:h*0.30,RE:24,RM:11,rp:38};
+}
+function ptOn(cx,cy,r,a){return {x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r};}
+function spiral(cx,cy,r0,r1,a0,a1,n){const p=[];for(let i=0;i<n;i++){const t=i/(n-1);const r=r0+(r1-r0)*t,a=a0+(a1-a0)*t;p.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r});}return p;}
+function arc(cx,cy,r,a0,a1,n,sq){sq=sq||1;const p=[];for(let i=0;i<n;i++){const t=i/(n-1);const a=a0+(a1-a0)*t;p.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r*sq});}return p;}
+function bez(P0,P1,P2,P3,n){const p=[];for(let i=0;i<n;i++){const t=i/(n-1),u=1-t;
+  p.push({x:u*u*u*P0.x+3*u*u*t*P1.x+3*u*t*t*P2.x+t*t*t*P3.x,y:u*u*u*P0.y+3*u*u*t*P1.y+3*u*t*t*P2.y+t*t*t*P3.y});}return p;}
+
+function buildMissions(){
+  const G=geom;
+  const parkExit=ptOn(G.ex,G.ey,G.rp,-0.35);          // right-ish of Earth
+  const moonApproach=ptOn(G.mx,G.my,G.RM+14,Math.PI*0.78); // lower-left of Moon
+  const ctrlA={x:G.ex+ (G.mx-G.ex)*0.35,y:G.ey-150};
+  const ctrlB={x:G.mx- (G.mx-G.ex)*0.30,y:G.my+30};
+
+  // shared early phases generator
+  function ascent(){return spiral(G.ex,G.ey,G.RE,G.rp,Math.PI*0.55,Math.PI*0.55-Math.PI*1.05,34);}
+  function parking(){return arc(G.ex,G.ey,G.rp,Math.PI*0.55-Math.PI*1.05,Math.PI*0.55-Math.PI*1.05-Math.PI*1.4,40);}
+  function coast(){return bez(parkExit,ctrlA,ctrlB,moonApproach,120);}
+
+  // APOLLO 11 ----------------------------------------------------
+  const apollo={label:'Apollo 11',phases:[
+    {name:'Launch & ascent',met:'T+0 → 00:12',dv:'≈9.4 km/s to LEO (with losses)',sp:[0,7.8],di:[0,0.19],
+     desc:'Saturn V burns through three stages, lofting the spacecraft into a ~190 km parking orbit in under 12 minutes.',gen:ascent},
+    {name:'Earth parking orbit',met:'00:12 → 02:44',dv:'coast',sp:[7.8,7.8],di:[0.19,0.19],
+     desc:'About 1.5 orbits while crew and ground verify every system before committing to the Moon.',gen:parking},
+    {name:'Trans-lunar injection',met:'02:44 → 02:50',dv:'≈3.1 km/s',sp:[7.8,10.8],di:[0.19,0.4],
+     desc:'The S-IVB reignites for ~6 minutes, raising apogee out to lunar distance. The CSM then turns and docks with the Lunar Module.',gen:()=>bez(parkExit,ctrlA,{x:ctrlA.x+40,y:ctrlA.y-10},ptOn(G.ex,G.ey,G.rp+70,-0.2),16)},
+    {name:'Trans-lunar coast',met:'02:50 → 75:50',dv:'small mid-course corrections',sp:[10.8,2.4],di:[0.4,384],
+     desc:'A three-day climb out of Earth\u2019s gravity well. Speed bleeds off until lunar gravity takes over near the Moon.',gen:coast},
+    {name:'Lunar orbit insertion',met:'75:50 → 76:00',dv:'≈0.9 km/s',sp:[2.4,1.6],di:[384,384],
+     desc:'A braking burn behind the Moon drops Apollo into a ~110 km lunar orbit, later circularised.',gen:()=>arc(G.mx,G.my,G.RM+13,Math.PI*0.78,Math.PI*0.78-Math.PI*0.6,18)},
+    {name:'Lunar orbit & landing',met:'76:00 → 102:46',dv:'descent ≈2.0 km/s',sp:[1.6,1.6],di:[384,384],
+     desc:'Eagle undocks and powers down to the Sea of Tranquility. Touchdown at MET 102:45:40 \u2014 \u201cThe Eagle has landed.\u201d Ascent, rendezvous, trans-Earth injection and a 3-day return follow.',gen:()=>arc(G.mx,G.my,G.RM+13,Math.PI*0.18,Math.PI*0.18-Math.PI*1.6,40)}
+  ]};
+
+  // ARTEMIS I ----------------------------------------------------
+  const moonFar=ptOn(G.mx,G.my,G.RM+40,-0.1);
+  const artemis1={label:'Artemis I',phases:[
+    {name:'Launch & ascent',met:'T+0 → 00:08',dv:'≈9.3 km/s to orbit',sp:[0,7.7],di:[0,0.2],
+     desc:'SLS Block 1 \u2014 two solid boosters and four RS-25 engines \u2014 reaches a high orbit; the core stage separates.',gen:ascent},
+    {name:'Perigee raise & TLI',met:'00:08 → 01:30',dv:'≈3.2 km/s (ICPS)',sp:[7.7,10.8],di:[0.2,0.5],
+     desc:'The ICPS upper stage performs a perigee-raise manoeuvre, then the trans-lunar injection burn that sends Orion to the Moon.',gen:parking},
+    {name:'Outbound coast',met:'Day 1 → 5',dv:'corrections',sp:[10.8,2.4],di:[0.5,384],
+     desc:'Orion coasts outbound on its European Service Module, several days to the Moon.',gen:coast},
+    {name:'Outbound powered flyby',met:'Day 5–6',dv:'≈0.3 km/s',sp:[2.4,2.0],di:[384,400],
+     desc:'A close pass ~130 km above the surface uses the Moon\u2019s gravity plus a burn to swing toward the distant retrograde orbit.',gen:()=>bez(moonApproach,ptOn(G.mx,G.my,G.RM+20,Math.PI*1.3),ptOn(G.mx,G.my,G.RM+34,Math.PI*1.7),moonFar,26)},
+    {name:'Distant retrograde orbit',met:'Day 6 → 19',dv:'insertion + departure',sp:[1.1,1.1],di:[400,432],
+     desc:'A large, very stable orbit ~70,000 km from the Moon. Orion reached a record ~432,000 km from Earth for a crew-rated vehicle.',gen:()=>arc(G.mx,G.my,G.RM+40,-0.1,-0.1+Math.PI*2,60,0.78)},
+    {name:'Return & reentry',met:'Day 19 → 25.5',dv:'return flyby ≈0.3 km/s',sp:[2.0,11.0],di:[432,0],
+     desc:'A return powered flyby and coast bring Orion home for a ~11 km/s skip reentry and Pacific splashdown after ~25.5 days and ~2.0 million km.',gen:()=>bez(moonFar,ctrlB,ctrlA,ptOn(G.ex,G.ey,G.RE+6,Math.PI*0.5),120)}
+  ]};
+
+  // ARTEMIS II (free return) ------------------------------------
+  const flybyMid=ptOn(G.mx,G.my,G.RM+24,-0.2);
+  const artemis2={label:'Artemis II',phases:[
+    {name:'Launch & ascent',met:'T+0 → 00:08',dv:'≈9.3 km/s to orbit',sp:[0,7.7],di:[0,0.2],
+     desc:'SLS lofts the first crewed Orion into a high Earth orbit. Four astronauts aboard.',gen:ascent},
+    {name:'High orbit checkout & TLI',met:'~Day 1',dv:'≈3.1 km/s (ICPS)',sp:[7.7,10.8],di:[0.2,0.5],
+     desc:'A day in a high elliptical orbit to test Orion\u2019s life-support and rendezvous systems, then trans-lunar injection.',gen:parking},
+    {name:'Outbound coast',met:'Day 1 → 4',dv:'corrections',sp:[10.8,2.0],di:[0.5,384],
+     desc:'A free-return path: aimed so that lunar gravity alone will curve Orion back to Earth \u2014 the safest first-flight profile.',gen:coast},
+    {name:'Lunar flyby',met:'~Day 4',dv:'gravity only',sp:[2.0,2.0],di:[384,400],
+     desc:'Orion sweeps behind the far side, passing thousands of km beyond the Moon \u2014 farther from Earth than any humans have ever been.',gen:()=>bez(moonApproach,ptOn(G.mx,G.my,G.RM+18,Math.PI*1.35),ptOn(G.mx,G.my,G.RM+26,Math.PI*1.85),flybyMid,30)},
+    {name:'Return coast & reentry',met:'Day 4 → 10',dv:'minor corrections',sp:[2.0,11.0],di:[400,0],
+     desc:'Lunar gravity has already bent the path homeward. Orion coasts back for a high-speed reentry and splashdown after ~10 days.',gen:()=>bez(flybyMid,ctrlB,ctrlA,ptOn(G.ex,G.ey,G.RE+6,Math.PI*0.5),120)}
+  ]};
+
+  missions=[apollo,artemis1,artemis2];
+  missions.forEach(m=>{
+    let pts=[];m.phases.forEach(ph=>{const seg=ph.gen();ph.i0=pts.length;pts=pts.concat(seg);ph.i1=pts.length-1;});
+    m.pts=pts;m.N=pts.length;
+  });
+}
+
+function lerp(a,b,t){return a+(b-a)*t;}
+function curState(){
+  const m=missions[cur];const p=+scrub.value/1000;const idx=Math.min(m.N-1,Math.max(0,Math.round(p*(m.N-1))));
+  let ph=m.phases[0],lf=0;
+  for(const x of m.phases){if(idx>=x.i0&&idx<=x.i1){ph=x;lf=(x.i1>x.i0)?(idx-x.i0)/(x.i1-x.i0):0;break;}}
+  return {m,idx,ph,lf,p};
+}
+function drawTraj(){
+  const G=geom,m=missions[cur];if(!m)return;
+  tx.clearRect(0,0,G.w,G.h);
+  // starfield
+  tx.fillStyle='#cfe0ff';for(let i=0;i<70;i++){const x=(i*73)%G.w,y=(i*131)%G.h;tx.globalAlpha=0.15+((i*37)%50)/120;tx.fillRect(x,y,1.2,1.2);}
+  tx.globalAlpha=1;
+  // full path faint
+  tx.strokeStyle='rgba(95,208,160,.22)';tx.lineWidth=1.4;tx.beginPath();
+  m.pts.forEach((p,i)=>i?tx.lineTo(p.x,p.y):tx.moveTo(p.x,p.y));tx.stroke();
+  const st=curState();
+  // traveled path bright
+  tx.strokeStyle='#5fd0a0';tx.lineWidth=2.2;tx.shadowColor='#5fd0a0';tx.shadowBlur=8;tx.beginPath();
+  for(let i=0;i<=st.idx;i++){const p=m.pts[i];i?tx.lineTo(p.x,p.y):tx.moveTo(p.x,p.y);}tx.stroke();tx.shadowBlur=0;
+  // Earth
+  const eg=tx.createRadialGradient(G.ex-6,G.ey-6,2,G.ex,G.ey,G.RE);eg.addColorStop(0,'#cfe9ff');eg.addColorStop(.5,'#6f8fd6');eg.addColorStop(1,'#1b3158');
+  tx.fillStyle=eg;tx.beginPath();tx.arc(G.ex,G.ey,G.RE,0,7);tx.fill();
+  // Moon
+  const mg=tx.createRadialGradient(G.mx-4,G.my-4,1,G.mx,G.my,G.RM);mg.addColorStop(0,'#e8e8ee');mg.addColorStop(1,'#6b6f7e');
+  tx.fillStyle=mg;tx.beginPath();tx.arc(G.mx,G.my,G.RM,0,7);tx.fill();
+  // labels
+  tx.font='12px "JetBrains Mono",monospace';tx.fillStyle='#93a0c2';tx.textAlign='center';
+  tx.fillText('EARTH',G.ex,G.ey+G.RE+16);tx.fillText('MOON',G.mx,G.my-G.RM-9);
+  // landing marker for apollo
+  if(cur===0){const lp=m.pts[m.phases[5].i0+Math.round((m.phases[5].i1-m.phases[5].i0)*0.5)];if(lp){tx.fillStyle='#f3ad5e';tx.beginPath();tx.arc(lp.x,lp.y,2.5,0,7);tx.fill();}}
+  // craft
+  const c=m.pts[st.idx];
+  tx.fillStyle='#fff';tx.shadowColor='#a9dcff';tx.shadowBlur=14;tx.beginPath();tx.arc(c.x,c.y,4.2,0,7);tx.fill();tx.shadowBlur=0;
+  tx.fillStyle='rgba(169,220,255,.4)';tx.beginPath();tx.arc(c.x,c.y,7,0,7);tx.fill();
+  updateLive(st);
+}
+function updateLive(st){
+  $('#lv-met').textContent=st.ph.met;
+  $('#lv-met').style.fontSize='.86rem';
+  $('#lv-phase').textContent=st.ph.name;
+  $('#lv-speed').textContent=lerp(st.ph.sp[0],st.ph.sp[1],st.lf).toFixed(2);
+  const d=lerp(st.ph.di[0],st.ph.di[1],st.lf);
+  $('#lv-dist').textContent=d<1?d.toFixed(2):Math.round(d).toLocaleString();
+  // phase card + chips
+  $('#phaseCard').innerHTML='<div class="met">'+st.ph.met+'</div><h4>'+st.ph.name+'</h4><p>'+st.ph.desc+'</p><span class="dv">Δv: '+st.ph.dv+'</span>';
+  document.querySelectorAll('.chip-ph').forEach((c,i)=>c.classList.toggle('on',missions[cur].phases[i]===st.ph));
+  bindTips();
+}
+function buildChips(){
+  const c=$('#phaseChips');c.innerHTML='';
+  missions[cur].phases.forEach((ph,i)=>{
+    const b=document.createElement('button');b.className='chip-ph';b.textContent=(i+1)+'. '+ph.name;
+    b.addEventListener('click',()=>{scrub.value=Math.round(ph.i0/(missions[cur].N-1)*1000);drawTraj();});
+    c.appendChild(b);
+  });
+}
+function setMission(i){
+  cur=i;document.querySelectorAll('#missionSeg button').forEach((b,j)=>b.classList.toggle('on',j===i));
+  scrub.value=0;buildChips();drawTraj();
+}
+document.querySelectorAll('#missionSeg button').forEach(b=>b.addEventListener('click',()=>setMission(+b.dataset.m)));
+scrub.addEventListener('input',()=>{drawTraj();});
+playBtn.addEventListener('click',()=>{playing=!playing;playBtn.textContent=playing?'❚❚':'▶';});
+
+/* ---------- Saturn V & SLS stages ---------- */
+const SATURN=[
+  {b:'S-IC',t:'First stage',s:'5× F-1 engines · RP-1 / LOX',sp:['34.5 MN sea level','Burn ~168 s','Isp ~263 s SL']},
+  {b:'S-II',t:'Second stage',s:'5× J-2 engines · LH2 / LOX',sp:['~5.1 MN vacuum','Burn ~360 s','Isp ~421 s']},
+  {b:'S-IVB',t:'Third stage',s:'1× J-2 (restartable) · LH2 / LOX',sp:['~1.0 MN vacuum','Orbit insertion + TLI','Isp ~421 s']},
+  {b:'CSM+LM',t:'Spacecraft',s:'Command/Service Module + Lunar Module',sp:['SPS ~91 kN','Descent + ascent engines','Crew of 3']}
+];
+const SLS=[
+  {b:'SRB ×2',t:'Solid rocket boosters',s:'Five-segment shuttle-derived SRBs',sp:['~32 MN combined','Burn ~126 s','~75% of liftoff thrust']},
+  {b:'Core',t:'Core stage',s:'4× RS-25 engines · LH2 / LOX',sp:['~7.4 MN vacuum','Burn ~8 min','Isp ~452 s']},
+  {b:'ICPS',t:'Interim upper stage',s:'1× RL10 · LH2 / LOX',sp:['~110 kN','Perigee raise + TLI','Isp ~462 s']},
+  {b:'Orion',t:'Spacecraft + ESM',s:'Orion capsule + European Service Module',sp:['OMS-E ~26 kN','Crew of 4','Deep-space rated']}
+];
+function buildStages(arr,sel){
+  const el=$(sel);arr.forEach(s=>{
+    const d=document.createElement('div');d.className='stage';
+    d.innerHTML='<span class="badge">'+s.b+'</span><div><h4>'+s.t+'</h4><div class="sub">'+s.s+'</div><div class="specs">'+s.sp.map(x=>'<span class="sp">'+x+'</span>').join('')+'</div></div>';
+    el.appendChild(d);
+  });
+}
+
+/* ---------- other missions ---------- */
+const MISSIONS=[
+  {n:'Apollo 8',y:'1968 · first to the Moon',tag:'Crewed',
+   spec:{Crew:'3',Orbits:'10 lunar',Distance:'~380,000 km',Duration:'6 days'},
+   physics:'The first humans to leave Earth orbit and circle another world. Used a near free-return trajectory for safety; the famous "Earthrise" photo came from lunar orbit.'},
+  {n:'Apollo 13',y:'1970 · the successful failure',tag:'Crewed',
+   spec:{Crew:'3','Abort':'Free return',Return:'Lunar gravity',Duration:'~6 days'},
+   physics:'After an oxygen-tank explosion, the crew looped around the Moon on a free-return trajectory, using the LM as a lifeboat and lunar gravity to slingshot home \u2014 no engine could be trusted for a direct abort.'},
+  {n:'Voyager 1 & 2',y:'1977 · the Grand Tour',tag:'Robotic',
+   spec:{Assists:'Jupiter, Saturn+','Speed':'~17 km/s','Status':'Interstellar',Power:'RTG'},
+   physics:'A rare planetary alignment let a single launch visit multiple giant planets via repeated gravity assists, each stealing orbital energy from a planet to fling the probe outward \u2014 now the most distant human-made objects.'},
+  {n:'Cassini–Huygens',y:'1997 · Saturn orbiter',tag:'Robotic',
+   spec:{Route:'V-V-E-J assists',Arrival:'2004','Orbit':'Saturn',End:'2017 dive'},
+   physics:'Too heavy to fly direct, Cassini gained speed with Venus-Venus-Earth-Jupiter gravity assists before a Saturn-orbit-insertion burn, then spent 13 years touring the rings and moons.'},
+  {n:'New Horizons',y:'2006 · Pluto flyby',tag:'Robotic',
+   spec:{'Launch v':'~16.3 km/s',Assist:'Jupiter','Flyby':'2015','Then':'Arrokoth'},
+   physics:'Launched faster than anything before it, then used a Jupiter gravity assist to cut years off the trip to Pluto \u2014 a high-speed flyby because braking into orbit was impossible.'},
+  {n:'JWST',y:'2021 · the L2 telescope',tag:'Robotic',
+   spec:{'Orbit':'Sun–Earth L2',Distance:'~1.5M km',Period:'~6 months','Δv':'tiny station-keeping'},
+   physics:'Parked at the second Sun-Earth Lagrange point, where gravity and orbital motion balance so the telescope keeps station with minimal fuel, always shaded from Sun, Earth and Moon.'},
+  {n:'Chang\u2019e 6',y:'2024 · far-side return',tag:'Robotic',
+   spec:{Target:'Far side',Sample:'~1.9 kg',Relay:'Queqiao-2',Return:'Earth'},
+   physics:'The first sample return from the Moon\u2019s far side, which never faces Earth \u2014 requiring a dedicated relay satellite to communicate during landing, ascent and rendezvous in lunar orbit.'},
+  {n:'Artemis I',y:'2022 · Orion shakedown',tag:'Uncrewed',
+   spec:{Orbit:'DRO','Max dist':'~432,000 km',Duration:'25.5 days','Travel':'~2.0M km'},
+   physics:'An uncrewed test to a distant retrograde orbit and back, validating Orion\u2019s heat shield against an ~11 km/s lunar-return reentry \u2014 the gateway flight for crewed Artemis missions.'}
+];
+function buildMissionGrid(){
+  const g=$('#missionGrid');
+  MISSIONS.forEach((m,i)=>{
+    const b=document.createElement('button');b.className='mcard';
+    b.innerHTML='<span class="tag">'+m.tag+'</span><h3>'+m.n+'</h3><div class="yr">'+m.y+'</div><p>'+m.physics.slice(0,96)+'\u2026</p>';
+    b.addEventListener('click',()=>openMission(i));g.appendChild(b);
+  });
+}
+function openMission(i){
+  const m=MISSIONS[i];$('#m-name').textContent=m.n;$('#m-yr').textContent=m.y;
+  let specs='';for(const k in m.spec)specs+='<div class="spec"><div class="k">'+k.replace(/[:']/g,'')+'</div><div class="v">'+m.spec[k]+'</div></div>';
+  $('#m-body').innerHTML='<div class="spec-grid">'+specs+'</div><h4>The physics that made it work</h4><p>'+m.physics+'</p>';
+  $('#modalBg').classList.add('open');bindTips();
+}
+$('#modalClose').addEventListener('click',()=>$('#modalBg').classList.remove('open'));
+$('#modalBg').addEventListener('click',e=>{if(e.target===$('#modalBg'))$('#modalBg').classList.remove('open');});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#modalBg').classList.remove('open');});
+
+/* ---------- hero canvas (orbital + ascent) ---------- */
+const hc=$('#hero-canvas'),hctx=hc.getContext('2d');
+const reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+let stars=[],sat={a:0},hf=0;
+function initHero(){hc.width=hc.clientWidth;hc.height=hc.clientHeight;stars=[];for(let i=0;i<130;i++)stars.push({x:Math.random()*hc.width,y:Math.random()*hc.height,r:Math.random()*1.2+.2,a:Math.random()*.6+.2,tw:Math.random()*.02});}
+function drawHero(){
+  hctx.clearRect(0,0,hc.width,hc.height);
+  stars.forEach(s=>{s.a+=Math.sin(hf*s.tw)*.004;hctx.globalAlpha=Math.max(.1,Math.min(.9,s.a));hctx.fillStyle='#cfe0ff';hctx.beginPath();hctx.arc(s.x,s.y,s.r,0,7);hctx.fill();});
+  hctx.globalAlpha=1;
+  const cx=hc.width*0.7,cy=hc.height*0.52,R=Math.min(hc.width,hc.height)*0.26;
+  const g=hctx.createRadialGradient(cx,cy,0,cx,cy,R*1.6);g.addColorStop(0,'rgba(95,208,160,.08)');g.addColorStop(.5,'rgba(111,143,214,.05)');g.addColorStop(1,'rgba(0,0,0,0)');
+  hctx.fillStyle=g;hctx.fillRect(0,0,hc.width,hc.height);
+  // planet
+  const pg=hctx.createRadialGradient(cx-R*0.3,cy-R*0.3,2,cx,cy,R);pg.addColorStop(0,'#a9dcff');pg.addColorStop(.55,'#4d6aa8');pg.addColorStop(1,'#162a4d');
+  hctx.fillStyle=pg;hctx.beginPath();hctx.arc(cx,cy,R,0,7);hctx.fill();
+  // orbit + satellite
+  hctx.strokeStyle='rgba(95,208,160,.3)';hctx.lineWidth=1;hctx.beginPath();
+  for(let t=0;t<7;t+=0.1){const x=cx+Math.cos(t)*R*1.7,y=cy+Math.sin(t)*R*1.7*0.42;t?hctx.lineTo(x,y):hctx.moveTo(x,y);}hctx.stroke();
+  sat.a+=0.012;const sx=cx+Math.cos(sat.a)*R*1.7,sy=cy+Math.sin(sat.a)*R*1.7*0.42;
+  hctx.fillStyle='#5fd0a0';hctx.shadowColor='#5fd0a0';hctx.shadowBlur=12;hctx.beginPath();hctx.arc(sx,sy,3.4,0,7);hctx.fill();hctx.shadowBlur=0;
+}
+
+/* ---------- loop, nav, reveal ---------- */
+function loop(){hf++;if(!reduce)drawHero();if(playing){let v=+scrub.value+3.2;if(v>1000){v=1000;playing=false;playBtn.textContent='▶';}scrub.value=v;drawTraj();}requestAnimationFrame(loop);}
+const links=[...document.querySelectorAll('.nav-links a')];const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+window.addEventListener('scroll',()=>{const sc=window.scrollY,dh=document.documentElement.scrollHeight-window.innerHeight;$('#progress').style.width=(dh>0?sc/dh*100:0)+'%';let c=0;secs.forEach((s,i)=>{if(s&&s.offsetTop-130<=sc)c=i;});links.forEach((l,i)=>l.classList.toggle('active',i===c));},{passive:true});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+window.addEventListener('resize',()=>{initHero();drawHero();setGeom();buildMissions();drawTraj();hohmann();});
+
+/* init */
+launchLab();hohmann();
+buildStages(SATURN,'#saturnStages');buildStages(SLS,'#slsStages');buildMissionGrid();
+initHero();drawHero();
+setGeom();buildMissions();buildChips();drawTraj();
+bindTips();
+if(!reduce)loop();
+</script>
+</body>
+</html>

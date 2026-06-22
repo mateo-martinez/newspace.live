@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Space History — From Sputnik to New Space</title>
+<meta name="description" content="An interactive, bilingual history of spaceflight: an era-by-era timeline of missions and milestones, the rockets that flew them, the people who made them happen, the New Space era explained, anecdotes, games and challenges." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --void:#05060d;--cloud:#0b1020;--cloud-2:#111a30;--cloud-3:#16223e;--line:#243353;
+  --cold:#6f8fd6;--ice:#a9dcff;--warm:#f3ad5e;--ir:#e0653f;--sim:#5fd0a0;--law:#9b8cff;--mech:#3cc9e6;--exo:#ff86c8;--cy:#9be35a;--hist:#e3b23c;
+  --text:#eaeefb;--muted:#93a0c2;--muted-2:#6b769a;
+  --shadow:0 18px 50px -20px rgba(0,0,0,.8);--r:16px;--maxw:1120px;
+  --display:"Space Grotesk",system-ui,sans-serif;--body:"Inter",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--void);color:var(--text);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(1100px 700px at 82% -8%, rgba(227,178,60,.08), transparent 60%),
+    radial-gradient(1000px 800px at 6% 2%, rgba(111,143,214,.12), transparent 60%),
+    radial-gradient(900px 900px at 50% 120%, rgba(224,101,63,.05), transparent 60%);}
+a{color:var(--ice);text-decoration:none}
+h1,h2,h3,h4{font-family:var(--display);font-weight:600;line-height:1.12;letter-spacing:-.01em;margin:0}
+p{margin:0 0 1em}.mono{font-family:var(--mono)}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+section{padding:84px 0;position:relative}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--warm);margin:0 0 14px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:26px;height:1px;background:linear-gradient(90deg,var(--warm),transparent)}
+.sec-title{font-size:clamp(1.7rem,4vw,2.5rem);margin-bottom:14px}
+.lede{color:var(--muted);font-size:1.05rem;max-width:66ch}
+#progress{position:fixed;top:0;left:0;height:2px;width:0;z-index:70;background:linear-gradient(90deg,var(--cold),var(--hist),var(--ice))}
+
+.nav{position:sticky;top:0;z-index:60;backdrop-filter:blur(14px);background:rgba(5,6,13,.72);border-bottom:1px solid var(--line)}
+.nav-inner{max-width:var(--maxw);margin:0 auto;padding:12px 24px;padding-right:66px;display:flex;align-items:center;gap:18px;position:relative}
+.brand{display:flex;align-items:center;gap:11px;font-family:var(--display);font-weight:700;letter-spacing:-.02em;font-size:1.02rem;white-space:nowrap}
+.brand a{color:inherit}
+.brand .dot{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 32% 32%,var(--ice),var(--hist) 55%,var(--ir) 95%);box-shadow:0 0 16px var(--hist);flex:none}
+.menu-btn{margin-left:auto;display:inline-flex;flex-direction:column;justify-content:center;gap:4px;width:42px;height:36px;padding:0 9px;border:1px solid var(--line);border-radius:9px;background:var(--cloud-2);cursor:pointer;transition:border-color .2s}
+.menu-btn:hover{border-color:var(--hist)}
+.menu-btn span{display:block;height:2px;width:100%;background:var(--text);border-radius:2px;transition:transform .25s,opacity .2s}
+.menu-btn.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.menu-btn.open span:nth-child(2){opacity:0}
+.menu-btn.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+.nav-links{position:absolute;top:calc(100% + 10px);right:0;display:none;flex-direction:column;gap:2px;min-width:230px;max-width:min(86vw,300px);background:rgba(8,11,22,.98);backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:14px;padding:10px;box-shadow:var(--shadow);max-height:72vh;overflow-y:auto}
+.nav-links.open{display:flex;animation:menuIn .18s ease}
+@keyframes menuIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.nav-links a{color:var(--muted);font-size:.9rem;padding:10px 13px;border-radius:10px;white-space:nowrap;transition:.18s;font-weight:500}
+.nav-links a:hover{color:var(--text);background:var(--cloud-2)}
+.nav-links a.active{color:var(--ice);background:rgba(227,178,60,.12)}
+
+.langflag{position:fixed;top:12px;right:16px;z-index:90;display:inline-flex;align-items:center;justify-content:center;background:rgba(11,16,32,.92);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:9px;padding:6px;cursor:pointer;transition:border-color .2s,transform .15s}
+.langflag:hover{border-color:var(--hist);transform:translateY(-1px)}
+.langflag svg{width:26px;height:17px;border-radius:2px;display:block;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+
+.hero{min-height:80vh;display:flex;align-items:center;padding-top:36px;position:relative;overflow:hidden}
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:-1;opacity:.95}
+.hero-inner{max-width:var(--maxw);margin:0 auto;padding:0 24px;width:100%}
+.hero .kick{font-family:var(--mono);font-size:.78rem;letter-spacing:.24em;text-transform:uppercase;color:var(--hist);margin-bottom:20px}
+.hero h1{font-size:clamp(2.5rem,7vw,5rem);font-weight:700;max-width:16ch;letter-spacing:-.025em}
+.hero h1 .grad{background:linear-gradient(100deg,var(--ice),var(--hist) 50%,var(--ir));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .sub{color:var(--muted);font-size:1.16rem;max-width:60ch;margin-top:22px}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:32px}
+.btn{font-family:var(--body);font-weight:600;font-size:.95rem;border-radius:12px;padding:13px 22px;border:1px solid var(--line);background:var(--cloud-2);color:var(--text);cursor:pointer;transition:transform .15s,border-color .2s;text-decoration:none;display:inline-flex;align-items:center;gap:9px}
+.btn:hover{transform:translateY(-2px);border-color:var(--hist)}
+.btn.primary{background:linear-gradient(100deg,rgba(227,178,60,.18),rgba(111,143,214,.18));border-color:rgba(227,178,60,.45)}
+.scroll-hint{margin-top:40px;color:var(--muted-2);font-size:.8rem;font-family:var(--mono);letter-spacing:.1em;display:flex;align-items:center;gap:8px}
+.scroll-hint .a{animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+@media (prefers-reduced-motion:reduce){.scroll-hint .a{animation:none}}
+
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1!important;transform:none!important}}
+
+.panel{background:linear-gradient(180deg,var(--cloud-2),var(--cloud));border:1px solid var(--line);border-radius:var(--r);padding:26px;box-shadow:var(--shadow)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:820px){.split{grid-template-columns:1fr}}
+
+/* tooltips */
+.term{border-bottom:1px dashed var(--hist);cursor:help;color:var(--ice);text-underline-offset:3px}
+.term:focus{outline:2px solid var(--hist);outline-offset:2px;border-radius:3px}
+#tip{position:fixed;z-index:200;max-width:330px;background:#17120a;border:1px solid var(--hist);border-radius:11px;padding:13px 15px;font-size:.86rem;color:var(--text);line-height:1.55;box-shadow:0 18px 40px -12px rgba(0,0,0,.85);opacity:0;pointer-events:none;transition:opacity .14s}
+#tip.show{opacity:1}#tip b{color:var(--warm)}
+.help-chip{width:21px;height:21px;border-radius:50%;border:1px solid var(--hist);color:var(--hist);font-size:.74rem;font-family:var(--mono);font-style:italic;display:inline-flex;align-items:center;justify-content:center;cursor:help;background:rgba(227,178,60,.1);font-weight:600;vertical-align:middle}
+.help-chip:hover{background:rgba(227,178,60,.25)}
+
+/* era filter chips */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.achip{font-family:var(--mono);font-size:.8rem;color:var(--muted);background:var(--cloud);border:1px solid var(--line);border-radius:9px;padding:8px 13px;cursor:pointer;transition:.16s}
+.achip:hover{border-color:var(--hist);color:var(--text)}
+.achip.on{background:rgba(227,178,60,.16);border-color:var(--hist);color:var(--hist)}
+
+/* timeline */
+.tl{margin-top:24px;position:relative;padding-left:30px}
+.tl::before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:linear-gradient(180deg,var(--cold),var(--hist),var(--ir))}
+.tl-item{position:relative;margin-bottom:14px;cursor:pointer}
+.tl-item::before{content:"";position:absolute;left:-26px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--cloud);border:2px solid var(--era,var(--hist));box-shadow:0 0 10px -2px var(--era,var(--hist));transition:.16s}
+.tl-item:hover::before{background:var(--era,var(--hist))}
+.tl-card{background:var(--cloud-2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;transition:.16s}
+.tl-item:hover .tl-card{border-color:var(--era,var(--hist));transform:translateX(3px)}
+.tl-card .yr{font-family:var(--mono);font-size:.78rem;color:var(--hist);font-weight:600}
+.tl-card h4{font-size:1.02rem;margin:2px 0 4px}
+.tl-card p{color:var(--muted);font-size:.88rem;margin:0}
+.tl-card .era-tag{font-family:var(--mono);font-size:.62rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted-2);border:1px solid var(--line);border-radius:99px;padding:2px 8px;margin-top:8px;display:inline-block}
+
+/* generic card grid */
+.bodygrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin-top:22px}
+.gcard{background:var(--cloud-2);border:1px solid var(--line);border-radius:13px;padding:17px;cursor:pointer;transition:.18s;text-align:left;color:inherit;font:inherit;width:100%;border-top:3px solid var(--hist)}
+.gcard:hover{transform:translateY(-3px);border-color:var(--hist)}
+.gcard h4{font-size:1.02rem;margin:0 0 3px}
+.gcard .role{font-family:var(--mono);font-size:.72rem;color:var(--hist);margin-bottom:7px}
+.gcard p{color:var(--muted);font-size:.85rem;margin:0}
+
+/* rockets canvas */
+canvas.plot{width:100%;display:block;border-radius:12px;background:var(--cloud);border:1px solid var(--line)}
+
+/* new space comparison */
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px}
+@media (max-width:760px){.vs{grid-template-columns:1fr}}
+.vscol{background:var(--cloud-2);border:1px solid var(--line);border-radius:14px;padding:20px}
+.vscol.old{border-top:3px solid var(--cold)}
+.vscol.new{border-top:3px solid var(--hist)}
+.vscol h3{font-size:1.1rem;margin-bottom:4px}
+.vscol .tag{font-family:var(--mono);font-size:.7rem;color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em}
+.vscol ul{list-style:none;padding:0;margin:14px 0 0}
+.vscol li{font-size:.9rem;color:var(--muted);padding:8px 0 8px 22px;position:relative;border-top:1px solid var(--line)}
+.vscol li:first-child{border-top:0}
+.vscol.old li::before{content:"›";position:absolute;left:4px;color:var(--cold)}
+.vscol.new li::before{content:"›";position:absolute;left:4px;color:var(--hist)}
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:20px}
+.feat .card{background:var(--cloud-2);border:1px solid var(--line);border-radius:13px;padding:18px}
+.feat .card h4{font-size:1rem;margin-bottom:6px;color:var(--hist)}
+.feat .card p{color:var(--muted);font-size:.88rem;margin:0}
+
+/* quiz */
+.quiz{background:var(--cloud);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+.quiz .score{font-family:var(--mono);font-size:.82rem;color:var(--hist);background:rgba(227,178,60,.1);border:1px solid rgba(227,178,60,.3);border-radius:99px;padding:5px 12px;display:inline-block;margin-bottom:14px}
+.quiz .q{font-weight:600;font-size:1.02rem;margin-bottom:14px}
+.qopts{display:grid;gap:10px}
+@media (min-width:560px){.qopts.two{grid-template-columns:1fr 1fr}}
+.qopt{background:var(--cloud-2);border:1px solid var(--line);border-radius:11px;padding:13px 15px;cursor:pointer;transition:.16s;text-align:left;color:inherit;font:inherit}
+.qopt:hover{border-color:var(--hist)}
+.qopt.correct{border-color:var(--sim);background:rgba(95,208,160,.14)}
+.qopt.wrong{border-color:var(--ir);background:rgba(224,101,63,.14)}
+.qfb{margin-top:14px;font-size:.9rem;color:var(--muted);min-height:20px}
+.qfb b{color:var(--hist)}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;z-index:120;background:rgba(3,4,10,.78);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:22px}
+.modal-bg.open{display:flex}
+.modal{background:linear-gradient(180deg,var(--cloud-2),var(--cloud));border:1px solid var(--hist);border-radius:18px;max-width:640px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow)}
+.modal-head{padding:22px 26px 16px;border-bottom:1px solid var(--line);display:flex;gap:14px;align-items:flex-start}
+.modal-head h3{font-size:1.4rem;line-height:1.2}.modal-head .sub{font-family:var(--mono);font-size:.8rem;color:var(--warm);margin-top:4px}
+.modal-close{margin-left:auto;background:var(--cloud-3);border:1px solid var(--line);color:var(--text);width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:1.1rem;flex:none}
+.modal-close:hover{border-color:var(--ir)}
+.modal-body{padding:22px 26px 26px}
+.modal-body h4{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--warm);font-family:var(--mono);margin:16px 0 7px}
+.modal-body h4:first-child{margin-top:0}
+.modal-body p{color:var(--muted);font-size:.93rem;margin:0}
+.spec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:4px 0 4px}
+.spec{background:var(--cloud);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.spec .k{font-size:.62rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);font-family:var(--mono);margin-bottom:4px}
+.spec .v{font-family:var(--mono);font-weight:600;color:var(--ice);font-size:.88rem}
+
+.note{font-size:.82rem;color:var(--muted-2);font-style:italic;margin-top:14px}
+.gloss{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.gloss dt{font-family:var(--display);font-weight:600;color:var(--ice);margin-bottom:4px}
+.gloss dd{margin:0 0 16px;color:var(--muted);font-size:.9rem}
+footer{border-top:1px solid var(--line);padding:40px 0 60px;color:var(--muted-2);font-size:.85rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="tip" role="tooltip"></div>
+<button id="langBtn" class="langflag" aria-label="Switch language / Cambiar idioma"></button>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="brand"><span class="dot"></span><a href="/">newspace.live</a> <span style="color:var(--muted-2);font-weight:500" data-i18n="nav.crumb">/ Space History</span></div>
+    <button id="menuBtn" class="menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="navlinks"><span></span><span></span><span></span></button>
+    <div class="nav-links" id="navlinks">
+      <a href="#timeline" data-i18n="nav.tl">Timeline</a>
+      <a href="#rockets" data-i18n="nav.rk">Rockets</a>
+      <a href="#people" data-i18n="nav.pp">People</a>
+      <a href="#newspace" data-i18n="nav.ns">New Space</a>
+      <a href="#anecdotes" data-i18n="nav.an">Anecdotes</a>
+      <a href="#games" data-i18n="nav.gm">Games</a>
+      <a href="#reference" data-i18n="nav.rf">Reference</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-inner">
+    <p class="kick" data-i18n="hero.kick">1957 → today · missions · rockets · people</p>
+    <h1 data-i18n-html="hero.h1">The story of <span class="grad">leaving Earth</span>.</h1>
+    <p class="sub" data-i18n-html="hero.sub">From a beeping metal sphere in 1957 to reusable rockets and private crews — the people, machines and moments that built the space age, and the New Space era reshaping it now. Explore the timeline, meet the pioneers, and hover every <span class="help-chip">i</span> for more.</p>
+    <div class="hero-cta">
+      <a class="btn primary" href="#timeline" data-i18n="hero.cta1">Open the timeline →</a>
+      <a class="btn" href="#newspace" data-i18n="hero.cta2">What is New Space?</a>
+    </div>
+    <div class="scroll-hint"><span class="a">↓</span> <span data-i18n="hero.scroll">seven sections below</span></div>
+  </div>
+</header>
+
+<!-- TIMELINE -->
+<section id="timeline">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="tl.eyebrow">Missions &amp; milestones</p>
+    <h2 class="sec-title reveal" data-i18n="tl.title">A timeline of spaceflight</h2>
+    <p class="lede reveal" data-i18n="tl.lede">Seven decades of firsts, in five eras. Filter by era, then click any milestone for the full story and an anecdote.</p>
+    <div class="chips reveal" id="eraChips" style="margin-top:20px"></div>
+    <div class="tl" id="timeline-list"></div>
+  </div>
+</section>
+
+<!-- ROCKETS -->
+<section id="rockets">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="rk.eyebrow">The machines</p>
+    <h2 class="sec-title reveal" data-i18n="rk.title">Rockets — to scale</h2>
+    <p class="lede reveal" data-i18n="rk.lede">Every mission rides a rocket. Here are the icons of each era drawn to the same height scale — from the V-2 to Starship. Click any to see its specs and story. Bars also show payload to low Earth orbit.</p>
+    <div class="panel reveal" style="margin-top:24px">
+      <canvas class="plot" id="rocketCanvas" height="360"></canvas>
+      <p class="note" data-i18n="rk.note">Heights to scale; click a rocket for detail. Payload-to-orbit varies hugely — that is the real story of progress.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PEOPLE -->
+<section id="people">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="pp.eyebrow">Who made it happen</p>
+    <h2 class="sec-title reveal" data-i18n="pp.title">People &amp; pioneers</h2>
+    <p class="lede reveal" data-i18n="pp.lede">Theorists, engineers, astronauts and the people behind the scenes. Click any for their contribution and a story.</p>
+    <div class="bodygrid reveal" id="peopleGrid"></div>
+  </div>
+</section>
+
+<!-- NEW SPACE -->
+<section id="newspace">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="ns.eyebrow">The era we're in</p>
+    <h2 class="sec-title reveal" data-i18n="ns.title">New Space, explained</h2>
+    <p class="lede reveal" data-i18n-html="ns.lede"><b style="color:var(--text)">New Space</b> is the shift, from roughly the 2000s onward, from spaceflight run almost entirely by governments to one driven by private companies, private capital and commercial markets. It is less a single event than a change in <span class="term" data-i18n-tip="tip.culture">culture and economics</span>: reusable rockets, mass-produced satellites, falling launch costs, and agencies buying services instead of building everything themselves.</p>
+
+    <div class="vs reveal">
+      <div class="vscol old">
+        <span class="tag" data-i18n="ns.oldtag">≈ 1957–2000</span>
+        <h3 data-i18n="ns.oldh">Old Space</h3>
+        <ul id="oldList"></ul>
+      </div>
+      <div class="vscol new">
+        <span class="tag" data-i18n="ns.newtag">≈ 2000 → today</span>
+        <h3 data-i18n="ns.newh">New Space</h3>
+        <ul id="newList"></ul>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--display);font-size:1.2rem;margin:34px 0 0" data-i18n="ns.featsh">What defines the era</h3>
+    <div class="feat reveal" id="nsFeatures"></div>
+
+    <p class="lede reveal" style="margin-top:30px" data-i18n-html="ns.origin">The turning point most people point to is the <span class="term" data-i18n-tip="tip.xprize">Ansari X Prize</span> in 2004 — the first privately built crewed spacecraft — and the founding of SpaceX (2002) and Blue Origin (2000). When SpaceX landed and reflew an orbital rocket booster (2015–2017), the economics of access to space changed for good.</p>
+  </div>
+</section>
+
+<!-- ANECDOTES -->
+<section id="anecdotes">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="an.eyebrow">The human side</p>
+    <h2 class="sec-title reveal" data-i18n="an.title">Anecdotes &amp; "did you know?"</h2>
+    <p class="lede reveal" data-i18n="an.lede">The moments that don't fit on a spec sheet. Click any for the full story.</p>
+    <div class="bodygrid reveal" id="anecGrid"></div>
+  </div>
+</section>
+
+<!-- GAMES -->
+<section id="games">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="gm.eyebrow">Test yourself</p>
+    <h2 class="sec-title reveal" data-i18n="gm.title">Games &amp; challenges</h2>
+    <p class="lede reveal" data-i18n="gm.lede">Three quick games — instant feedback and a running score.</p>
+    <div class="split" style="margin-top:26px">
+      <div class="quiz reveal"><div class="score" id="q1-score">0 / 0</div><div class="q" id="q1-q"></div><div class="qopts two" id="q1-opts"></div><div class="qfb" id="q1-fb"></div><button class="btn" id="q1-next" style="margin-top:14px" data-i18n="gm.next">Next →</button></div>
+      <div class="quiz reveal"><div class="score" id="q2-score">0 / 0</div><div class="q" id="q2-q"></div><div class="qopts two" id="q2-opts"></div><div class="qfb" id="q2-fb"></div><button class="btn" id="q2-next" style="margin-top:14px" data-i18n="gm.next">Next →</button></div>
+    </div>
+    <div class="quiz reveal" style="margin-top:20px"><div class="score" id="q3-score">0 / 0</div><div class="q" id="q3-q"></div><div class="qopts" id="q3-opts"></div><div class="qfb" id="q3-fb"></div><button class="btn" id="q3-next" style="margin-top:14px" data-i18n="gm.next">Next →</button></div>
+    <p class="note reveal" data-i18n="gm.h">Top-left: which event came first? Top-right: Old Space or New Space? Bottom: identify the milestone.</p>
+  </div>
+</section>
+
+<!-- REFERENCE -->
+<section id="reference">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="rf.eyebrow">Quick reference</p>
+    <h2 class="sec-title reveal" data-i18n="rf.title">Glossary</h2>
+    <div class="panel reveal" style="margin-top:24px"><dl class="gloss" id="glossList"></dl></div>
+    <p class="note reveal" data-i18n="rf.note">Dates are historical record; figures are rounded for clarity. A teaching overview, not an exhaustive catalogue — entire missions and people are necessarily left out.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div><strong style="color:var(--text);font-family:var(--display)">newspace.live</strong> · <span data-i18n="ft.t">A history of spaceflight</span></div>
+    <div data-i18n="ft.d">Educational overview · dates from the historical record.</div>
+  </div>
+</footer>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-name">
+    <div class="modal-head"><div><h3 id="m-name"></h3><div class="sub" id="m-sub"></div></div><button class="modal-close" id="modalClose" aria-label="Close">✕</button></div>
+    <div class="modal-body" id="m-body"></div>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+let LANG='en';
+
+/* ============ i18n dictionary ============ */
+const I18N={
+ 'nav.crumb':{en:'/ Space History',es:'/ Historia Espacial'},
+ 'nav.tl':{en:'Timeline',es:'Línea de tiempo'},'nav.rk':{en:'Rockets',es:'Cohetes'},'nav.pp':{en:'People',es:'Personas'},
+ 'nav.ns':{en:'New Space',es:'New Space'},'nav.an':{en:'Anecdotes',es:'Anécdotas'},'nav.gm':{en:'Games',es:'Juegos'},'nav.rf':{en:'Reference',es:'Referencia'},
+ 'hero.kick':{en:'1957 → today · missions · rockets · people',es:'1957 → hoy · misiones · cohetes · personas'},
+ 'hero.h1':{en:'The story of <span class="grad">leaving Earth</span>.',es:'La historia de <span class="grad">salir de la Tierra</span>.'},
+ 'hero.sub':{en:'From a beeping metal sphere in 1957 to reusable rockets and private crews — the people, machines and moments that built the space age, and the New Space era reshaping it now. Explore the timeline, meet the pioneers, and hover every <span class="help-chip">i</span> for more.',es:'Desde una esfera metálica que pitaba en 1957 hasta cohetes reutilizables y tripulaciones privadas — las personas, máquinas y momentos que construyeron la era espacial, y la era New Space que la está rediseñando ahora. Explorá la línea de tiempo, conocé a los pioneros y pasá el cursor por cada <span class="help-chip">i</span> para ver más.'},
+ 'hero.cta1':{en:'Open the timeline →',es:'Abrí la línea de tiempo →'},
+ 'hero.cta2':{en:'What is New Space?',es:'¿Qué es New Space?'},
+ 'hero.scroll':{en:'seven sections below',es:'siete secciones abajo'},
+
+ 'tl.eyebrow':{en:'Missions & milestones',es:'Misiones e hitos'},
+ 'tl.title':{en:'A timeline of spaceflight',es:'Una línea de tiempo de los vuelos espaciales'},
+ 'tl.lede':{en:'Seven decades of firsts, in five eras. Filter by era, then click any milestone for the full story and an anecdote.',es:'Siete décadas de primeras veces, en cinco eras. Filtrá por era y luego hacé clic en cualquier hito para ver la historia completa y una anécdota.'},
+
+ 'rk.eyebrow':{en:'The machines',es:'Las máquinas'},
+ 'rk.title':{en:'Rockets — to scale',es:'Cohetes — a escala'},
+ 'rk.lede':{en:'Every mission rides a rocket. Here are the icons of each era drawn to the same height scale — from the V-2 to Starship. Click any to see its specs and story. Bars also show payload to low Earth orbit.',es:'Cada misión viaja en un cohete. Acá están los íconos de cada era dibujados a la misma escala de altura — desde el V-2 hasta Starship. Hacé clic en cualquiera para ver sus datos y su historia. Las barras también muestran la carga útil a órbita baja.'},
+ 'rk.note':{en:'Heights to scale; click a rocket for detail. Payload-to-orbit varies hugely — that is the real story of progress.',es:'Alturas a escala; hacé clic en un cohete para ver detalle. La carga útil a órbita varía muchísimo — esa es la verdadera historia del progreso.'},
+
+ 'pp.eyebrow':{en:'Who made it happen',es:'Quiénes lo hicieron posible'},
+ 'pp.title':{en:'People & pioneers',es:'Personas y pioneros'},
+ 'pp.lede':{en:'Theorists, engineers, astronauts and the people behind the scenes. Click any for their contribution and a story.',es:'Teóricos, ingenieros, astronautas y las personas detrás de escena. Hacé clic en cualquiera para ver su aporte y una historia.'},
+
+ 'ns.eyebrow':{en:"The era we're in",es:'La era en la que estamos'},
+ 'ns.title':{en:'New Space, explained',es:'New Space, explicado'},
+ 'ns.lede':{en:'<b style="color:var(--text)">New Space</b> is the shift, from roughly the 2000s onward, from spaceflight run almost entirely by governments to one driven by private companies, private capital and commercial markets. It is less a single event than a change in <span class="term" data-i18n-tip="tip.culture">culture and economics</span>: reusable rockets, mass-produced satellites, falling launch costs, and agencies buying services instead of building everything themselves.',es:'<b style="color:var(--text)">New Space</b> es el cambio, desde aproximadamente los 2000 en adelante, de una actividad espacial llevada casi por completo por gobiernos a una impulsada por empresas privadas, capital privado y mercados comerciales. Es menos un evento único que un cambio de <span class="term" data-i18n-tip="tip.culture">cultura y economía</span>: cohetes reutilizables, satélites producidos en serie, costos de lanzamiento en caída, y agencias que compran servicios en vez de construir todo ellas mismas.'},
+ 'ns.oldtag':{en:'≈ 1957–2000',es:'≈ 1957–2000'},'ns.newtag':{en:'≈ 2000 → today',es:'≈ 2000 → hoy'},
+ 'ns.oldh':{en:'Old Space',es:'Old Space'},'ns.newh':{en:'New Space',es:'New Space'},
+ 'ns.featsh':{en:'What defines the era',es:'Qué define la era'},
+ 'ns.origin':{en:'The turning point most people point to is the <span class="term" data-i18n-tip="tip.xprize">Ansari X Prize</span> in 2004 — the first privately built crewed spacecraft — and the founding of SpaceX (2002) and Blue Origin (2000). When SpaceX landed and reflew an orbital rocket booster (2015–2017), the economics of access to space changed for good.',es:'El punto de inflexión que la mayoría señala es el <span class="term" data-i18n-tip="tip.xprize">Ansari X Prize</span> en 2004 — la primera nave tripulada de construcción privada — y la fundación de SpaceX (2002) y Blue Origin (2000). Cuando SpaceX aterrizó y volvió a volar un propulsor orbital (2015–2017), la economía del acceso al espacio cambió para siempre.'},
+
+ 'an.eyebrow':{en:'The human side',es:'El lado humano'},
+ 'an.title':{en:'Anecdotes & "did you know?"',es:'Anécdotas y "¿sabías que?"'},
+ 'an.lede':{en:"The moments that don't fit on a spec sheet. Click any for the full story.",es:'Los momentos que no entran en una ficha técnica. Hacé clic en cualquiera para ver la historia completa.'},
+
+ 'gm.eyebrow':{en:'Test yourself',es:'Ponete a prueba'},
+ 'gm.title':{en:'Games & challenges',es:'Juegos y desafíos'},
+ 'gm.lede':{en:'Three quick games — instant feedback and a running score.',es:'Tres juegos rápidos — devolución al instante y puntaje acumulado.'},
+ 'gm.next':{en:'Next →',es:'Siguiente →'},
+ 'gm.h':{en:'Top-left: which event came first? Top-right: Old Space or New Space? Bottom: identify the milestone.',es:'Arriba izq.: ¿qué evento fue primero? Arriba der.: ¿Old Space o New Space? Abajo: identificá el hito.'},
+
+ 'rf.eyebrow':{en:'Quick reference',es:'Referencia rápida'},
+ 'rf.title':{en:'Glossary',es:'Glosario'},
+ 'rf.note':{en:'Dates are historical record; figures are rounded for clarity. A teaching overview, not an exhaustive catalogue — entire missions and people are necessarily left out.',es:'Las fechas son registro histórico; las cifras están redondeadas para mayor claridad. Es una visión didáctica, no un catálogo exhaustivo — quedan afuera misiones y personas enteras.'},
+ 'ft.t':{en:'A history of spaceflight',es:'Una historia de los vuelos espaciales'},
+ 'ft.d':{en:'Educational overview · dates from the historical record.',es:'Visión educativa · fechas del registro histórico.'},
+
+ /* tooltips */
+ 'tip.culture':{en:'<b>Culture & economics.</b> Old Space optimised for never failing (lives, prestige, huge budgets). New Space optimises for cost and iteration — build, fly, fail, fix, fly again.',es:'<b>Cultura y economía.</b> El Old Space optimizaba para no fallar nunca (vidas, prestigio, presupuestos enormes). El New Space optimiza para el costo y la iteración — construir, volar, fallar, corregir, volver a volar.'},
+ 'tip.xprize':{en:'<b>Ansari X Prize.</b> A US$10M prize for the first privately funded crewed craft to reach space twice in two weeks. Won in 2004 by SpaceShipOne (Burt Rutan / Scaled Composites, funded by Paul Allen) — the spark of commercial human spaceflight.',es:'<b>Ansari X Prize.</b> Un premio de US$10M para la primera nave tripulada de financiación privada en llegar al espacio dos veces en dos semanas. Ganado en 2004 por SpaceShipOne (Burt Rutan / Scaled Composites, financiado por Paul Allen) — la chispa del vuelo espacial humano comercial.'},
+ 'tip.eva':{en:'<b>EVA / spacewalk.</b> Extravehicular activity — leaving the spacecraft in a pressure suit. First done by Alexei Leonov in 1965.',es:'<b>EVA / caminata espacial.</b> Actividad extravehicular — salir de la nave con un traje presurizado. La primera la hizo Alexei Leonov en 1965.'},
+ 'tip.reuse':{en:'<b>Reusability.</b> Recovering and reflying a rocket stage instead of discarding it. Pioneered operationally by the Falcon 9, it is the single biggest driver of falling launch cost.',es:'<b>Reutilización.</b> Recuperar y volver a volar una etapa del cohete en vez de descartarla. Llevada a la operación por el Falcon 9, es el mayor factor de la caída del costo de lanzamiento.'},
+ 'tip.cubesat':{en:'<b>CubeSat.</b> A tiny standardised satellite built from 10 cm units. Cheap and mass-producible, CubeSats let universities, startups and small nations reach orbit.',es:'<b>CubeSat.</b> Un satélite diminuto estandarizado hecho con unidades de 10 cm. Barato y producible en serie, los CubeSats permiten a universidades, startups y naciones pequeñas llegar a órbita.'},
+ 'tip.constellation':{en:'<b>Mega-constellation.</b> Hundreds or thousands of small satellites working together — e.g. Starlink for broadband. A New Space business model impossible under Old Space economics.',es:'<b>Mega-constelación.</b> Cientos o miles de satélites pequeños trabajando juntos — p. ej. Starlink para banda ancha. Un modelo de negocio de New Space imposible bajo la economía del Old Space.'}
+};
+function t(k){const e=I18N[k];return e?(e[LANG]||e.en):k;}
+
+/* ============ flags ============ */
+function flagSVG(lang){
+  if(lang==='es') return '<svg viewBox="0 0 24 16"><rect width="24" height="16" fill="#c60b1e"/><rect y="4" width="24" height="8" fill="#ffc400"/></svg>';
+  return '<svg viewBox="0 0 24 16"><rect width="24" height="16" fill="#012169"/><path d="M0,0 L24,16 M24,0 L0,16" stroke="#fff" stroke-width="3"/><path d="M0,0 L24,16 M24,0 L0,16" stroke="#C8102E" stroke-width="1.6"/><rect x="9.5" width="5" height="16" fill="#fff"/><rect y="5.5" width="24" height="5" fill="#fff"/><rect x="10.5" width="3" height="16" fill="#C8102E"/><rect y="6.5" width="24" height="3" fill="#C8102E"/></svg>';
+}
+const rerenderers=[];
+function applyLang(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(!I18N[k])return;const val=t(k);
+    if(/[<>]/.test(val)){el.innerHTML=val;return;}
+    const kids=[...el.childNodes].filter(n=>n.nodeType===1);
+    if(kids.length){el.textContent=val+' ';kids.forEach(n=>el.appendChild(n));}else el.textContent=val;});
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{const k=el.getAttribute('data-i18n-html');if(I18N[k])el.innerHTML=t(k);});
+  document.querySelectorAll('[data-i18n-tip]').forEach(el=>{const k=el.getAttribute('data-i18n-tip');if(I18N[k])el.setAttribute('data-tip',t(k));});
+  $('#langBtn').innerHTML=flagSVG(LANG==='en'?'es':'en');
+  rerenderers.forEach(fn=>{try{fn();}catch(e){}});
+  bindTips();
+}
+function toggleLang(){LANG=LANG==='en'?'es':'en';try{localStorage.setItem('nslang',LANG);}catch(e){}applyLang();}
+$('#langBtn').addEventListener('click',toggleLang);
+
+/* ============ tooltips ============ */
+const tip=$('#tip');let tipTimer=null;
+function showTip(el){const x=el.getAttribute('data-tip');if(!x)return;tip.innerHTML=x;tip.classList.add('show');
+  const r=el.getBoundingClientRect();const tw=Math.min(330,window.innerWidth-24);tip.style.maxWidth=tw+'px';
+  let px=r.left+r.width/2-tw/2;px=Math.max(12,Math.min(px,window.innerWidth-tw-12));
+  let py=r.bottom+10;if(py+tip.offsetHeight>window.innerHeight-12)py=r.top-tip.offsetHeight-10;
+  tip.style.left=px+'px';tip.style.top=Math.max(12,py)+'px';}
+function hideTip(){tip.classList.remove('show');}
+function bindTips(){document.querySelectorAll('[data-tip]').forEach(el=>{if(el.dataset.tb)return;el.dataset.tb=1;
+  if(!el.hasAttribute('tabindex')&&el.classList.contains('term'))el.setAttribute('tabindex','0');
+  el.addEventListener('mouseenter',()=>showTip(el));el.addEventListener('mouseleave',hideTip);
+  el.addEventListener('focus',()=>showTip(el));el.addEventListener('blur',hideTip);
+  el.addEventListener('click',e=>{e.stopPropagation();showTip(el);clearTimeout(tipTimer);tipTimer=setTimeout(hideTip,5000);});});}
+document.addEventListener('click',hideTip);window.addEventListener('scroll',hideTip,{passive:true});
+
+/* ============ modal ============ */
+function openModal(name,sub,sections,specs){
+  $('#m-name').textContent=name;$('#m-sub').textContent=sub||'';
+  let body=specs?('<div class="spec-grid">'+specs+'</div>'):'';
+  sections.forEach(s=>{body+='<h4>'+s.h+'</h4><p>'+s.p+'</p>';});
+  $('#m-body').innerHTML=body;$('#modalBg').classList.add('open');bindTips();
+}
+$('#modalClose').addEventListener('click',()=>$('#modalBg').classList.remove('open'));
+$('#modalBg').addEventListener('click',e=>{if(e.target===$('#modalBg'))$('#modalBg').classList.remove('open');});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#modalBg').classList.remove('open');});
+
+/* ============ ERAS ============ */
+const ERAS={
+ pioneers:{t:{en:'Pioneers',es:'Pioneros'},c:'#9b8cff'},
+ race:{t:{en:'Space Race',es:'Carrera espacial'},c:'#6f8fd6'},
+ apollo:{t:{en:'Apollo & probes',es:'Apolo y sondas'},c:'#e3b23c'},
+ shuttle:{t:{en:'Shuttle & Station',es:'Transbordador y Estación'},c:'#3cc9e6'},
+ newspace:{t:{en:'New Space',es:'New Space'},c:'#5fd0a0'}
+};
+let eraFilter='all';
+
+/* ============ TIMELINE DATA ============ */
+const TIMELINE=[
+ {y:'1903',era:'pioneers',t:{en:'The rocket equation',es:'La ecuación del cohete'},b:{en:'Tsiolkovsky publishes the math of spaceflight.',es:'Tsiolkovsky publica la matemática del vuelo espacial.'},d:{en:'Russian schoolteacher Konstantin Tsiolkovsky derives the rocket equation, proving spaceflight is physically possible with staged, liquid-fuelled rockets — decades before any existed.',es:'El maestro ruso Konstantin Tsiolkovsky deriva la ecuación del cohete, probando que el vuelo espacial es físicamente posible con cohetes de etapas y combustible líquido — décadas antes de que existiera alguno.'},an:{en:'He worked it out almost alone, nearly deaf, in a small town, and also sketched space elevators and airlocks.',es:'Lo resolvió casi solo, casi sordo, en un pueblo pequeño, y además bosquejó ascensores espaciales y esclusas de aire.'}},
+ {y:'1957',era:'race',t:{en:'Sputnik 1',es:'Sputnik 1'},b:{en:'The first artificial satellite. The Space Age begins.',es:'El primer satélite artificial. Comienza la Era Espacial.'},d:{en:'On 4 October 1957 the USSR launches a 58 cm aluminium sphere that beeps from orbit. It shocks the world, triggers the Space Race and leads directly to the creation of NASA in 1958.',es:'El 4 de octubre de 1957 la URSS lanza una esfera de aluminio de 58 cm que pita desde la órbita. Conmociona al mundo, dispara la Carrera Espacial y lleva directamente a la creación de la NASA en 1958.'},an:{en:'Amateur radio operators worldwide could hear its beep — proof, in everyone\u2019s living room, that the space age was real.',es:'Radioaficionados de todo el mundo podían oír su pitido — prueba, en el living de cada casa, de que la era espacial era real.'}},
+ {y:'1961',era:'race',t:{en:'Gagarin orbits Earth',es:'Gagarin orbita la Tierra'},b:{en:'Yuri Gagarin becomes the first human in space.',es:'Yuri Gagarin es el primer humano en el espacio.'},d:{en:'On 12 April 1961, aboard Vostok 1, Yuri Gagarin completes one orbit of Earth in 108 minutes — the first person ever in space. Weeks later, JFK commits the US to landing on the Moon.',es:'El 12 de abril de 1961, a bordo del Vostok 1, Yuri Gagarin completa una órbita a la Tierra en 108 minutos — la primera persona en el espacio. Semanas después, JFK compromete a EE.UU. a llegar a la Luna.'},an:{en:'His call as he lifted off — "Poyekhali!", "Let\u2019s go!" — became one of the most famous words of the era.',es:'Su grito al despegar — "¡Poyekhali!", "¡Vamos!" — se volvió una de las palabras más célebres de la era.'}},
+ {y:'1963',era:'race',t:{en:'First woman in space',es:'Primera mujer en el espacio'},b:{en:'Valentina Tereshkova flies solo on Vostok 6.',es:'Valentina Tereshkova vuela sola en el Vostok 6.'},d:{en:'Valentina Tereshkova, a former textile worker and amateur parachutist, orbits Earth 48 times over three days — more time in space than all American astronauts to that date combined.',es:'Valentina Tereshkova, ex trabajadora textil y paracaidista amateur, orbita la Tierra 48 veces en tres días — más tiempo en el espacio que todos los astronautas estadounidenses hasta esa fecha juntos.'},an:{en:'It would be 19 years before another woman flew to space (Svetlana Savitskaya, 1982).',es:'Pasarían 19 años hasta que otra mujer volara al espacio (Svetlana Savitskaya, 1982).'}},
+ {y:'1965',era:'race',t:{en:'First spacewalk',es:'Primera caminata espacial'},b:{en:'Alexei Leonov steps outside Voskhod 2.',es:'Alexei Leonov sale del Voskhod 2.'},d:{en:'Alexei Leonov performs the first <span class="term" data-i18n-tip="tip.eva">EVA</span>, floating outside for 12 minutes. His suit ballooned in vacuum and he barely fit back through the airlock — a near-disaster kept secret for years.',es:'Alexei Leonov realiza la primera <span class="term" data-i18n-tip="tip.eva">EVA</span>, flotando afuera durante 12 minutos. Su traje se infló en el vacío y apenas pudo volver por la esclusa — un casi desastre mantenido en secreto por años.'},an:{en:'He had to bleed air from his suit to squeeze back in — risking the bends — and told no one for decades.',es:'Tuvo que purgar aire de su traje para poder reentrar — arriesgando una embolia — y no lo contó por décadas.'}},
+ {y:'1969',era:'apollo',t:{en:'Apollo 11 — Moon landing',es:'Apolo 11 — alunizaje'},b:{en:'Humans walk on another world.',es:'Humanos caminan sobre otro mundo.'},d:{en:'On 20 July 1969 Neil Armstrong and Buzz Aldrin land in the Sea of Tranquility while Michael Collins orbits above. An estimated 600 million people watch the first steps on television.',es:'El 20 de julio de 1969 Neil Armstrong y Buzz Aldrin alunizan en el Mar de la Tranquilidad mientras Michael Collins orbita arriba. Unos 600 millones de personas ven los primeros pasos por televisión.'},an:{en:'During descent the guidance computer threw "1202" alarms; Margaret Hamilton\u2019s software shed low-priority tasks and kept flying. They landed with seconds of fuel left.',es:'Durante el descenso la computadora de guiado lanzó alarmas "1202"; el software de Margaret Hamilton descartó tareas de baja prioridad y siguió volando. Aterrizaron con segundos de combustible.'}},
+ {y:'1970',era:'apollo',t:{en:'Apollo 13 — "successful failure"',es:'Apolo 13 — "fracaso exitoso"'},b:{en:'A crippled ship makes it home.',es:'Una nave averiada logra volver.'},d:{en:'An oxygen tank explodes en route to the Moon. The crew uses the lunar module as a lifeboat and, with ground engineers, improvises CO\u2082 scrubbers and a free-return trajectory to get home alive.',es:'Un tanque de oxígeno explota camino a la Luna. La tripulación usa el módulo lunar como bote salvavidas y, con ingenieros en tierra, improvisa filtros de CO\u2082 y una trayectoria de retorno libre para volver con vida.'},an:{en:'Engineers had to fit a square CO\u2082 filter into a round hole using only items aboard — duct tape, a sock, a manual cover. It worked.',es:'Los ingenieros tuvieron que encajar un filtro de CO\u2082 cuadrado en un agujero redondo usando solo lo que había a bordo — cinta, una media, la tapa de un manual. Funcionó.'}},
+ {y:'1971',era:'apollo',t:{en:'First space station',es:'Primera estación espacial'},b:{en:'Salyut 1 opens the era of living in orbit.',es:'Salyut 1 abre la era de habitar la órbita.'},d:{en:'The USSR launches Salyut 1, the first crewed space station — the start of humans living and working in orbit for long durations, a line that runs through Mir to the ISS.',es:'La URSS lanza Salyut 1, la primera estación espacial tripulada — el inicio de humanos viviendo y trabajando en órbita por largos períodos, una línea que va de Mir hasta la ISS.'},an:{en:'Tragically its first crew died on return when a valve depressurised their capsule — the only humans to die in space itself.',es:'Trágicamente su primera tripulación murió al regresar cuando una válvula despresurizó la cápsula — los únicos humanos en morir en el espacio mismo.'}},
+ {y:'1977',era:'apollo',t:{en:'Voyager 1 & 2 launch',es:'Lanzamiento de Voyager 1 y 2'},b:{en:'The grand tour of the outer planets.',es:'El gran tour de los planetas exteriores.'},d:{en:'Two probes leave to survey Jupiter, Saturn, Uranus and Neptune, exploiting a rare planetary alignment. Voyager 1 is now the most distant human-made object, in interstellar space.',es:'Dos sondas parten a estudiar Júpiter, Saturno, Urano y Neptuno, aprovechando una alineación planetaria rara. Voyager 1 es hoy el objeto humano más lejano, en el espacio interestelar.'},an:{en:'Each carries a Golden Record — sounds and images of Earth for any future finder. In 1990 Voyager 1 turned back to photograph the "Pale Blue Dot".',es:'Cada una lleva un Disco de Oro — sonidos e imágenes de la Tierra para cualquier hallador futuro. En 1990 Voyager 1 se dio vuelta para fotografiar el "Punto Azul Pálido".'}},
+ {y:'1981',era:'shuttle',t:{en:'Space Shuttle flies',es:'Vuela el Transbordador'},b:{en:'The first reusable spacecraft.',es:'La primera nave reutilizable.'},d:{en:'Columbia launches on STS-1 — the first reusable crewed spacecraft. Over 30 years the Shuttle flew 135 missions, built the ISS and launched Hubble, but never reached its cost-saving promise.',es:'Columbia despega en la STS-1 — la primera nave tripulada reutilizable. En 30 años el Transbordador voló 135 misiones, construyó la ISS y lanzó el Hubble, pero nunca cumplió su promesa de bajar costos.'},an:{en:'Two were lost — Challenger (1986) and Columbia (2003), killing 14 astronauts — hard lessons in the cost of normalising risk.',es:'Se perdieron dos — Challenger (1986) y Columbia (2003), con 14 astronautas muertos — duras lecciones sobre el costo de normalizar el riesgo.'}},
+ {y:'1990',era:'shuttle',t:{en:'Hubble Space Telescope',es:'Telescopio Espacial Hubble'},b:{en:'A new pair of eyes on the universe.',es:'Un nuevo par de ojos sobre el universo.'},d:{en:'Hubble launches and, after a famous mirror flaw is fixed by spacewalking astronauts in 1993, transforms astronomy — from the age of the universe to the first images of exoplanet atmospheres.',es:'El Hubble se lanza y, tras corregir un célebre defecto del espejo con astronautas en EVA en 1993, transforma la astronomía — desde la edad del universo hasta las primeras imágenes de atmósferas de exoplanetas.'},an:{en:'The flawed mirror was off by 1/50th the width of a human hair — enough to blur everything until astronauts fitted corrective optics.',es:'El espejo defectuoso estaba desviado 1/50 del ancho de un cabello humano — suficiente para desenfocar todo hasta que los astronautas instalaron óptica correctiva.'}},
+ {y:'1998',era:'shuttle',t:{en:'ISS assembly begins',es:'Comienza el ensamblaje de la ISS'},b:{en:'The largest structure ever built in space.',es:'La estructura más grande jamás construida en el espacio.'},d:{en:'The first module, Zarya, launches. The International Space Station becomes a partnership of the US, Russia, Europe, Japan and Canada — continuously crewed since November 2000.',es:'El primer módulo, Zarya, se lanza. La Estación Espacial Internacional se vuelve una alianza de EE.UU., Rusia, Europa, Japón y Canadá — habitada de forma continua desde noviembre de 2000.'},an:{en:'Humans have now lived in space without a break for over two decades — the longest continuous human presence off Earth in history.',es:'Los humanos llevan más de dos décadas viviendo en el espacio sin interrupción — la presencia humana continua fuera de la Tierra más larga de la historia.'}},
+ {y:'2004',era:'newspace',t:{en:'Ansari X Prize won',es:'Se gana el Ansari X Prize'},b:{en:'The first private crewed spacecraft.',es:'La primera nave tripulada privada.'},d:{en:'SpaceShipOne, built by Burt Rutan\u2019s team and funded by Paul Allen, reaches space twice in two weeks to win the <span class="term" data-i18n-tip="tip.xprize">X Prize</span> — proving private spaceflight was possible and igniting the New Space movement.',es:'SpaceShipOne, construido por el equipo de Burt Rutan y financiado por Paul Allen, llega al espacio dos veces en dos semanas para ganar el <span class="term" data-i18n-tip="tip.xprize">X Prize</span> — probando que el vuelo espacial privado era posible y encendiendo el movimiento New Space.'},an:{en:'It cost a fraction of any government program and was designed by a small team in the Mojave Desert.',es:'Costó una fracción de cualquier programa gubernamental y fue diseñado por un equipo pequeño en el desierto de Mojave.'}},
+ {y:'2012',era:'newspace',t:{en:'Dragon reaches the ISS',es:'Dragon llega a la ISS'},b:{en:'First commercial cargo to the station.',es:'Primera carga comercial a la estación.'},d:{en:'SpaceX\u2019s Dragon becomes the first commercial spacecraft to dock with the ISS, proving NASA\u2019s gamble of buying services from private companies instead of owning the hardware.',es:'El Dragon de SpaceX se vuelve la primera nave comercial en acoplarse a la ISS, validando la apuesta de la NASA de comprar servicios a empresas privadas en vez de ser dueña del hardware.'},an:{en:'The same year, Curiosity landed on Mars via the audacious "sky crane" — lowered on cables from a rocket-powered descent stage.',es:'El mismo año, Curiosity aterrizó en Marte con la audaz "grúa celeste" — descendido con cables desde una etapa propulsada por cohetes.'}},
+ {y:'2015',era:'newspace',t:{en:'First orbital booster landing',es:'Primer aterrizaje de propulsor orbital'},b:{en:'A rocket flies back and lands upright.',es:'Un cohete vuelve y aterriza de pie.'},d:{en:'A Falcon 9 first stage flies its payload to orbit, then returns and lands vertically. With <span class="term" data-i18n-tip="tip.reuse">reusability</span> proven, launch costs begin to collapse — the defining technology of New Space.',es:'Una primera etapa de Falcon 9 lleva su carga a órbita, luego regresa y aterriza verticalmente. Con la <span class="term" data-i18n-tip="tip.reuse">reutilización</span> probada, los costos de lanzamiento empiezan a desplomarse — la tecnología que define al New Space.'},an:{en:'After many spectacular crashes, the booster finally stuck the landing in December 2015; a sea-platform landing followed in 2016.',es:'Tras muchos choques espectaculares, el propulsor por fin clavó el aterrizaje en diciembre de 2015; en 2016 siguió un aterrizaje en plataforma marina.'}},
+ {y:'2020',era:'newspace',t:{en:'Crew Dragon — Demo-2',es:'Crew Dragon — Demo-2'},b:{en:'First crewed flight by a private company.',es:'Primer vuelo tripulado de una empresa privada.'},d:{en:'SpaceX flies NASA astronauts Bob Behnken and Doug Hurley to the ISS — the first crewed orbital flight by a private company, and the first US crewed launch from home soil since the Shuttle retired in 2011.',es:'SpaceX lleva a los astronautas de la NASA Bob Behnken y Doug Hurley a la ISS — el primer vuelo orbital tripulado de una empresa privada, y el primer lanzamiento tripulado de EE.UU. desde su suelo desde el retiro del Transbordador en 2011.'},an:{en:'For nine years (2011–2020) the US had no way to launch its own astronauts and bought seats on Russian Soyuz rockets.',es:'Durante nueve años (2011–2020) EE.UU. no tuvo forma de lanzar a sus propios astronautas y compraba asientos en cohetes Soyuz rusos.'}},
+ {y:'2021',era:'newspace',t:{en:'JWST launches',es:'Se lanza el JWST'},b:{en:'The successor to Hubble unfolds in space.',es:'El sucesor del Hubble se despliega en el espacio.'},d:{en:'The James Webb Space Telescope launches on Christmas Day 2021 and unfolds its 6.5 m gold mirror a million km from Earth, seeing the first galaxies and the atmospheres of distant worlds in infrared.',es:'El Telescopio Espacial James Webb se lanza en Navidad de 2021 y despliega su espejo dorado de 6,5 m a un millón de km de la Tierra, viendo las primeras galaxias y las atmósferas de mundos lejanos en infrarrojo.'},an:{en:'It had to execute 344 "single points of failure" flawlessly while unfolding — any one could have doomed it. All worked.',es:'Tuvo que ejecutar sin fallas 344 "puntos únicos de falla" mientras se desplegaba — cualquiera podría haberlo condenado. Todos funcionaron.'}},
+ {y:'2022',era:'newspace',t:{en:'Artemis I',es:'Artemis I'},b:{en:'Return to the Moon begins.',es:'Comienza el regreso a la Luna.'},d:{en:'NASA\u2019s uncrewed Orion capsule flies around the Moon atop the giant SLS rocket, opening the Artemis program — which aims to return humans, including the first woman, to the lunar surface.',es:'La cápsula Orion sin tripulación de la NASA vuela alrededor de la Luna sobre el gigante cohete SLS, abriendo el programa Artemis — que busca devolver humanos, incluida la primera mujer, a la superficie lunar.'},an:{en:'Artemis blends Old and New Space: a government super-rocket alongside commercial landers and private partners.',es:'Artemis mezcla Old y New Space: un super-cohete gubernamental junto a módulos de aterrizaje comerciales y socios privados.'}}
+];
+function buildEraChips(){const c=$('#eraChips');c.innerHTML='';
+  const all=document.createElement('button');all.className='achip'+(eraFilter==='all'?' on':'');all.textContent=LANG==='es'?'Todas':'All';
+  all.addEventListener('click',()=>{eraFilter='all';buildEraChips();buildTimeline();});c.appendChild(all);
+  Object.keys(ERAS).forEach(k=>{const b=document.createElement('button');b.className='achip'+(eraFilter===k?' on':'');b.textContent=ERAS[k].t[LANG];b.style.cssText=eraFilter===k?'border-color:'+ERAS[k].c+';color:'+ERAS[k].c+';background:'+ERAS[k].c+'22':'';
+    b.addEventListener('click',()=>{eraFilter=k;buildEraChips();buildTimeline();});c.appendChild(b);});}
+function buildTimeline(){const list=$('#timeline-list');list.innerHTML='';
+  TIMELINE.filter(e=>eraFilter==='all'||e.era===eraFilter).forEach(e=>{
+    const div=document.createElement('div');div.className='tl-item';div.style.setProperty('--era',ERAS[e.era].c);
+    div.innerHTML='<div class="tl-card"><div class="yr">'+e.y+'</div><h4>'+e.t[LANG]+'</h4><p>'+e.b[LANG]+'</p><span class="era-tag" style="color:'+ERAS[e.era].c+';border-color:'+ERAS[e.era].c+'55">'+ERAS[e.era].t[LANG]+'</span></div>';
+    div.addEventListener('click',()=>openModal(e.t[LANG],e.y+' · '+ERAS[e.era].t[LANG],
+      [{h:LANG==='es'?'Qué pasó':'What happened',p:e.d[LANG]},{h:LANG==='es'?'Anécdota':'Anecdote',p:e.an[LANG]}]));
+    list.appendChild(div);});}
+rerenderers.push(()=>{buildEraChips();buildTimeline();});
+
+/* ============ ROCKETS ============ */
+const ROCKETS=[
+ {n:'V-2',country:{en:'Germany',es:'Alemania'},h:14,payload:'—',first:'1944',c:'#9b8cff',story:{en:'The first object to reach space (1944) — a ballistic weapon whose engineers, led by Wernher von Braun, later built the rockets of both superpowers.',es:'El primer objeto en llegar al espacio (1944) — un arma balística cuyos ingenieros, liderados por Wernher von Braun, luego construyeron los cohetes de ambas superpotencias.'}},
+ {n:'R-7 / Soyuz',country:{en:'USSR / Russia',es:'URSS / Rusia'},h:46,payload:'~7 t',first:'1957',c:'#6f8fd6',story:{en:'Launched Sputnik and Gagarin, and — in continuous evolution — still flies today as Soyuz. The most-launched rocket family in history.',es:'Lanzó el Sputnik y a Gagarin, y — en evolución continua — todavía vuela hoy como Soyuz. La familia de cohetes más lanzada de la historia.'}},
+ {n:'Saturn V',country:{en:'USA',es:'EE.UU.'},h:111,payload:'~140 t',first:'1967',c:'#e3b23c',story:{en:'The Moon rocket. Still the tallest, heaviest and most powerful rocket to fly successfully for decades — it sent Apollo crews to the Moon.',es:'El cohete de la Luna. Durante décadas, el cohete más alto, pesado y potente en volar con éxito — envió a las tripulaciones del Apolo a la Luna.'}},
+ {n:'Space Shuttle',country:{en:'USA',es:'EE.UU.'},h:56,payload:'~27 t',first:'1981',c:'#3cc9e6',story:{en:'The first partly reusable system. Winged orbiter plus boosters and a huge tank; it built the ISS but proved expensive and complex.',es:'El primer sistema parcialmente reutilizable. Orbitador alado más propulsores y un tanque enorme; construyó la ISS pero resultó caro y complejo.'}},
+ {n:'Falcon 9',country:{en:'USA (SpaceX)',es:'EE.UU. (SpaceX)'},h:70,payload:'~22 t',first:'2010',c:'#5fd0a0',story:{en:'The workhorse of New Space. Its first stage lands and reflies, crushing launch costs and enabling Starlink and commercial crew.',es:'El caballo de batalla del New Space. Su primera etapa aterriza y vuelve a volar, derrumbando los costos y habilitando Starlink y la tripulación comercial.'}},
+ {n:'Falcon Heavy',country:{en:'USA (SpaceX)',es:'EE.UU. (SpaceX)'},h:70,payload:'~64 t',first:'2018',c:'#5fd0a0',story:{en:'Three Falcon 9 cores together. Its debut famously launched a Tesla Roadster toward Mars orbit with a dummy "Starman" at the wheel.',es:'Tres núcleos de Falcon 9 juntos. Su debut lanzó célebremente un Tesla Roadster hacia la órbita de Marte con un maniquí "Starman" al volante.'}},
+ {n:'SLS',country:{en:'USA (NASA)',es:'EE.UU. (NASA)'},h:98,payload:'~95 t',first:'2022',c:'#f3ad5e',story:{en:'NASA\u2019s Moon rocket for Artemis — drawing on Shuttle heritage. Powerful and capable, but expendable and expensive: Old Space methods for a New Space age.',es:'El cohete lunar de la NASA para Artemis — heredero del Transbordador. Potente y capaz, pero descartable y caro: métodos de Old Space para una era de New Space.'}},
+ {n:'Starship',country:{en:'USA (SpaceX)',es:'EE.UU. (SpaceX)'},h:121,payload:'~100+ t',first:'2023',c:'#9be35a',story:{en:'The tallest rocket ever built, designed to be fully reusable. In flight testing toward routine, low-cost heavy lift — and central to plans for the Moon and Mars.',es:'El cohete más alto jamás construido, diseñado para ser totalmente reutilizable. En pruebas de vuelo hacia una carga pesada rutinaria y barata — y central en los planes para la Luna y Marte.'}}
+];
+const rc=$('#rocketCanvas'),rx=rc.getContext('2d');
+function drawRockets(){const w=rc.clientWidth,h=rc.height;rc.width=w;rx.clearRect(0,0,w,h);
+  const maxH=Math.max(...ROCKETS.map(r=>r.h));const n=ROCKETS.length;const slot=w/n;const baseY=h-46;const topPad=20;
+  const sc=(baseY-topPad)/maxH;
+  ROCKETS.forEach((r,i)=>{const cx=slot*(i+0.5);const rh=r.h*sc;const bw=Math.min(slot*0.34,18);
+    // body
+    rx.fillStyle=r.c;rx.globalAlpha=.9;
+    rx.beginPath();
+    const topY=baseY-rh;
+    rx.moveTo(cx-bw/2,baseY);rx.lineTo(cx-bw/2,topY+bw);
+    rx.quadraticCurveTo(cx-bw/2,topY,cx,topY); // nose left
+    rx.quadraticCurveTo(cx+bw/2,topY,cx+bw/2,topY+bw);
+    rx.lineTo(cx+bw/2,baseY);rx.closePath();rx.fill();
+    rx.globalAlpha=1;
+    // fins
+    rx.fillStyle=r.c;rx.beginPath();rx.moveTo(cx-bw/2,baseY);rx.lineTo(cx-bw/2-bw*0.4,baseY);rx.lineTo(cx-bw/2,baseY-bw*0.9);rx.closePath();rx.fill();
+    rx.beginPath();rx.moveTo(cx+bw/2,baseY);rx.lineTo(cx+bw/2+bw*0.4,baseY);rx.lineTo(cx+bw/2,baseY-bw*0.9);rx.closePath();rx.fill();
+    // label name
+    rx.fillStyle='#eaeefb';rx.font='600 11px Inter,sans-serif';rx.textAlign='center';
+    rx.save();rx.translate(cx,baseY+14);rx.fillText(r.n,0,0);rx.restore();
+    // height label
+    rx.fillStyle='#6b769a';rx.font='9px "JetBrains Mono",monospace';rx.fillText(r.h+' m',cx,baseY+28);
+    r._x=cx;r._w=Math.max(bw,slot*0.5);r._top=topY;
+  });
+  // baseline
+  rx.strokeStyle='rgba(36,53,83,.8)';rx.beginPath();rx.moveTo(0,baseY+1);rx.lineTo(w,baseY+1);rx.stroke();
+}
+function rocketModal(r){openModal(r.n,r.country[LANG]+' · '+(LANG==='es'?'primer vuelo ':'first flight ')+r.first,
+  [{h:LANG==='es'?'Historia':'Story',p:r.story[LANG]}],
+  '<div class="spec"><div class="k">'+(LANG==='es'?'Altura':'Height')+'</div><div class="v">'+r.h+' m</div></div>'+
+  '<div class="spec"><div class="k">'+(LANG==='es'?'Carga a LEO':'Payload to LEO')+'</div><div class="v">'+r.payload+'</div></div>'+
+  '<div class="spec"><div class="k">'+(LANG==='es'?'Primer vuelo':'First flight')+'</div><div class="v">'+r.first+'</div></div>');}
+rc.addEventListener('click',ev=>{const rect=rc.getBoundingClientRect();const mx=ev.clientX-rect.left;
+  let best=null,bd=1e9;ROCKETS.forEach(r=>{const d=Math.abs(mx-r._x);if(d<bd){bd=d;best=r;}});if(best&&bd<rc.clientWidth/ROCKETS.length/2+10)rocketModal(best);});
+rc.style.cursor='pointer';
+rerenderers.push(drawRockets);
+
+/* ============ PEOPLE ============ */
+const PEOPLE=[
+ {n:'Konstantin Tsiolkovsky',r:{en:'Theorist · 1857–1935',es:'Teórico · 1857–1935'},b:{en:'Founder of astronautics theory.',es:'Fundador de la teoría astronáutica.'},c:{en:'A deaf Russian schoolteacher who derived the rocket equation and imagined staged rockets, space stations and elevators long before flight was possible. "Earth is the cradle of humanity, but one cannot live in the cradle forever."',es:'Un maestro ruso sordo que derivó la ecuación del cohete e imaginó cohetes de etapas, estaciones espaciales y ascensores mucho antes de que el vuelo fuera posible. "La Tierra es la cuna de la humanidad, pero no se puede vivir en la cuna para siempre."'}},
+ {n:'Robert Goddard',r:{en:'Engineer · 1882–1945',es:'Ingeniero · 1882–1945'},b:{en:'Built the first liquid-fuel rocket.',es:'Construyó el primer cohete de combustible líquido.'},c:{en:'Launched the first liquid-fuelled rocket in 1926. Ridiculed in his time — a newspaper mocked his physics — he was quietly vindicated; the same paper printed a correction in 1969 as Apollo 11 flew.',es:'Lanzó el primer cohete de combustible líquido en 1926. Ridiculizado en su época — un diario se burló de su física — fue vindicado en silencio; el mismo diario publicó una corrección en 1969 mientras volaba el Apolo 11.'}},
+ {n:'Sergei Korolev',r:{en:'Chief Designer · 1907–1966',es:'Diseñador jefe · 1907–1966'},b:{en:'Architect of Soviet space triumphs.',es:'Arquitecto de los triunfos espaciales soviéticos.'},c:{en:'The secret "Chief Designer" behind Sputnik, Gagarin and the R-7. Imprisoned in the Gulag in the 1930s, he later led the USSR\u2019s early lead in space. His identity was kept secret until his death.',es:'El secreto "Diseñador Jefe" detrás del Sputnik, Gagarin y el R-7. Encarcelado en el Gulag en los años 30, luego lideró la temprana ventaja soviética en el espacio. Su identidad se mantuvo en secreto hasta su muerte.'}},
+ {n:'Katherine Johnson',r:{en:'Mathematician · 1918–2020',es:'Matemática · 1918–2020'},b:{en:'Computed the trajectories that flew.',es:'Calculó las trayectorias que volaron.'},c:{en:'A NASA mathematician whose hand calculations guided Mercury and Apollo flights. Before his orbital flight, John Glenn insisted she personally verify the computer\u2019s numbers: "If she says they\u2019re good, then I\u2019m ready to go."',es:'Una matemática de la NASA cuyos cálculos a mano guiaron los vuelos Mercury y Apolo. Antes de su vuelo orbital, John Glenn insistió en que ella verificara personalmente los números de la computadora: "Si ella dice que están bien, entonces estoy listo."'}},
+ {n:'Yuri Gagarin',r:{en:'Cosmonaut · 1934–1968',es:'Cosmonauta · 1934–1968'},b:{en:'First human in space.',es:'Primer humano en el espacio.'},c:{en:'A foundry worker\u2019s son who became the first person in space in 1961, instantly the most famous man on Earth. He died in a jet training crash at 34; his global goodwill tour had made him a symbol of the era.',es:'Hijo de un obrero de fundición que se convirtió en la primera persona en el espacio en 1961, al instante el hombre más famoso de la Tierra. Murió en un accidente de entrenamiento en jet a los 34; su gira mundial lo había vuelto un símbolo de la era.'}},
+ {n:'Valentina Tereshkova',r:{en:'Cosmonaut · b. 1937',es:'Cosmonauta · n. 1937'},b:{en:'First woman in space.',es:'Primera mujer en el espacio.'},c:{en:'A textile worker and amateur parachutist selected for her skydiving experience, she became the first woman in space in 1963 — and remains the only woman to have flown a solo space mission.',es:'Trabajadora textil y paracaidista amateur seleccionada por su experiencia en salto, se convirtió en la primera mujer en el espacio en 1963 — y sigue siendo la única mujer en haber volado una misión espacial en solitario.'}},
+ {n:'Neil Armstrong',r:{en:'Astronaut · 1930–2012',es:'Astronauta · 1930–2012'},b:{en:'First person on the Moon.',es:'Primera persona en la Luna.'},c:{en:'Test pilot and engineer, famously calm, who took the first steps on the Moon in 1969. Intensely private afterward, he rarely spoke of it, uncomfortable as a symbol — "I am, and ever will be, a white-socks, pocket-protector, nerdy engineer."',es:'Piloto de pruebas e ingeniero, célebre por su calma, que dio los primeros pasos en la Luna en 1969. Intensamente reservado después, rara vez hablaba de ello, incómodo como símbolo — "Soy, y siempre seré, un ingeniero nerd de medias blancas y protector de bolsillo."'}},
+ {n:'Margaret Hamilton',r:{en:'Software engineer · b. 1936',es:'Ingeniera de software · n. 1936'},b:{en:'Wrote the Apollo flight software.',es:'Escribió el software de vuelo del Apolo.'},c:{en:'Led the team that wrote the Apollo guidance software and helped coin the term "software engineering". Her priority-scheduling design saved the Apollo 11 landing when the computer overloaded during descent.',es:'Lideró el equipo que escribió el software de guiado del Apolo y ayudó a acuñar el término "ingeniería de software". Su diseño de priorización salvó el alunizaje del Apolo 11 cuando la computadora se sobrecargó durante el descenso.'}},
+ {n:'Carl Sagan',r:{en:'Scientist & communicator · 1934–1996',es:'Científico y divulgador · 1934–1996'},b:{en:'Brought the cosmos to everyone.',es:'Acercó el cosmos a todos.'},c:{en:'Planetary scientist who shaped early probe missions and, through "Cosmos", inspired generations. He chaired the Voyager Golden Record and gave us the "Pale Blue Dot" — Earth as a mote of dust in a sunbeam.',es:'Científico planetario que dio forma a las primeras misiones de sondas y, a través de "Cosmos", inspiró generaciones. Presidió el Disco de Oro de Voyager y nos dio el "Punto Azul Pálido" — la Tierra como una mota de polvo en un rayo de sol.'}},
+ {n:'Sergei Krikalev',r:{en:'Cosmonaut · b. 1958',es:'Cosmonauta · n. 1958'},b:{en:'"Stranded" as a country vanished.',es:'"Varado" mientras un país desaparecía.'},c:{en:'Launched to the Mir station in May 1991 as a Soviet citizen — and, with the USSR collapsing, his return kept slipping. He landed in March 1992 to a different country, sometimes called "the last Soviet citizen". He later logged among the most time in space of anyone.',es:'Despegó a la estación Mir en mayo de 1991 como ciudadano soviético — y, con la URSS colapsando, su regreso se siguió postergando. Aterrizó en marzo de 1992 en un país distinto, a veces llamado "el último ciudadano soviético". Luego acumuló de los mayores tiempos en el espacio de cualquiera.'}}
+];
+function buildPeople(){const g=$('#peopleGrid');g.innerHTML='';PEOPLE.forEach(p=>{const b=document.createElement('button');b.className='gcard';
+  b.innerHTML='<h4>'+p.n+'</h4><div class="role">'+p.r[LANG]+'</div><p>'+p.b[LANG]+'</p>';
+  b.addEventListener('click',()=>openModal(p.n,p.r[LANG],[{h:LANG==='es'?'Aporte e historia':'Contribution & story',p:p.c[LANG]}]));g.appendChild(b);});}
+rerenderers.push(buildPeople);
+
+/* ============ NEW SPACE lists ============ */
+const OLD=[
+ {en:'Run by national governments and agencies',es:'Llevado por gobiernos y agencias nacionales'},
+ {en:'Expendable rockets — thrown away each flight',es:'Cohetes descartables — se tiran en cada vuelo'},
+ {en:'Cost-plus contracts; very high cost per launch',es:'Contratos cost-plus; costo por lanzamiento altísimo'},
+ {en:'Few, large, bespoke satellites',es:'Pocos satélites, grandes y a medida'},
+ {en:'Slow, requirements-driven, risk-averse',es:'Lento, guiado por requisitos, averso al riesgo'},
+ {en:'Goals: prestige, science, security',es:'Objetivos: prestigio, ciencia, seguridad'}
+];
+const NEW=[
+ {en:'Driven by private companies and venture capital',es:'Impulsado por empresas privadas y capital de riesgo'},
+ {en:'<span class="term" data-i18n-tip="tip.reuse">Reusable</span> rockets — flown again and again',es:'Cohetes <span class="term" data-i18n-tip="tip.reuse">reutilizables</span> — vuelan una y otra vez'},
+ {en:'Fixed-price services; falling cost per kg',es:'Servicios a precio fijo; costo por kg en caída'},
+ {en:'Many small, mass-produced satellites (<span class="term" data-i18n-tip="tip.cubesat">CubeSats</span>, <span class="term" data-i18n-tip="tip.constellation">constellations</span>)',es:'Muchos satélites pequeños en serie (<span class="term" data-i18n-tip="tip.cubesat">CubeSats</span>, <span class="term" data-i18n-tip="tip.constellation">constelaciones</span>)'},
+ {en:'Fast, iterative, "fail fast and fix"',es:'Rápido, iterativo, "fallar rápido y corregir"'},
+ {en:'Goals: + commercial markets and access for all',es:'Objetivos: + mercados comerciales y acceso para todos'}
+];
+const NSFEAT=[
+ {h:{en:'Reusability',es:'Reutilización'},p:{en:'Landing and reflying rocket stages turned launch from a single-use event into something closer to aviation — the core cost breakthrough.',es:'Aterrizar y volver a volar etapas convirtió el lanzamiento de un evento de un solo uso en algo más parecido a la aviación — el gran salto de costo.'}},
+ {h:{en:'Miniaturisation',es:'Miniaturización'},p:{en:'CubeSats and smallsats let universities, startups and small nations — Uruguay included — reach orbit for a tiny fraction of the old price.',es:'Los CubeSats y smallsats permiten a universidades, startups y naciones pequeñas — Uruguay incluido — llegar a órbita por una fracción minúscula del precio anterior.'}},
+ {h:{en:'Government as customer',es:'El gobierno como cliente'},p:{en:'Agencies now buy rides and services (cargo, crew, lunar landers) instead of owning every vehicle — freeing them to focus on missions, not trucks.',es:'Las agencias ahora compran viajes y servicios (carga, tripulación, módulos lunares) en vez de ser dueñas de cada vehículo — liberándose para enfocarse en misiones, no en camiones.'}},
+ {h:{en:'New markets',es:'Nuevos mercados'},p:{en:'Broadband constellations, Earth-imaging, space tourism and in-space services created revenue that pays for spaceflight beyond government budgets.',es:'Constelaciones de banda ancha, imágenes de la Tierra, turismo espacial y servicios en órbita crearon ingresos que financian el vuelo espacial más allá de los presupuestos estatales.'}}
+];
+function buildNS(){
+  $('#oldList').innerHTML=OLD.map(x=>'<li>'+x[LANG]+'</li>').join('');
+  $('#newList').innerHTML=NEW.map(x=>'<li>'+x[LANG]+'</li>').join('');
+  $('#nsFeatures').innerHTML=NSFEAT.map(f=>'<div class="card"><h4>'+f.h[LANG]+'</h4><p>'+f.p[LANG]+'</p></div>').join('');
+}
+rerenderers.push(buildNS);
+
+/* ============ ANECDOTES ============ */
+const ANEC=[
+ {t:{en:'The 1202 alarm',es:'La alarma 1202'},b:{en:'A computer overload almost stopped Apollo 11.',es:'Una sobrecarga casi detiene al Apolo 11.'},s:{en:'Seconds from the Moon, the guidance computer flashed "1202" and "1201" overload alarms. Because Margaret Hamilton\u2019s software was designed to drop low-priority tasks and keep the essentials running, mission control called "Go" — and they landed with about 25 seconds of fuel to spare.',es:'A segundos de la Luna, la computadora de guiado mostró alarmas de sobrecarga "1202" y "1201". Como el software de Margaret Hamilton estaba diseñado para descartar tareas de baja prioridad y mantener lo esencial, el control de misión dijo "Go" — y aterrizaron con unos 25 segundos de combustible de margen.'}},
+ {t:{en:'The Moon-buggy fender',es:'El guardabarros del jeep lunar'},b:{en:'Apollo 17 fixed with maps and tape.',es:'El Apolo 17 reparado con mapas y cinta.'},s:{en:'On Apollo 17 a rover fender broke off, kicking up choking lunar dust. The crew improvised a replacement from laminated maps and duct tape — a literal patch on the Moon that let them keep driving.',es:'En el Apolo 17 se rompió un guardabarros del rover, levantando polvo lunar asfixiante. La tripulación improvisó un repuesto con mapas laminados y cinta adhesiva — un parche literal en la Luna que les permitió seguir conduciendo.'}},
+ {t:{en:'The Golden Record',es:'El Disco de Oro'},b:{en:'A message to anyone, anywhere, anytime.',es:'Un mensaje para cualquiera, en cualquier lugar y tiempo.'},s:{en:'Both Voyagers carry a gold-plated record with greetings in 55 languages, sounds of Earth and 90 minutes of music — from Bach to Chuck Berry. It will outlast the pyramids, drifting between the stars for perhaps a billion years.',es:'Ambas Voyager llevan un disco bañado en oro con saludos en 55 idiomas, sonidos de la Tierra y 90 minutos de música — de Bach a Chuck Berry. Sobrevivirá a las pirámides, vagando entre las estrellas por quizás mil millones de años.'}},
+ {t:{en:'The four failures',es:'Los cuatro fracasos'},b:{en:'SpaceX nearly died before Falcon 1 worked.',es:'SpaceX casi muere antes de que el Falcon 1 funcionara.'},s:{en:'SpaceX\u2019s first three Falcon 1 launches all failed, nearly bankrupting the company. The fourth, in September 2008, reached orbit with the last of the money — the launch that arguably saved the New Space era before it began.',es:'Los primeros tres lanzamientos del Falcon 1 de SpaceX fallaron, casi llevando a la quiebra a la empresa. El cuarto, en septiembre de 2008, llegó a órbita con el último dinero — el lanzamiento que, podría decirse, salvó la era New Space antes de que empezara.'}},
+ {t:{en:'The Pale Blue Dot',es:'El Punto Azul Pálido'},b:{en:'Earth, photographed from 6 billion km.',es:'La Tierra, fotografiada a 6.000 millones de km.'},s:{en:'In 1990, leaving the Solar System, Voyager 1 turned its camera back and caught Earth as a single pale pixel. Carl Sagan\u2019s reflection on it — "everyone you love, everyone you know... on a mote of dust suspended in a sunbeam" — became a touchstone of humility.',es:'En 1990, al dejar el Sistema Solar, Voyager 1 giró su cámara y captó a la Tierra como un único píxel pálido. La reflexión de Carl Sagan — "todos los que amás, todos los que conocés... en una mota de polvo suspendida en un rayo de sol" — se volvió un símbolo de humildad.'}},
+ {t:{en:'A starman in a Tesla',es:'Un Starman en un Tesla'},b:{en:'Falcon Heavy\u2019s very odd first payload.',es:'La rarísima primera carga del Falcon Heavy.'},s:{en:'For its 2018 debut, instead of a dummy mass, Falcon Heavy launched a cherry-red Tesla Roadster with a spacesuited mannequin — "Starman" — playing Bowie, on a trajectory past Mars. It is still out there, orbiting the Sun.',es:'Para su debut en 2018, en vez de una masa de prueba, el Falcon Heavy lanzó un Tesla Roadster rojo cereza con un maniquí en traje espacial — "Starman" — sonando Bowie, en una trayectoria más allá de Marte. Sigue allá afuera, orbitando el Sol.'}}
+];
+function buildAnec(){const g=$('#anecGrid');g.innerHTML='';ANEC.forEach(a=>{const b=document.createElement('button');b.className='gcard';
+  b.innerHTML='<h4>'+a.t[LANG]+'</h4><p>'+a.b[LANG]+'</p>';
+  b.addEventListener('click',()=>openModal(a.t[LANG],LANG==='es'?'Anécdota':'Anecdote',[{h:LANG==='es'?'La historia':'The story',p:a.s[LANG]}]));g.appendChild(b);});}
+rerenderers.push(buildAnec);
+
+/* ============ GAMES ============ */
+// Q1: which came first
+function yearNum(y){return parseInt(y,10);}
+const Q1POOL=TIMELINE.map(e=>({t:e.t,y:yearNum(e.y)}));
+function makeFirst(prefix){let correct=0,total=0,answered=false,a,b;
+  function pick(){answered=false;let i=Math.floor(Math.random()*Q1POOL.length),j;do{j=Math.floor(Math.random()*Q1POOL.length);}while(j===i||Q1POOL[j].y===Q1POOL[i].y);a=Q1POOL[i];b=Q1POOL[j];
+    $('#'+prefix+'-q').textContent=LANG==='es'?'¿Cuál ocurrió primero?':'Which came first?';
+    $('#'+prefix+'-score').textContent=correct+' / '+total;
+    const box=$('#'+prefix+'-opts');box.innerHTML='';
+    [a,b].forEach(o=>{const bt=document.createElement('button');bt.className='qopt';bt.textContent=o.t[LANG];bt.addEventListener('click',()=>choose(o,bt));box.appendChild(bt);});
+    $('#'+prefix+'-fb').innerHTML='';}
+  function choose(o,bt){if(answered)return;answered=true;total++;const earlier=a.y<b.y?a:b;const right=o===earlier;if(right)correct++;
+    $('#'+prefix+'-score').textContent=correct+' / '+total;
+    [...$('#'+prefix+'-opts').children].forEach(c=>{if(c.textContent===earlier.t[LANG])c.classList.add('correct');else if(c===bt)c.classList.add('wrong');});
+    $('#'+prefix+'-fb').innerHTML='<b>'+(right?(LANG==='es'?'¡Bien!':'Correct!'):(LANG==='es'?'No.':'Nope.'))+'</b> '+earlier.t[LANG]+' ('+earlier.y+') '+(LANG==='es'?'fue antes que':'came before')+' '+(earlier===a?b:a).t[LANG]+' ('+(earlier===a?b:a).y+').';}
+  $('#'+prefix+'-next').addEventListener('click',pick);return{render:pick};
+}
+// Q2: old vs new space
+const Q2=[
+ {q:{en:'Reusing a rocket booster across many flights',es:'Reutilizar un propulsor en muchos vuelos'},a:'new'},
+ {q:{en:'A government agency owning and operating every vehicle',es:'Una agencia estatal dueña y operadora de cada vehículo'},a:'old'},
+ {q:{en:'A constellation of thousands of mass-produced satellites',es:'Una constelación de miles de satélites en serie'},a:'new'},
+ {q:{en:'Expendable rockets and cost-plus contracts',es:'Cohetes descartables y contratos cost-plus'},a:'old'},
+ {q:{en:'NASA buying crew transport as a service',es:'La NASA comprando transporte de tripulación como servicio'},a:'new'},
+ {q:{en:'A single bespoke probe built over a decade',es:'Una sonda única a medida construida en una década'},a:'old'}
+];
+function makeOldNew(prefix){let correct=0,total=0,answered=false,idx=0;
+  function lab(o){return o==='new'?(LANG==='es'?'New Space':'New Space'):(LANG==='es'?'Old Space':'Old Space');}
+  function render(){answered=false;const it=Q2[idx%Q2.length];
+    $('#'+prefix+'-q').textContent=it.q[LANG];$('#'+prefix+'-score').textContent=correct+' / '+total;
+    const box=$('#'+prefix+'-opts');box.innerHTML='';
+    ['old','new'].forEach(o=>{const bt=document.createElement('button');bt.className='qopt';bt.textContent=lab(o);bt.dataset.o=o;bt.addEventListener('click',()=>choose(o,it));box.appendChild(bt);});
+    $('#'+prefix+'-fb').innerHTML='';}
+  function choose(o,it){if(answered)return;answered=true;total++;const right=o===it.a;if(right)correct++;
+    $('#'+prefix+'-score').textContent=correct+' / '+total;
+    [...$('#'+prefix+'-opts').children].forEach(c=>{if(c.dataset.o===it.a)c.classList.add('correct');else if(c.dataset.o===o)c.classList.add('wrong');});
+    $('#'+prefix+'-fb').innerHTML='<b>'+(right?(LANG==='es'?'¡Bien!':'Correct!'):(LANG==='es'?'No exactamente.':'Not quite.'))+'</b> '+lab(it.a)+'.';}
+  $('#'+prefix+'-next').addEventListener('click',()=>{idx++;render();});return{render};
+}
+// Q3: identify the milestone
+const Q3=[
+ {clue:{en:'First artificial satellite (1957)',es:'Primer satélite artificial (1957)'},a:'Sputnik 1',opts:['Sputnik 1','Explorer 1','Vostok 1','Apollo 11']},
+ {clue:{en:'First human in space (1961)',es:'Primer humano en el espacio (1961)'},a:'Vostok 1 — Gagarin',opts:['Apollo 11','Vostok 1 — Gagarin','Mercury — Glenn','Voskhod 2']},
+ {clue:{en:'First reusable orbital booster landing (2015)',es:'Primer aterrizaje de propulsor orbital reutilizable (2015)'},a:'Falcon 9',opts:['Space Shuttle','SLS','Falcon 9','Saturn V']},
+ {clue:{en:'Telescope launched in 1990, repaired in orbit',es:'Telescopio lanzado en 1990, reparado en órbita'},a:'Hubble',opts:['JWST','Hubble','Kepler','Spitzer']},
+ {clue:{en:'First privately built crewed spacecraft (2004)',es:'Primera nave tripulada de construcción privada (2004)'},a:'SpaceShipOne',opts:['Crew Dragon','SpaceShipOne','New Shepard','Starliner']}
+];
+function makeIdentify(prefix){let correct=0,total=0,answered=false,idx=0;
+  function render(){answered=false;const it=Q3[idx%Q3.length];
+    $('#'+prefix+'-q').textContent=(LANG==='es'?'Identificá: ':'Identify: ')+it.clue[LANG];
+    $('#'+prefix+'-score').textContent=correct+' / '+total;
+    const box=$('#'+prefix+'-opts');box.innerHTML='';
+    it.opts.forEach(o=>{const bt=document.createElement('button');bt.className='qopt';bt.textContent=o;bt.addEventListener('click',()=>choose(o,it,bt));box.appendChild(bt);});
+    $('#'+prefix+'-fb').innerHTML='';}
+  function choose(o,it,bt){if(answered)return;answered=true;total++;const right=o===it.a;if(right)correct++;
+    $('#'+prefix+'-score').textContent=correct+' / '+total;
+    [...$('#'+prefix+'-opts').children].forEach(c=>{if(c.textContent===it.a)c.classList.add('correct');else if(c===bt)c.classList.add('wrong');});
+    $('#'+prefix+'-fb').innerHTML='<b>'+(right?(LANG==='es'?'¡Correcto!':'Correct!'):(LANG==='es'?'Era:':'It was:'))+'</b> '+it.a+'.';}
+  $('#'+prefix+'-next').addEventListener('click',()=>{idx++;render();});return{render};
+}
+let g1,g2,g3;
+function buildGames(){if(!g1){g1=makeFirst('q1');g2=makeOldNew('q2');g3=makeIdentify('q3');}g1.render();g2.render();g3.render();}
+rerenderers.push(()=>{if(g1){g1.render();g2.render();g3.render();}});
+
+/* ============ glossary ============ */
+const GLOSS=[
+ {t:'New Space',d:{en:'The commercial, private-capital, reusability-driven era of spaceflight from ~2000.',es:'La era comercial del vuelo espacial, de capital privado y reutilización, desde ~2000.'}},
+ {t:'Old Space',d:{en:'The government-led, expendable, cost-plus era that preceded it.',es:'La era previa: liderada por gobiernos, descartable y cost-plus.'}},
+ {t:'EVA',d:{en:'Extravehicular activity — a spacewalk outside the craft. First by Leonov, 1965.',es:'Actividad extravehicular — una caminata fuera de la nave. La primera, Leonov, 1965.'}},
+ {t:'Reusability',d:{en:'Recovering and reflying rocket stages — the key to falling launch cost.',es:'Recuperar y volver a volar etapas — la clave de la caída del costo de lanzamiento.'}},
+ {t:'CubeSat / smallsat',d:{en:'Tiny standardised satellites, cheap and mass-producible.',es:'Satélites diminutos estandarizados, baratos y producibles en serie.'}},
+ {t:'Mega-constellation',d:{en:'Hundreds to thousands of satellites working as one network (e.g. Starlink).',es:'De cientos a miles de satélites operando como una red (p. ej. Starlink).'}},
+ {t:'LEO',d:{en:'Low Earth Orbit — where stations, most satellites and crewed flights operate.',es:'Órbita Terrestre Baja — donde operan estaciones, la mayoría de satélites y vuelos tripulados.'}},
+ {t:'Payload to orbit',d:{en:'The mass a rocket can deliver to a given orbit — the headline measure of a launcher.',es:'La masa que un cohete puede llevar a una órbita dada — la medida estrella de un lanzador.'}}
+];
+function buildGloss(){$('#glossList').innerHTML=GLOSS.map(g=>'<div><dt>'+g.t+'</dt><dd>'+g.d[LANG]+'</dd></div>').join('');}
+rerenderers.push(buildGloss);
+
+/* ============ hero canvas ============ */
+const hc=$('#hero-canvas'),hx=hc.getContext('2d');
+const reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+let stars=[],trail=[],hf=0;
+function initHero(){hc.width=hc.clientWidth;hc.height=hc.clientHeight;
+  stars=[];for(let i=0;i<120;i++)stars.push({x:Math.random()*hc.width,y:Math.random()*hc.height,r:Math.random()*1.2+.2,a:Math.random()*.6+.2,tw:Math.random()*.02});
+  trail=[];}
+function drawHero(){hx.clearRect(0,0,hc.width,hc.height);
+  stars.forEach(s=>{s.a+=Math.sin(hf*s.tw)*.004;hx.globalAlpha=Math.max(.1,Math.min(.9,s.a));hx.fillStyle='#cfe0ff';hx.beginPath();hx.arc(s.x,s.y,s.r,0,7);hx.fill();});
+  hx.globalAlpha=1;
+  // rising rocket with trail
+  const t=(hf*1.4)%(hc.height+160);const rx0=hc.width*0.74,ry=hc.height-t;
+  trail.push({x:rx0,y:ry+18,a:1});if(trail.length>40)trail.shift();
+  trail.forEach(p=>{p.a*=0.94;hx.globalAlpha=p.a*.5;hx.fillStyle='#e3b23c';hx.beginPath();hx.arc(p.x+(Math.random()-.5)*3,p.y,2.4,0,7);hx.fill();});
+  hx.globalAlpha=1;
+  hx.fillStyle='#a9dcff';hx.beginPath();hx.moveTo(rx0,ry-9);hx.lineTo(rx0-4,ry+8);hx.lineTo(rx0+4,ry+8);hx.closePath();hx.fill();
+  hx.fillStyle='#e3b23c';hx.beginPath();hx.arc(rx0,ry+10,2.4,0,7);hx.fill();
+}
+
+/* ============ menu + nav + loop ============ */
+const menuBtn=$('#menuBtn'),navLinks=$('#navlinks');
+function setMenu(open){menuBtn.classList.toggle('open',open);navLinks.classList.toggle('open',open);menuBtn.setAttribute('aria-expanded',open?'true':'false');}
+menuBtn.addEventListener('click',e=>{e.stopPropagation();setMenu(!navLinks.classList.contains('open'));});
+navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>setMenu(false)));
+document.addEventListener('click',e=>{if(!navLinks.contains(e.target)&&!menuBtn.contains(e.target))setMenu(false);});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')setMenu(false);});
+
+const links=[...document.querySelectorAll('.nav-links a')];
+const secs=links.map(a=>{const h=a.getAttribute('href');return h&&h.startsWith('#')?document.querySelector(h):null;});
+window.addEventListener('scroll',()=>{const sc=window.scrollY,dh=document.documentElement.scrollHeight-window.innerHeight;
+  $('#progress').style.width=(dh>0?sc/dh*100:0)+'%';let cur=-1;secs.forEach((s,i)=>{if(s&&s.offsetTop-130<=sc)cur=i;});
+  links.forEach((l,i)=>l.classList.toggle('active',i===cur));},{passive:true});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+window.addEventListener('resize',()=>{initHero();drawHero();drawRockets();});
+function loop(){hf++;if(!reduce)drawHero();requestAnimationFrame(loop);}
+
+/* ============ init ============ */
+buildGames();
+try{LANG=localStorage.getItem('nslang')||'en';}catch(e){}
+applyLang();
+initHero();drawHero();
+if(!reduce)loop();
+</script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>newspace.live · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#05060d;--cloud:#0b1020;--panel:#111a30;--panel-2:#16223e;--line:#243353;
+    --text:#eaeefb;--text-dim:#93a0c2;--text-faint:#6b769a;--accent:#6f8fd6;--warm:#f3ad5e;--ir:#e0653f;--ok:#5fd0a0;
+    --display:'Space Grotesk',system-ui;--body:'Inter',system-ui;--mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--void);color:var(--text);font-family:var(--body);font-size:14px;min-height:100vh}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 18px}
+  header{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+  h1{font-family:var(--display);font-size:18px;margin:0;flex:1}
+  .lang{background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:7px;width:34px;height:30px;cursor:pointer;font-size:15px}
+  .card{background:var(--cloud);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:18px}
+  .card h2{font-family:var(--display);font-size:14px;margin:0 0 14px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px}
+  label{display:block;font-size:11px;color:var(--text-dim);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.5px}
+  input,select{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:9px 11px;font-size:13px;font-family:var(--body)}
+  .btn{background:var(--accent);color:#04121a;border:none;border-radius:8px;padding:9px 16px;font-weight:600;cursor:pointer;font-size:13px}
+  .btn.sec{background:var(--panel-2);color:var(--text);border:1px solid var(--line)}
+  .btn.danger{background:var(--ir);color:#1a0a06}
+  .btn.sm{padding:5px 10px;font-size:11px}
+  .row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+  .row>div{flex:1;min-width:140px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--line)}
+  th{color:var(--text-faint);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+  .rolepill{font-family:var(--mono);font-size:10px;padding:1px 7px;border-radius:4px;background:var(--panel-2);border:1px solid var(--line)}
+  .rolepill.admin{background:var(--ir);color:#1a0a06;border-color:transparent}
+  .muted{color:var(--text-faint);font-size:11px;font-family:var(--mono)}
+  .msg{padding:9px 12px;border-radius:8px;font-size:12px;margin-bottom:12px;display:none}
+  .msg.err{background:rgba(224,101,63,.15);border:1px solid var(--ir);color:#f4b59c;display:block}
+  .msg.ok{background:rgba(95,208,160,.12);border:1px solid var(--ok);color:#bde8d6;display:block}
+  .hide{display:none}
+  .uact{display:flex;gap:5px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 data-i18n="title">newspace.live · Console</h1>
+    <span id="who" class="muted"></span>
+    <button id="logoutBtn" class="btn sec sm hide" data-i18n="logout">Sign out</button>
+    <button id="lang" class="lang" title="Idioma">&#127466;&#127480;</button>
+  </header>
+
+  <div id="msg" class="msg"></div>
+
+  <!-- Bootstrap (primer admin) -->
+  <div id="bootstrapCard" class="card hide">
+    <h2 data-i18n="bs_title">Create the first administrator</h2>
+    <p class="muted" data-i18n="bs_note">No users exist yet. This creates the initial admin account. It only works while the database has no users.</p>
+    <div class="row">
+      <div><label data-i18n="f_name">Name</label><input id="bsName" autocomplete="name"></div>
+      <div><label data-i18n="f_email">Email</label><input id="bsEmail" type="email" autocomplete="username"></div>
+    </div>
+    <label data-i18n="f_pass">Password (min 10)</label><input id="bsPass" type="password" autocomplete="new-password">
+    <div style="margin-top:14px"><button id="bsBtn" class="btn" data-i18n="bs_btn">Create admin</button></div>
+  </div>
+
+  <!-- Login -->
+  <div id="loginCard" class="card hide">
+    <h2 data-i18n="login_title">Sign in</h2>
+    <label data-i18n="f_email">Email</label><input id="liEmail" type="email" autocomplete="username">
+    <label data-i18n="f_pass">Password</label><input id="liPass" type="password" autocomplete="current-password">
+    <div style="margin-top:14px"><button id="liBtn" class="btn" data-i18n="login_btn">Sign in</button></div>
+  </div>
+
+  <!-- Panel -->
+  <div id="panel" class="hide">
+    <div id="notAdmin" class="card hide"><p class="muted" data-i18n="not_admin">You are signed in. User management is available to administrators only.</p></div>
+    <div id="adminArea" class="hide">
+      <div class="card">
+        <h2 data-i18n="users_title">Users</h2>
+        <table><thead><tr><th data-i18n="th_name">Name</th><th data-i18n="th_email">Email</th><th data-i18n="th_role">Role</th><th data-i18n="th_active">Active</th><th data-i18n="th_last">Last login</th><th></th></tr></thead>
+        <tbody id="userRows"></tbody></table>
+      </div>
+      <div class="card">
+        <h2 data-i18n="create_title">Create user</h2>
+        <div class="row">
+          <div><label data-i18n="f_name">Name</label><input id="nuName"></div>
+          <div><label data-i18n="f_email">Email</label><input id="nuEmail" type="email"></div>
+        </div>
+        <div class="row" style="margin-top:6px">
+          <div><label data-i18n="f_role">Role</label><select id="nuRole"><option value="viewer">viewer</option><option value="operator">operator</option><option value="analyst">analyst</option><option value="admin">admin</option></select></div>
+          <div><label data-i18n="f_pass">Password (min 10)</label><input id="nuPass" type="password"></div>
+          <div style="flex:0 0 auto"><button id="nuBtn" class="btn" data-i18n="create_btn">Create</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2 data-i18n="activity_title">Activity log</h2>
+        <table><thead><tr><th data-i18n="th_when">When</th><th data-i18n="th_user">User</th><th data-i18n="th_action">Action</th><th data-i18n="th_detail">Detail</th></tr></thead>
+        <tbody id="actRows"></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const I18N={
+ en:{title:"newspace.live · Console",logout:"Sign out",bs_title:"Create the first administrator",bs_note:"No users exist yet. This creates the initial admin account. It only works while the database has no users.",bs_btn:"Create admin",login_title:"Sign in",login_btn:"Sign in",f_name:"Name",f_email:"Email",f_pass:"Password (min 10)",f_role:"Role",not_admin:"You are signed in. User management is available to administrators only.",users_title:"Users",create_title:"Create user",create_btn:"Create",th_name:"Name",th_email:"Email",th_role:"Role",th_active:"Active",th_last:"Last login",save:"Save",reset_pw:"Reset password",enable:"Enable",disable:"Disable",ask_pw:"New password (min 10):",created:"Created.",updated:"Updated.",done:"Done.",activity_title:"Activity log",th_when:"When",th_user:"User",th_action:"Action",th_detail:"Detail"},
+ es:{title:"newspace.live · Consola",logout:"Salir",bs_title:"Crear el primer administrador",bs_note:"Todav\u00eda no hay usuarios. Esto crea la cuenta admin inicial. Solo funciona mientras la base no tenga usuarios.",bs_btn:"Crear admin",login_title:"Ingresar",login_btn:"Ingresar",f_name:"Nombre",f_email:"Email",f_pass:"Contrase\u00f1a (m\u00edn 10)",f_role:"Rol",not_admin:"Tu sesi\u00f3n est\u00e1 iniciada. La gesti\u00f3n de usuarios es solo para administradores.",users_title:"Usuarios",create_title:"Crear usuario",create_btn:"Crear",th_name:"Nombre",th_email:"Email",th_role:"Rol",th_active:"Activo",th_last:"\u00daltimo ingreso",save:"Guardar",reset_pw:"Resetear contrase\u00f1a",enable:"Activar",disable:"Desactivar",ask_pw:"Nueva contrase\u00f1a (m\u00edn 10):",created:"Creado.",updated:"Actualizado.",done:"Hecho.",activity_title:"Registro de actividad",th_when:"Cu\u00e1ndo",th_user:"Usuario",th_action:"Acci\u00f3n",th_detail:"Detalle"}
+};
+let LANG=localStorage.getItem("ns_lang")||"en", CSRF="", ME=null;
+const $=id=>document.getElementById(id);
+const t=k=>(I18N[LANG][k]||I18N.en[k]||k);
+function applyLang(){document.documentElement.lang=LANG;document.querySelectorAll("[data-i18n]").forEach(e=>e.textContent=t(e.dataset.i18n));$("lang").innerHTML=LANG==="en"?"\ud83c\uddea\ud83c\uddf8":"\ud83c\uddec\ud83c\udde7";if(ME&&ME.role==="admin")renderUsers();}
+function show(el,on){$(el).classList.toggle("hide",!on);}
+function msg(text,ok){const m=$("msg");m.textContent=text;m.className="msg "+(ok?"ok":"err");setTimeout(()=>{m.className="msg";},3500);}
+async function api(file,action,method,body){
+  const o={method:method||"GET",credentials:"include",headers:{}};
+  if(body){o.headers["Content-Type"]="application/json";o.headers["X-CSRF"]=CSRF;o.body=JSON.stringify(body);}
+  const r=await fetch(file+"?action="+action,o); let d={};try{d=await r.json();}catch(e){}
+  if(!r.ok||d.ok===false)throw new Error(d.error||("HTTP "+r.status));
+  return d;
+}
+async function refresh(){
+  const d=await api("auth.php","csrf"); CSRF=d.csrf; ME=d.user;
+  show("bootstrapCard",d.needs_bootstrap);
+  show("loginCard",!d.needs_bootstrap&&!ME);
+  show("panel",!!ME);
+  show("logoutBtn",!!ME);
+  $("who").textContent=ME?(ME.name+" \u00b7 "+ME.role):"";
+  if(ME){const admin=ME.role==="admin";show("adminArea",admin);show("notAdmin",!admin);if(admin){await loadUsers();await loadActivity();}}
+}
+let USERS=[];
+async function loadUsers(){const d=await api("users.php","list");USERS=d.users;renderUsers();}
+async function loadActivity(){try{const d=await api("users.php","activity");renderActivity(d.activity);}catch(e){}}
+function renderActivity(rows){$("actRows").innerHTML=(rows&&rows.length)?rows.map(a=>`<tr><td class="muted">${esc((a.ts||"").replace(" ","\u00a0"))}</td><td>${esc(a.user_name||"\u2014")}</td><td><span class="rolepill">${esc(a.action)}</span></td><td class="muted">${esc(a.detail||"")}</td></tr>`).join(""):`<tr><td colspan="4" class="muted">\u2014</td></tr>`;}
+function renderUsers(){
+  const roles=["viewer","operator","analyst","admin"];
+  $("userRows").innerHTML=USERS.map(u=>{
+    const sel=`<select data-id="${u.id}" class="roleSel" style="padding:4px 6px;font-size:11px">${roles.map(r=>`<option value="${r}"${r===u.role?" selected":""}>${r}</option>`).join("")}</select>`;
+    return `<tr>
+      <td>${esc(u.name)}</td><td class="muted">${esc(u.email)}</td>
+      <td>${u.role==="admin"?'<span class="rolepill admin">admin</span> ':''}${sel}</td>
+      <td>${u.active?"\u2713":"\u2014"}</td>
+      <td class="muted">${u.last_login?u.last_login.replace(" ","\u00a0"):"\u2014"}</td>
+      <td class="uact">
+        <button class="btn sec sm act-active" data-id="${u.id}" data-on="${u.active?0:1}">${u.active?t("disable"):t("enable")}</button>
+        <button class="btn sec sm act-pw" data-id="${u.id}">${t("reset_pw")}</button>
+      </td></tr>`;
+  }).join("");
+  document.querySelectorAll(".roleSel").forEach(s=>s.addEventListener("change",async()=>{try{await api("users.php","update","POST",{id:+s.dataset.id,role:s.value});msg(t("updated"),1);await loadUsers();await loadActivity();}catch(e){msg(e.message);await loadUsers();}}));
+  document.querySelectorAll(".act-active").forEach(b=>b.addEventListener("click",async()=>{try{await api("users.php","update","POST",{id:+b.dataset.id,active:+b.dataset.on});msg(t("updated"),1);await loadUsers();await loadActivity();}catch(e){msg(e.message);}}));
+  document.querySelectorAll(".act-pw").forEach(b=>b.addEventListener("click",async()=>{const p=prompt(t("ask_pw"));if(!p)return;try{await api("users.php","resetpw","POST",{id:+b.dataset.id,password:p});msg(t("done"),1);}catch(e){msg(e.message);}}));
+}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+$("lang").addEventListener("click",()=>{LANG=LANG==="en"?"es":"en";localStorage.setItem("ns_lang",LANG);applyLang();});
+$("logoutBtn").addEventListener("click",async()=>{try{await api("auth.php","logout","POST",{});}catch(e){}ME=null;await refresh();});
+$("bsBtn").addEventListener("click",async()=>{try{await api("auth.php","bootstrap","POST",{name:$("bsName").value,email:$("bsEmail").value,password:$("bsPass").value});await refresh();}catch(e){msg(e.message);}});
+$("liBtn").addEventListener("click",async()=>{try{await api("auth.php","login","POST",{email:$("liEmail").value,password:$("liPass").value});const r=new URLSearchParams(location.search).get("return");if(r&&/^[\w.\-]+\.html(\?[\w=&%.\-]*)?$/.test(r)){location.href=r;return;}await refresh();}catch(e){msg(e.message);}});
+$("nuBtn").addEventListener("click",async()=>{try{await api("users.php","create","POST",{name:$("nuName").value,email:$("nuEmail").value,role:$("nuRole").value,password:$("nuPass").value});msg(t("created"),1);$("nuName").value=$("nuEmail").value=$("nuPass").value="";await loadUsers();await loadActivity();}catch(e){msg(e.message);}});
+
+applyLang();
+refresh().catch(e=>msg(e.message));
+</script>
+</body>
+</html>

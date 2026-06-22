@@ -1,0 +1,804 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Exoplanet Formation — How Other Worlds Are Made</title>
+<meta name="description" content="An interactive, bilingual guide to how exoplanets form: the protoplanetary disk, the frost line, core accretion vs migration, detection by transit, the habitable zone — with games, challenges and real examples." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+:root{
+  --void:#05060d;--cloud:#0b1020;--cloud-2:#111a30;--cloud-3:#16223e;--line:#243353;
+  --cold:#6f8fd6;--ice:#a9dcff;--warm:#f3ad5e;--ir:#e0653f;--sim:#5fd0a0;--law:#9b8cff;--mech:#3cc9e6;--exo:#ff86c8;
+  --text:#eaeefb;--muted:#93a0c2;--muted-2:#6b769a;--ok:#5fd0a0;
+  --shadow:0 18px 50px -20px rgba(0,0,0,.8);--r:16px;--maxw:1120px;
+  --display:"Space Grotesk",system-ui,sans-serif;--body:"Inter",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--void);color:var(--text);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(1100px 700px at 82% -8%, rgba(255,134,200,.10), transparent 60%),
+    radial-gradient(1000px 800px at 6% 2%, rgba(111,143,214,.12), transparent 60%),
+    radial-gradient(900px 900px at 50% 120%, rgba(243,173,94,.05), transparent 60%);}
+a{color:var(--ice);text-decoration:none}
+h1,h2,h3,h4{font-family:var(--display);font-weight:600;line-height:1.12;letter-spacing:-.01em;margin:0}
+p{margin:0 0 1em}.mono{font-family:var(--mono)}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+section{padding:84px 0;position:relative}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--warm);margin:0 0 14px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:26px;height:1px;background:linear-gradient(90deg,var(--warm),transparent)}
+.sec-title{font-size:clamp(1.7rem,4vw,2.5rem);margin-bottom:14px}
+.lede{color:var(--muted);font-size:1.05rem;max-width:66ch}
+#progress{position:fixed;top:0;left:0;height:2px;width:0;z-index:70;background:linear-gradient(90deg,var(--cold),var(--exo),var(--ice))}
+
+.nav{position:sticky;top:0;z-index:60;backdrop-filter:blur(14px);background:rgba(5,6,13,.72);border-bottom:1px solid var(--line)}
+.nav-inner{max-width:var(--maxw);margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:11px;font-family:var(--display);font-weight:700;letter-spacing:-.02em;font-size:1.02rem;white-space:nowrap}
+.brand a{color:inherit}
+.brand .dot{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 32% 32%,var(--ice),var(--exo) 55%,var(--cold) 95%);box-shadow:0 0 16px var(--exo);flex:none}
+.nav-links{display:flex;gap:4px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-links a{color:var(--muted);font-size:.83rem;padding:7px 10px;border-radius:9px;white-space:nowrap;transition:.18s;font-weight:500}
+.nav-links a:hover{color:var(--text);background:var(--cloud-2)}
+.nav-links a.active{color:var(--ice);background:rgba(255,134,200,.14)}
+.lang{display:inline-flex;align-items:center;gap:7px;background:var(--cloud-2);border:1px solid var(--line);border-radius:9px;padding:6px 10px;cursor:pointer;color:var(--text);font-family:var(--body);font-weight:600;font-size:.8rem;flex:none;transition:.18s}
+.lang:hover{border-color:var(--exo)}
+.lang svg{width:22px;height:15px;border-radius:2px;display:block;flex:none}
+.lang .lng{font-family:var(--mono);letter-spacing:.05em}
+
+.hero{min-height:80vh;display:flex;align-items:center;padding-top:36px;position:relative;overflow:hidden}
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:-1;opacity:.95}
+.hero-inner{max-width:var(--maxw);margin:0 auto;padding:0 24px;width:100%}
+.hero .kick{font-family:var(--mono);font-size:.78rem;letter-spacing:.24em;text-transform:uppercase;color:var(--exo);margin-bottom:20px}
+.hero h1{font-size:clamp(2.5rem,7vw,5rem);font-weight:700;max-width:16ch;letter-spacing:-.025em}
+.hero h1 .grad{background:linear-gradient(100deg,var(--ice),var(--exo) 50%,var(--warm));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .sub{color:var(--muted);font-size:1.16rem;max-width:60ch;margin-top:22px}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:32px}
+.btn{font-family:var(--body);font-weight:600;font-size:.95rem;border-radius:12px;padding:13px 22px;border:1px solid var(--line);background:var(--cloud-2);color:var(--text);cursor:pointer;transition:transform .15s,border-color .2s;text-decoration:none;display:inline-flex;align-items:center;gap:9px}
+.btn:hover{transform:translateY(-2px);border-color:var(--exo)}
+.btn.primary{background:linear-gradient(100deg,rgba(255,134,200,.18),rgba(111,143,214,.18));border-color:rgba(255,134,200,.45)}
+.scroll-hint{margin-top:40px;color:var(--muted-2);font-size:.8rem;font-family:var(--mono);letter-spacing:.1em;display:flex;align-items:center;gap:8px}
+.scroll-hint .a{animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+@media (prefers-reduced-motion:reduce){.scroll-hint .a{animation:none}}
+
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1!important;transform:none!important}}
+
+.panel{background:linear-gradient(180deg,var(--cloud-2),var(--cloud));border:1px solid var(--line);border-radius:var(--r);padding:26px;box-shadow:var(--shadow)}
+.card{background:var(--cloud-2);border:1px solid var(--line);border-radius:14px;padding:20px;transition:.18s}
+.card:hover{transform:translateY(-3px);border-color:var(--exo)}
+.card h3{font-size:1.06rem;margin-bottom:8px}.card p{color:var(--muted);font-size:.92rem;margin:0}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:820px){.split{grid-template-columns:1fr}}
+.lab{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+@media (max-width:860px){.lab{grid-template-columns:1fr}}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+
+/* tooltips */
+.term{border-bottom:1px dashed var(--exo);cursor:help;color:var(--ice);text-underline-offset:3px}
+.term:focus{outline:2px solid var(--exo);outline-offset:2px;border-radius:3px}
+#tip{position:fixed;z-index:200;max-width:330px;background:#1a0c16;border:1px solid var(--exo);border-radius:11px;padding:13px 15px;font-size:.86rem;color:var(--text);line-height:1.55;box-shadow:0 18px 40px -12px rgba(0,0,0,.85);opacity:0;pointer-events:none;transition:opacity .14s}
+#tip.show{opacity:1}#tip b{color:var(--warm)}
+.help-chip{width:21px;height:21px;border-radius:50%;border:1px solid var(--exo);color:var(--exo);font-size:.74rem;font-family:var(--mono);font-style:italic;display:inline-flex;align-items:center;justify-content:center;cursor:help;background:rgba(255,134,200,.1);font-weight:600;vertical-align:middle}
+.help-chip:hover{background:rgba(255,134,200,.25)}
+
+/* formulas */
+.formula{background:var(--cloud);border:1px solid var(--line);border-left:3px solid var(--exo);border-radius:12px;padding:16px 18px;margin:14px 0;overflow-x:auto}
+.formula .katex{font-size:1.14em}
+.example{background:rgba(255,134,200,.07);border:1px solid rgba(255,134,200,.28);border-radius:11px;padding:14px 16px;font-size:.9rem;color:var(--muted);margin-top:14px}
+.example b{color:var(--exo)}
+
+/* controls */
+.ctrl{margin-bottom:16px}
+.ctrl-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;gap:8px}
+.ctrl-head label{font-size:.9rem;font-weight:600;display:flex;align-items:center;gap:7px}
+.ctrl-head .val{font-family:var(--mono);font-size:.9rem;color:var(--warm)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:99px;background:linear-gradient(90deg,var(--cold),var(--exo));outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;border-radius:50%;background:var(--ice);border:3px solid var(--void);box-shadow:0 0 0 1px var(--exo),0 0 14px var(--exo);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:19px;height:19px;border-radius:50%;background:var(--ice);border:3px solid var(--void);box-shadow:0 0 0 1px var(--exo);cursor:pointer}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(116px,1fr));gap:11px;margin-top:6px}
+.stat{background:var(--cloud);border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+.stat .k{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2);font-family:var(--mono);margin-bottom:5px}
+.stat .v{font-family:var(--mono);font-size:1.08rem;font-weight:600;color:var(--ice)}
+.stat .u{color:var(--muted);font-size:.74rem}
+canvas.plot{width:100%;display:block;border-radius:12px;background:var(--cloud);border:1px solid var(--line)}
+
+/* timeline */
+.timeline{position:relative;margin-top:30px}
+.tl-track{position:absolute;left:0;right:0;top:26px;height:2px;background:var(--line)}
+.tl-fill{position:absolute;left:0;top:26px;height:2px;background:linear-gradient(90deg,var(--cold),var(--exo));border-radius:2px}
+.tl-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;position:relative}
+@media (max-width:760px){.tl-row{grid-template-columns:1fr;gap:12px}.tl-track,.tl-fill{display:none}}
+.tl-step{cursor:pointer}
+.tl-node{width:14px;height:14px;border-radius:50%;background:var(--cloud-3);border:2px solid var(--cold);margin:20px auto 12px;transition:.2s;position:relative;z-index:2}
+@media (max-width:760px){.tl-node{margin:4px 0 8px}}
+.tl-step:hover .tl-node,.tl-step.sel .tl-node{background:var(--exo);border-color:var(--exo);box-shadow:0 0 16px var(--exo);transform:scale(1.25)}
+.tl-step .label{font-family:var(--display);font-weight:600;font-size:.9rem;text-align:center}
+.tl-step .yr{font-family:var(--mono);font-size:.72rem;color:var(--warm);text-align:center;margin-top:3px}
+@media (max-width:760px){.tl-step .label,.tl-step .yr{text-align:left}}
+.tl-detail{margin-top:26px;background:var(--cloud);border:1px solid var(--line);border-left:3px solid var(--exo);border-radius:12px;padding:20px 22px}
+.tl-detail h4{font-size:1.18rem;margin-bottom:2px}
+.tl-detail .meta{font-family:var(--mono);font-size:.78rem;color:var(--exo);margin-bottom:10px}
+.tl-detail p{color:var(--muted);margin:0}
+
+/* frost bar */
+.frostbar{height:60px;border-radius:12px;position:relative;margin:16px 0 8px;background:linear-gradient(90deg,#ff9a5a 0%,#f3ad5e 25%,#6f8fd6 55%,#3a5391 100%)}
+.frostline{position:absolute;top:-8px;bottom:-8px;width:2px;background:var(--ice);box-shadow:0 0 10px var(--ice);transition:left .15s}
+.frostline span{position:absolute;top:-24px;left:50%;transform:translateX(-50%);white-space:nowrap;font-family:var(--mono);font-size:.72rem;color:var(--ice)}
+.frostlabels{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);font-family:var(--mono)}
+
+/* games / quiz */
+.gamebtns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.gbtn{font-family:var(--body);font-weight:600;font-size:.92rem;border-radius:11px;padding:12px 18px;border:1px solid var(--line);background:var(--cloud-2);color:var(--text);cursor:pointer;transition:.16s;flex:1;min-width:130px}
+.gbtn:hover{border-color:var(--exo);transform:translateY(-2px)}
+.gbtn.yes{border-color:rgba(95,208,160,.5)}.gbtn.no{border-color:rgba(224,101,63,.5)}
+.scorebar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.pill{font-family:var(--mono);font-size:.8rem;background:var(--cloud);border:1px solid var(--line);border-radius:99px;padding:6px 13px;color:var(--muted)}
+.pill b{color:var(--exo)}
+.feedback{margin-top:14px;border-radius:12px;padding:14px 16px;border:1px solid var(--line);font-size:.92rem;min-height:20px}
+.feedback.ok{background:rgba(95,208,160,.12);border-color:var(--sim);color:#bff0db}
+.feedback.bad{background:rgba(224,101,63,.12);border-color:var(--ir);color:#ffd0bf}
+.qopts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+@media (max-width:560px){.qopts{grid-template-columns:1fr}}
+.qopt{text-align:left;background:var(--cloud-2);border:1px solid var(--line);border-radius:11px;padding:13px 15px;cursor:pointer;color:inherit;font:inherit;transition:.15s}
+.qopt:hover{border-color:var(--exo)}
+.qopt.right{border-color:var(--sim);background:rgba(95,208,160,.12)}
+.qopt.wrong{border-color:var(--ir);background:rgba(224,101,63,.12)}
+
+/* bodies */
+.bodygrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:20px}
+.body{background:var(--cloud-2);border:1px solid var(--line);border-radius:13px;padding:15px;cursor:pointer;transition:.18s;text-align:left;color:inherit;font:inherit;width:100%}
+.body:hover{transform:translateY(-3px);border-color:var(--exo)}
+.body .orb{width:34px;height:34px;border-radius:50%;margin-bottom:10px;box-shadow:0 0 18px -3px currentColor}
+.body h4{font-size:1rem;margin-bottom:1px}.body .d{font-family:var(--mono);font-size:.72rem;color:var(--warm)}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;z-index:120;background:rgba(3,4,10,.78);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:22px}
+.modal-bg.open{display:flex}
+.modal{background:linear-gradient(180deg,var(--cloud-2),var(--cloud));border:1px solid var(--exo);border-radius:18px;max-width:620px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow)}
+.modal-head{padding:22px 26px 16px;border-bottom:1px solid var(--line);display:flex;gap:14px;align-items:center}
+.modal-head .orb{width:46px;height:46px;border-radius:50%;flex:none;box-shadow:0 0 22px -2px currentColor}
+.modal-head h3{font-size:1.35rem}.modal-head .sub{font-family:var(--mono);font-size:.8rem;color:var(--warm)}
+.modal-close{margin-left:auto;background:var(--cloud-3);border:1px solid var(--line);color:var(--text);width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:1.1rem;flex:none}
+.modal-close:hover{border-color:var(--ir)}
+.modal-body{padding:22px 26px 26px}
+.spec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:6px 0 16px}
+.spec{background:var(--cloud);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+.spec .k{font-size:.62rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);font-family:var(--mono);margin-bottom:4px}
+.spec .v{font-family:var(--mono);font-weight:600;color:var(--ice);font-size:.9rem}
+.modal-body h4{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--warm);font-family:var(--mono);margin:16px 0 8px}
+.modal-body p{color:var(--muted);font-size:.93rem}
+
+.note{font-size:.82rem;color:var(--muted-2);font-style:italic;margin-top:12px}
+.gloss{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.gloss dt{font-family:var(--display);font-weight:600;color:var(--ice);margin-bottom:4px}
+.gloss dd{margin:0 0 16px;color:var(--muted);font-size:.9rem}
+footer{border-top:1px solid var(--line);padding:40px 0 60px;color:var(--muted-2);font-size:.85rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="tip" role="tooltip"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="brand"><span class="dot"></span><a href="/">newspace.live</a> <span style="color:var(--muted-2);font-weight:500" data-i18n="nav.crumb">/ Exoplanets</span></div>
+    <div class="nav-links" id="navlinks">
+      <a href="#how" data-i18n="nav.how">How worlds form</a>
+      <a href="#frost" data-i18n="nav.frost">The frost line</a>
+      <a href="#transit" data-i18n="nav.transit">Detection</a>
+      <a href="#game" data-i18n="nav.game">Transit hunter</a>
+      <a href="#quiz" data-i18n="nav.quiz">Classify</a>
+      <a href="#hz" data-i18n="nav.hz">Habitable zone</a>
+      <a href="#worlds" data-i18n="nav.worlds">Real worlds</a>
+      <a href="#reference" data-i18n="nav.ref">Reference</a>
+    </div>
+    <button class="lang" id="langBtn" onclick="toggleLang()" aria-label="Switch language"></button>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-inner">
+    <p class="kick" data-i18n="hero.kick">Disks · accretion · other worlds</p>
+    <h1 data-i18n-html="hero.h1">How other <span class="grad">worlds</span> are made.</h1>
+    <p class="sub" data-i18n="hero.sub">From a swirling disk of gas and dust to thousands of confirmed planets around other stars — explore exoplanet formation hands-on, with simulators, games and challenges. Hover every <span class="help-chip">i</span> for more detail.</p>
+    <div class="hero-cta">
+      <a class="btn primary" href="#how" data-i18n="hero.cta1">Start with formation →</a>
+      <a class="btn" href="#game" data-i18n="hero.cta2">Play: hunt a planet</a>
+    </div>
+    <div class="scroll-hint"><span class="a">↓</span> <span data-i18n="hero.scroll">interactive throughout</span></div>
+  </div>
+</header>
+
+<!-- HOW WORLDS FORM -->
+<section id="how">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="how.eyebrow">From dust to planets</p>
+    <h2 class="sec-title reveal" data-i18n="how.title">Five steps from disk to world</h2>
+    <p class="lede reveal" data-i18n="how.lede">A planet is leftover material from a star's birth. Around the newborn star spins a flat disk of gas and dust; over a few million years, that dust assembles itself — bottom-up — into worlds. Click each stage.</p>
+    <div class="timeline reveal">
+      <div class="tl-track"></div><div class="tl-fill" style="width:100%"></div>
+      <div class="tl-row" id="tlRow"></div>
+      <div class="tl-detail" id="tlDetail"></div>
+    </div>
+    <div class="grid3 reveal" style="margin-top:30px">
+      <div class="card"><h3 style="color:var(--warm)" data-i18n="how.c1h">Core accretion</h3><p data-i18n="how.c1p">The standard route: dust → pebbles → planetesimals → a solid core. If a core grows big enough (~10 Earth masses) before the gas disperses, it runs away and gulps a giant gas envelope.</p></div>
+      <div class="card"><h3 style="color:var(--cold)" data-i18n="how.c2h">Disk instability</h3><p data-i18n="how.c2p">An alternative for massive disks: a cold, heavy region collapses directly under its own gravity into a giant planet — fast, and far from the star.</p></div>
+      <div class="card"><h3 style="color:var(--exo)" data-i18n="how.c3h">Migration</h3><p data-i18n="how.c3p">Planets don't stay put. Drag from the disk can spiral a giant inward — which is how "hot Jupiters" end up roasting beside their stars.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FROST LINE -->
+<section id="frost">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="frost.eyebrow">The great divide</p>
+    <h2 class="sec-title reveal" data-i18n="frost.title">The frost line decides everything</h2>
+    <p class="lede reveal" data-i18n="frost.lede">Close to the star it is too hot for ice; only rock and metal condense, so you build small rocky planets. Past the frost line, water and other volatiles freeze onto grains, suddenly providing far more solid material — enough to grow giant cores quickly. Move the star's brightness and watch the line shift.</p>
+    <div class="panel reveal" style="margin-top:26px">
+      <div class="ctrl"><div class="ctrl-head"><label data-i18n="frost.lum">Star luminosity <span class="help-chip" data-i18n-tip="tip.lum">i</span></label><span class="val" id="fl-v">1.0 L☉</span></div>
+        <input type="range" id="fl" min="-1" max="1.6" value="0" step="0.02"></div>
+      <div class="frostbar"><div class="frostline" id="frostline"><span data-i18n="frost.snow">snow line</span></div></div>
+      <div class="frostlabels"><span data-i18n="frost.hot">hot · rock &amp; metal · rocky planets</span><span data-i18n="frost.cold">cold · + ices · giant cores</span></div>
+      <div class="readout" style="margin-top:16px">
+        <div class="stat"><div class="k" data-i18n="frost.dist">Snow line distance</div><div class="v" id="fl-d">—</div><div class="u">AU</div></div>
+        <div class="stat"><div class="k" data-i18n="frost.note">Rule of thumb</div><div class="v" style="font-size:.86rem" id="fl-rule">d ≈ 2.7·√L</div></div>
+      </div>
+      <div class="example" data-i18n-html="frost.ex"><b>In our Solar System</b> the frost line sat near 2.7 AU — between Mars and Jupiter. That is exactly why the four inner planets are small and rocky and the giants lie beyond, and why the asteroid belt (rock just inside, ice just outside) marks the boundary.</div>
+    </div>
+  </div>
+</section>
+
+<!-- DETECTION / TRANSIT -->
+<section id="transit">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="tr.eyebrow">How we find them</p>
+    <h2 class="sec-title reveal" data-i18n="tr.title">The transit method</h2>
+    <p class="lede reveal" data-i18n="tr.lede">Most known exoplanets were found by watching a star dim slightly each time a planet crosses in front of it. The depth of that dip reveals the planet's size relative to the star — and its rhythm reveals the orbit.</p>
+    <div class="lab" style="margin-top:30px">
+      <div class="panel reveal">
+        <div class="formula"><div data-formula="\delta = \left(\dfrac{R_p}{R_\star}\right)^2"></div></div>
+        <p style="color:var(--muted);font-size:.92rem" data-i18n-html="tr.body">The fractional drop in brightness <span class="mono">δ</span> equals the planet-to-star area ratio. A Jupiter crossing a Sun-like star dims it by ~1%; an Earth, by only ~0.008% — which is why finding small planets needs space telescopes. Drag the sliders and read the dip.</p>
+        <div class="ctrl" style="margin-top:8px"><div class="ctrl-head"><label data-i18n="tr.rp">Planet radius <span class="help-chip" data-i18n-tip="tip.rp">i</span></label><span class="val" id="tp-rp-v">1.0 R♃</span></div><input type="range" id="tp-rp" min="0.3" max="2" value="1" step="0.05"></div>
+        <div class="ctrl"><div class="ctrl-head"><label data-i18n="tr.rs">Star radius</label><span class="val" id="tp-rs-v">1.0 R☉</span></div><input type="range" id="tp-rs" min="0.3" max="2.5" value="1" step="0.05"></div>
+        <div class="readout">
+          <div class="stat"><div class="k" data-i18n="tr.depth">Transit depth</div><div class="v" id="tp-depth">—</div><div class="u">%</div></div>
+          <div class="stat"><div class="k" data-i18n="tr.ratio">Radius ratio</div><div class="v" id="tp-ratio">—</div><div class="u">Rp/R★</div></div>
+        </div>
+      </div>
+      <div class="panel reveal">
+        <canvas class="plot" id="transit-canvas" height="260"></canvas>
+        <p class="note" data-i18n="tr.cap">The light curve: brightness vs time as the planet crosses. Deeper dip = bigger planet.</p>
+      </div>
+    </div>
+    <div class="grid3 reveal" style="margin-top:24px">
+      <div class="card"><h3 style="color:var(--cold)" data-i18n="tr.m1h">Radial velocity</h3><p data-i18n="tr.m1p">The planet's gravity tugs the star into a tiny wobble, shifting its light blue then red. Reveals the planet's minimum mass — complementary to transits.</p></div>
+      <div class="card"><h3 style="color:var(--warm)" data-i18n="tr.m2h">Direct imaging</h3><p data-i18n="tr.m2p">Blocking the star's glare to photograph the planet itself. Works best for young, hot, wide-orbit giants that still glow in the infrared.</p></div>
+      <div class="card"><h3 style="color:var(--exo)" data-i18n="tr.m3h">Microlensing</h3><p data-i18n="tr.m3p">A planet's gravity briefly magnifies a background star's light. Uniquely sensitive to cold, distant planets — a one-time, unrepeatable blip.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- GAME: TRANSIT HUNTER -->
+<section id="game">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="g.eyebrow">Game · challenge</p>
+    <h2 class="sec-title reveal" data-i18n="g.title">Transit hunter</h2>
+    <p class="lede reveal" data-i18n="g.lede">You are the mission scientist. Each light curve is buried in noise — some hide a real planet transit, some are just a restless star. Call it: planet, or no planet? Crank up the noise for a harder hunt.</p>
+    <div class="panel reveal" style="margin-top:26px">
+      <div class="scorebar">
+        <span class="pill" data-i18n-html="g.score">Score: <b id="g-score">0</b></span>
+        <span class="pill" data-i18n-html="g.round">Round: <b id="g-round">1</b></span>
+        <span class="pill" data-i18n-html="g.streak">Streak: <b id="g-streak">0</b></span>
+      </div>
+      <canvas class="plot" id="game-canvas" height="240"></canvas>
+      <div class="ctrl" style="margin-top:14px"><div class="ctrl-head"><label data-i18n="g.noise">Noise level (difficulty) <span class="help-chip" data-i18n-tip="tip.noise">i</span></label><span class="val" id="g-noise-v">medium</span></div>
+        <input type="range" id="g-noise" min="1" max="3" value="2" step="1"></div>
+      <div class="gamebtns">
+        <button class="gbtn yes" id="g-yes" data-i18n="g.yes">🪐 Planet detected</button>
+        <button class="gbtn no" id="g-no" data-i18n="g.no">✕ No planet</button>
+      </div>
+      <div class="feedback" id="g-fb" data-i18n="g.fb0">Make your call — is there a transit hidden in this light curve?</div>
+    </div>
+  </div>
+</section>
+
+<!-- QUIZ: CLASSIFY -->
+<section id="quiz">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="q.eyebrow">Game · challenge</p>
+    <h2 class="sec-title reveal" data-i18n="q.title">Classify the world</h2>
+    <p class="lede reveal" data-i18n="q.lede">Given a planet's size, mass and orbit, what kind of world is it? Use the clues — small and dense means rocky; big and short-period means a roasted giant.</p>
+    <div class="panel reveal" style="margin-top:26px">
+      <div class="scorebar"><span class="pill" data-i18n-html="q.score">Correct: <b id="q-score">0</b> / <b id="q-total">0</b></span></div>
+      <div class="readout" id="q-specs"></div>
+      <div class="qopts" id="q-opts"></div>
+      <div class="feedback" id="q-fb" data-i18n="q.fb0">Read the data, then pick the planet type.</div>
+      <button class="btn" id="q-next" style="margin-top:14px;display:none" data-i18n="q.next">Next world →</button>
+    </div>
+  </div>
+</section>
+
+<!-- HABITABLE ZONE -->
+<section id="hz">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="hz.eyebrow">Could it be habitable?</p>
+    <h2 class="sec-title reveal" data-i18n="hz.title">The habitable zone</h2>
+    <p class="lede reveal" data-i18n="hz.lede">The "Goldilocks zone" is the band of distances where a planet could hold liquid water — not boiling, not frozen. It depends on the star: dim red dwarfs have it tucked in close, bright stars push it far out. Place a planet and check.</p>
+    <div class="lab" style="margin-top:30px">
+      <div class="panel reveal">
+        <div class="formula"><div data-formula="T_{eq}=T_\star\sqrt{\dfrac{R_\star}{2a}}\,(1-A)^{1/4}"></div></div>
+        <div class="ctrl" style="margin-top:6px"><div class="ctrl-head"><label data-i18n="hz.lum">Star luminosity <span class="help-chip" data-i18n-tip="tip.hzlum">i</span></label><span class="val" id="hz-l-v">1.0 L☉</span></div><input type="range" id="hz-l" min="-2" max="1.4" value="0" step="0.02"></div>
+        <div class="ctrl"><div class="ctrl-head"><label data-i18n="hz.dist">Planet distance</label><span class="val" id="hz-d-v">1.00 AU</span></div><input type="range" id="hz-d" min="-1.3" max="0.9" value="0" step="0.01"></div>
+        <div class="readout">
+          <div class="stat"><div class="k" data-i18n="hz.inner">HZ inner</div><div class="v" id="hz-in">—</div><div class="u">AU</div></div>
+          <div class="stat"><div class="k" data-i18n="hz.outer">HZ outer</div><div class="v" id="hz-out">—</div><div class="u">AU</div></div>
+          <div class="stat"><div class="k" data-i18n="hz.teq">Equil. temp</div><div class="v" id="hz-teq">—</div><div class="u">K</div></div>
+        </div>
+        <div class="feedback" id="hz-verdict" style="margin-top:14px"></div>
+      </div>
+      <div class="panel reveal">
+        <canvas class="plot" id="hz-canvas" height="260"></canvas>
+        <p class="note" data-i18n="hz.cap">Green band = habitable zone. Drag the planet's distance in or out of it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REAL WORLDS -->
+<section id="worlds">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="w.eyebrow">Worked examples</p>
+    <h2 class="sec-title reveal" data-i18n="w.title">Real exoplanets, drilled down</h2>
+    <p class="lede reveal" data-i18n="w.lede">Every one of these rewrote what we thought planets could be. Click any for its data and why it matters.</p>
+    <div class="bodygrid reveal" id="worldGrid"></div>
+  </div>
+</section>
+
+<!-- REFERENCE -->
+<section id="reference">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="r.eyebrow">Quick reference</p>
+    <h2 class="sec-title reveal" data-i18n="r.title">Formulas &amp; glossary</h2>
+    <div class="split reveal" style="margin-top:24px">
+      <div class="panel">
+        <h3 style="font-size:1.1rem;margin-bottom:12px" data-i18n="r.fh">Formulas</h3>
+        <div class="formula" style="margin-top:0"><div data-formula="\delta=(R_p/R_\star)^2"></div></div>
+        <div class="formula"><div data-formula="T_{eq}=T_\star\sqrt{R_\star/2a}\,(1-A)^{1/4}"></div></div>
+        <div class="formula"><div data-formula="d_{HZ}=\sqrt{L/S}\;\;[\text{AU}]"></div></div>
+        <div class="formula"><div data-formula="d_{snow}\approx 2.7\sqrt{L/L_\odot}\;\;[\text{AU}]"></div></div>
+      </div>
+      <div class="panel">
+        <h3 style="font-size:1.1rem;margin-bottom:12px" data-i18n="r.gh">Glossary</h3>
+        <dl class="gloss" id="glossList"></dl>
+      </div>
+    </div>
+    <p class="note reveal" data-i18n="r.note">Values are representative and rounded for teaching; habitable-zone and formation models are simplified.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div><strong style="color:var(--text);font-family:var(--display)">newspace.live</strong> · <span data-i18n="foot.t">Exoplanet Formation</span></div>
+    <div data-i18n="foot.s">Interactive &amp; bilingual · values rounded for teaching.</div>
+  </div>
+</footer>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-name">
+    <div class="modal-head"><div class="orb" id="m-orb"></div><div><h3 id="m-name"></h3><div class="sub" id="m-sub"></div></div><button class="modal-close" id="modalClose" aria-label="Close">✕</button></div>
+    <div class="modal-body" id="m-body"></div>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+let LANG='en';
+
+/* ============ i18n dictionary ============ */
+const I18N={
+ 'nav.crumb':{en:'/ Exoplanets',es:'/ Exoplanetas'},
+ 'nav.how':{en:'How worlds form',es:'Cómo se forman'},
+ 'nav.frost':{en:'The frost line',es:'Línea de hielo'},
+ 'nav.transit':{en:'Detection',es:'Detección'},
+ 'nav.game':{en:'Transit hunter',es:'Cazador de tránsitos'},
+ 'nav.quiz':{en:'Classify',es:'Clasificá'},
+ 'nav.hz':{en:'Habitable zone',es:'Zona habitable'},
+ 'nav.worlds':{en:'Real worlds',es:'Mundos reales'},
+ 'nav.ref':{en:'Reference',es:'Referencia'},
+ 'hero.kick':{en:'Disks · accretion · other worlds',es:'Discos · acreción · otros mundos'},
+ 'hero.h1':{en:'How other <span class="grad">worlds</span> are made.',es:'Cómo se hacen <span class="grad">otros mundos</span>.'},
+ 'hero.sub':{en:'From a swirling disk of gas and dust to thousands of confirmed planets around other stars — explore exoplanet formation hands-on, with simulators, games and challenges. Hover every <span class="help-chip">i</span> for more detail.',es:'Desde un disco giratorio de gas y polvo hasta miles de planetas confirmados alrededor de otras estrellas — explorá la formación de exoplanetas de forma práctica, con simuladores, juegos y desafíos. Pasá el cursor por cada <span class="help-chip">i</span> para ver más detalle.'},
+ 'hero.cta1':{en:'Start with formation →',es:'Empezá por la formación →'},
+ 'hero.cta2':{en:'Play: hunt a planet',es:'Jugá: cazá un planeta'},
+ 'hero.scroll':{en:'interactive throughout',es:'interactivo de punta a punta'},
+ 'how.eyebrow':{en:'From dust to planets',es:'Del polvo a los planetas'},
+ 'how.title':{en:'Five steps from disk to world',es:'Cinco pasos del disco al mundo'},
+ 'how.lede':{en:"A planet is leftover material from a star's birth. Around the newborn star spins a flat disk of gas and dust; over a few million years, that dust assembles itself — bottom-up — into worlds. Click each stage.",es:'Un planeta es material sobrante del nacimiento de una estrella. Alrededor de la estrella recién nacida gira un disco plano de gas y polvo; en unos pocos millones de años, ese polvo se ensambla — de abajo hacia arriba — en mundos. Hacé clic en cada etapa.'},
+ 'how.c1h':{en:'Core accretion',es:'Acreción del núcleo'},
+ 'how.c1p':{en:'The standard route: dust → pebbles → planetesimals → a solid core. If a core grows big enough (~10 Earth masses) before the gas disperses, it runs away and gulps a giant gas envelope.',es:'La vía estándar: polvo → guijarros → planetesimales → un núcleo sólido. Si un núcleo crece lo suficiente (~10 masas terrestres) antes de que el gas se disipe, se dispara y engulle una envoltura gigante de gas.'},
+ 'how.c2h':{en:'Disk instability',es:'Inestabilidad del disco'},
+ 'how.c2p':{en:'An alternative for massive disks: a cold, heavy region collapses directly under its own gravity into a giant planet — fast, and far from the star.',es:'Una alternativa para discos masivos: una región fría y pesada colapsa directamente bajo su propia gravedad en un planeta gigante — rápido, y lejos de la estrella.'},
+ 'how.c3h':{en:'Migration',es:'Migración'},
+ 'how.c3p':{en:'Planets don\u2019t stay put. Drag from the disk can spiral a giant inward — which is how "hot Jupiters" end up roasting beside their stars.',es:'Los planetas no se quedan quietos. El roce del disco puede hacer espiralar un gigante hacia adentro — así es como los "júpiteres calientes" terminan asándose junto a sus estrellas.'},
+ 'frost.eyebrow':{en:'The great divide',es:'La gran división'},
+ 'frost.title':{en:'The frost line decides everything',es:'La línea de hielo lo decide todo'},
+ 'frost.lede':{en:'Close to the star it is too hot for ice; only rock and metal condense, so you build small rocky planets. Past the frost line, water and other volatiles freeze onto grains, suddenly providing far more solid material — enough to grow giant cores quickly. Move the star\u2019s brightness and watch the line shift.',es:'Cerca de la estrella hace demasiado calor para el hielo; solo condensan roca y metal, así que se forman pequeños planetas rocosos. Más allá de la línea de hielo, el agua y otros volátiles se congelan sobre los granos, aportando de golpe mucho más material sólido — suficiente para hacer crecer núcleos gigantes rápido. Movés el brillo de la estrella y mirás cómo se desplaza la línea.'},
+ 'frost.lum':{en:'Star luminosity',es:'Luminosidad estelar'},
+ 'frost.snow':{en:'snow line',es:'línea de nieve'},
+ 'frost.hot':{en:'hot · rock & metal · rocky planets',es:'caliente · roca y metal · planetas rocosos'},
+ 'frost.cold':{en:'cold · + ices · giant cores',es:'frío · + hielos · núcleos gigantes'},
+ 'frost.dist':{en:'Snow line distance',es:'Distancia línea de nieve'},
+ 'frost.note':{en:'Rule of thumb',es:'Regla práctica'},
+ 'frost.ex':{en:'<b>In our Solar System</b> the frost line sat near 2.7 AU — between Mars and Jupiter. That is exactly why the four inner planets are small and rocky and the giants lie beyond, and why the asteroid belt (rock just inside, ice just outside) marks the boundary.',es:'<b>En nuestro Sistema Solar</b> la línea de hielo estaba cerca de 2,7 UA — entre Marte y Júpiter. Por eso exactamente los cuatro planetas interiores son pequeños y rocosos y los gigantes quedan más allá, y por eso el cinturón de asteroides (roca justo adentro, hielo justo afuera) marca la frontera.'},
+ 'tr.eyebrow':{en:'How we find them',es:'Cómo los encontramos'},
+ 'tr.title':{en:'The transit method',es:'El método del tránsito'},
+ 'tr.lede':{en:'Most known exoplanets were found by watching a star dim slightly each time a planet crosses in front of it. The depth of that dip reveals the planet\u2019s size relative to the star — and its rhythm reveals the orbit.',es:'La mayoría de los exoplanetas conocidos se hallaron observando cómo una estrella se atenúa levemente cada vez que un planeta pasa por delante. La profundidad de esa caída revela el tamaño del planeta respecto a la estrella — y su ritmo revela la órbita.'},
+ 'tr.body':{en:'The fractional drop in brightness <span class="mono">δ</span> equals the planet-to-star area ratio. A Jupiter crossing a Sun-like star dims it by ~1%; an Earth, by only ~0.008% — which is why finding small planets needs space telescopes. Drag the sliders and read the dip.',es:'La caída fraccional de brillo <span class="mono">δ</span> es igual a la razón de áreas planeta/estrella. Un Júpiter cruzando una estrella como el Sol la atenúa ~1%; una Tierra, solo ~0,008% — por eso encontrar planetas pequeños requiere telescopios espaciales. Movés los controles y leés la caída.'},
+ 'tr.rp':{en:'Planet radius',es:'Radio del planeta'},
+ 'tr.rs':{en:'Star radius',es:'Radio de la estrella'},
+ 'tr.depth':{en:'Transit depth',es:'Profundidad'},
+ 'tr.ratio':{en:'Radius ratio',es:'Razón de radios'},
+ 'tr.cap':{en:'The light curve: brightness vs time as the planet crosses. Deeper dip = bigger planet.',es:'La curva de luz: brillo vs tiempo mientras el planeta cruza. Caída más profunda = planeta más grande.'},
+ 'tr.m1h':{en:'Radial velocity',es:'Velocidad radial'},
+ 'tr.m1p':{en:'The planet\u2019s gravity tugs the star into a tiny wobble, shifting its light blue then red. Reveals the planet\u2019s minimum mass — complementary to transits.',es:'La gravedad del planeta hace tambalear la estrella, corriendo su luz al azul y luego al rojo. Revela la masa mínima del planeta — complementario al tránsito.'},
+ 'tr.m2h':{en:'Direct imaging',es:'Imagen directa'},
+ 'tr.m2p':{en:'Blocking the star\u2019s glare to photograph the planet itself. Works best for young, hot, wide-orbit giants that still glow in the infrared.',es:'Bloquear el resplandor de la estrella para fotografiar el planeta mismo. Funciona mejor con gigantes jóvenes, calientes y de órbita amplia que aún brillan en el infrarrojo.'},
+ 'tr.m3h':{en:'Microlensing',es:'Microlente gravitacional'},
+ 'tr.m3p':{en:'A planet\u2019s gravity briefly magnifies a background star\u2019s light. Uniquely sensitive to cold, distant planets — a one-time, unrepeatable blip.',es:'La gravedad de un planeta amplifica brevemente la luz de una estrella de fondo. Único método sensible a planetas fríos y lejanos — un destello irrepetible.'},
+ 'g.eyebrow':{en:'Game · challenge',es:'Juego · desafío'},
+ 'g.title':{en:'Transit hunter',es:'Cazador de tránsitos'},
+ 'g.lede':{en:'You are the mission scientist. Each light curve is buried in noise — some hide a real planet transit, some are just a restless star. Call it: planet, or no planet? Crank up the noise for a harder hunt.',es:'Sos el científico de la misión. Cada curva de luz está enterrada en ruido — algunas esconden un tránsito real, otras son solo una estrella inquieta. Decidí: ¿planeta o no? Subí el ruido para una cacería más difícil.'},
+ 'g.score':{en:'Score: <b id="g-score">0</b>',es:'Puntaje: <b id="g-score">0</b>'},
+ 'g.round':{en:'Round: <b id="g-round">1</b>',es:'Ronda: <b id="g-round">1</b>'},
+ 'g.streak':{en:'Streak: <b id="g-streak">0</b>',es:'Racha: <b id="g-streak">0</b>'},
+ 'g.noise':{en:'Noise level (difficulty)',es:'Nivel de ruido (dificultad)'},
+ 'g.yes':{en:'🪐 Planet detected',es:'🪐 Planeta detectado'},
+ 'g.no':{en:'✕ No planet',es:'✕ Sin planeta'},
+ 'g.fb0':{en:'Make your call — is there a transit hidden in this light curve?',es:'Decidí — ¿hay un tránsito escondido en esta curva de luz?'},
+ 'q.eyebrow':{en:'Game · challenge',es:'Juego · desafío'},
+ 'q.title':{en:'Classify the world',es:'Clasificá el mundo'},
+ 'q.lede':{en:'Given a planet\u2019s size, mass and orbit, what kind of world is it? Use the clues — small and dense means rocky; big and short-period means a roasted giant.',es:'Dados el tamaño, la masa y la órbita de un planeta, ¿qué tipo de mundo es? Usá las pistas — pequeño y denso es rocoso; grande y de período corto es un gigante asado.'},
+ 'q.score':{en:'Correct: <b id="q-score">0</b> / <b id="q-total">0</b>',es:'Aciertos: <b id="q-score">0</b> / <b id="q-total">0</b>'},
+ 'q.fb0':{en:'Read the data, then pick the planet type.',es:'Leé los datos y elegí el tipo de planeta.'},
+ 'q.next':{en:'Next world →',es:'Siguiente mundo →'},
+ 'hz.eyebrow':{en:'Could it be habitable?',es:'¿Podría ser habitable?'},
+ 'hz.title':{en:'The habitable zone',es:'La zona habitable'},
+ 'hz.lede':{en:'The "Goldilocks zone" is the band of distances where a planet could hold liquid water — not boiling, not frozen. It depends on the star: dim red dwarfs have it tucked in close, bright stars push it far out. Place a planet and check.',es:'La "zona Ricitos de Oro" es la franja de distancias donde un planeta podría tener agua líquida — ni hirviendo ni congelada. Depende de la estrella: las enanas rojas tenues la tienen muy cerca, las estrellas brillantes la empujan lejos. Ubicá un planeta y verificá.'},
+ 'hz.lum':{en:'Star luminosity',es:'Luminosidad estelar'},
+ 'hz.dist':{en:'Planet distance',es:'Distancia del planeta'},
+ 'hz.inner':{en:'HZ inner',es:'ZH interior'},
+ 'hz.outer':{en:'HZ outer',es:'ZH exterior'},
+ 'hz.teq':{en:'Equil. temp',es:'Temp. equilibrio'},
+ 'hz.cap':{en:'Green band = habitable zone. Drag the planet\u2019s distance in or out of it.',es:'Franja verde = zona habitable. Movés la distancia del planeta dentro o fuera de ella.'},
+ 'w.eyebrow':{en:'Worked examples',es:'Ejemplos resueltos'},
+ 'w.title':{en:'Real exoplanets, drilled down',es:'Exoplanetas reales, en detalle'},
+ 'w.lede':{en:'Every one of these rewrote what we thought planets could be. Click any for its data and why it matters.',es:'Cada uno de estos reescribió lo que creíamos posible. Hacé clic en cualquiera para ver sus datos y por qué importa.'},
+ 'r.eyebrow':{en:'Quick reference',es:'Referencia rápida'},
+ 'r.title':{en:'Formulas & glossary',es:'Fórmulas y glosario'},
+ 'r.fh':{en:'Formulas',es:'Fórmulas'},
+ 'r.gh':{en:'Glossary',es:'Glosario'},
+ 'r.note':{en:'Values are representative and rounded for teaching; habitable-zone and formation models are simplified.',es:'Los valores son representativos y redondeados con fines didácticos; los modelos de zona habitable y de formación están simplificados.'},
+ 'foot.t':{en:'Exoplanet Formation',es:'Formación de Exoplanetas'},
+ 'foot.s':{en:'Interactive & bilingual · values rounded for teaching.',es:'Interactivo y bilingüe · valores redondeados con fines didácticos.'},
+ /* tooltips */
+ 'tip.lum':{en:'<b>Luminosity (L).</b> Total light a star emits, in units of the Sun (L☉). It scales steeply with mass, so a star twice the Sun\u2019s mass can be ~10× brighter, pushing the snow line much farther out.',es:'<b>Luminosidad (L).</b> Luz total que emite una estrella, en unidades del Sol (L☉). Crece con fuerza con la masa, así que una estrella del doble de masa del Sol puede ser ~10× más brillante, empujando la línea de nieve mucho más lejos.'},
+ 'tip.rp':{en:'<b>Planet radius.</b> Shown in Jupiter radii (R♃ ≈ 11 Earth radii). Transit depth depends only on size, not mass — so transits measure radius, and radial velocity is needed for mass.',es:'<b>Radio del planeta.</b> En radios de Júpiter (R♃ ≈ 11 radios terrestres). La profundidad del tránsito depende solo del tamaño, no de la masa — el tránsito mide el radio, y se necesita velocidad radial para la masa.'},
+ 'tip.noise':{en:'<b>Noise.</b> Real photometry jitters from the star itself and the instrument. The harder challenge mimics weak signals near the detection limit, where false positives and missed planets both happen.',es:'<b>Ruido.</b> La fotometría real fluctúa por la propia estrella y el instrumento. El desafío más difícil imita señales débiles cerca del límite de detección, donde ocurren tanto falsos positivos como planetas no detectados.'},
+ 'tip.hzlum':{en:'<b>Why the HZ moves.</b> The habitable zone distance scales as √L: four times the luminosity doubles the distance. That is why an Earth-twin around a faint red dwarf orbits very close in.',es:'<b>Por qué se mueve la ZH.</b> La distancia de la zona habitable escala como √L: cuadruplicar la luminosidad duplica la distancia. Por eso una gemela de la Tierra alrededor de una enana roja tenue orbita muy cerca.'}
+};
+function t(k){const e=I18N[k];return e?(e[LANG]||e.en):k;}
+
+/* flags */
+function flagSVG(lang){
+  if(lang==='es') return '<svg viewBox="0 0 24 16"><rect width="24" height="16" fill="#c60b1e"/><rect y="4" width="24" height="8" fill="#ffc400"/></svg>';
+  return '<svg viewBox="0 0 24 16"><rect width="24" height="16" fill="#012169"/><path d="M0,0 L24,16 M24,0 L0,16" stroke="#fff" stroke-width="3"/><path d="M0,0 L24,16 M24,0 L0,16" stroke="#C8102E" stroke-width="1.6"/><rect x="9.5" width="5" height="16" fill="#fff"/><rect y="5.5" width="24" height="5" fill="#fff"/><rect x="10.5" width="3" height="16" fill="#C8102E"/><rect y="6.5" width="24" height="3" fill="#C8102E"/></svg>';
+}
+const rerenderers=[];
+function applyLang(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(!I18N[k])return;const val=t(k);
+    if(/[<>]/.test(val)){el.innerHTML=val;return;}
+    const kids=[...el.childNodes].filter(n=>n.nodeType===1);
+    if(kids.length){el.textContent=val+' ';kids.forEach(n=>el.appendChild(n));}
+    else el.textContent=val;});
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{const k=el.getAttribute('data-i18n-html');if(I18N[k])el.innerHTML=t(k);});
+  document.querySelectorAll('[data-i18n-tip]').forEach(el=>{const k=el.getAttribute('data-i18n-tip');if(I18N[k])el.setAttribute('data-tip',t(k));});
+  const tgt=LANG==='en'?'es':'en';const name=LANG==='en'?'ES':'EN';
+  $('#langBtn').innerHTML=flagSVG(tgt)+'<span class="lng">'+name+'</span>';
+  rerenderers.forEach(fn=>{try{fn();}catch(e){}});
+  bindTips();
+}
+function toggleLang(){LANG=LANG==='en'?'es':'en';applyLang();}
+
+/* tooltips */
+const tip=$('#tip');let tipTimer=null;
+function showTip(el){const t2=el.getAttribute('data-tip');if(!t2)return;tip.innerHTML=t2;tip.classList.add('show');
+  const r=el.getBoundingClientRect();const tw=Math.min(330,window.innerWidth-24);tip.style.maxWidth=tw+'px';
+  let x=r.left+r.width/2-tw/2;x=Math.max(12,Math.min(x,window.innerWidth-tw-12));
+  let y=r.bottom+10;if(y+tip.offsetHeight>window.innerHeight-12)y=r.top-tip.offsetHeight-10;
+  tip.style.left=x+'px';tip.style.top=Math.max(12,y)+'px';}
+function hideTip(){tip.classList.remove('show');}
+function bindTips(){document.querySelectorAll('[data-tip]').forEach(el=>{if(el.dataset.tb)return;el.dataset.tb=1;
+  if(!el.hasAttribute('tabindex')&&el.classList.contains('term'))el.setAttribute('tabindex','0');
+  el.addEventListener('mouseenter',()=>showTip(el));el.addEventListener('mouseleave',hideTip);
+  el.addEventListener('focus',()=>showTip(el));el.addEventListener('blur',hideTip);
+  el.addEventListener('click',e=>{e.stopPropagation();showTip(el);clearTimeout(tipTimer);tipTimer=setTimeout(hideTip,5000);});});}
+document.addEventListener('click',hideTip);window.addEventListener('scroll',hideTip,{passive:true});
+
+/* KaTeX */
+function renderFormulas(){if(!window.katex)return;document.querySelectorAll('[data-formula]').forEach(el=>{if(el.dataset.done)return;el.dataset.done=1;try{katex.render(el.getAttribute('data-formula'),el,{throwOnError:false,displayMode:true});}catch(e){}});}
+window.addEventListener('load',()=>{renderFormulas();setTimeout(renderFormulas,300);});
+
+/* ============ formation timeline ============ */
+const STAGES=[
+ {key:'st0',t:{en:'Molecular cloud core',es:'Núcleo de nube molecular'},yr:{en:'before t=0',es:'antes de t=0'},d:{en:'A clump of cold gas and dust collapses to form a star, leaving a spinning, flattened disk of leftover material around it — the protoplanetary disk.',es:'Un grumo de gas y polvo frío colapsa para formar una estrella, dejando a su alrededor un disco aplanado y giratorio de material sobrante — el disco protoplanetario.'}},
+ {key:'st1',t:{en:'Dust to pebbles',es:'Del polvo a guijarros'},yr:{en:'~10³–10⁴ yr',es:'~10³–10⁴ años'},d:{en:'Micron-sized grains collide and stick by static and surface forces, settling to the disk midplane and growing into millimetre-to-centimetre pebbles.',es:'Granos de micras chocan y se pegan por fuerzas estáticas y superficiales, se asientan en el plano medio del disco y crecen hasta guijarros de milímetros a centímetros.'}},
+ {key:'st2',t:{en:'Planetesimals',es:'Planetesimales'},yr:{en:'~10⁴–10⁵ yr',es:'~10⁴–10⁵ años'},d:{en:'Pebbles concentrate (helped by gas instabilities) and gravitationally clump into kilometre-sized planetesimals — now big enough for their own gravity to pull in more.',es:'Los guijarros se concentran (ayudados por inestabilidades del gas) y se agrupan gravitacionalmente en planetesimales de kilómetros — ya lo bastante grandes para que su propia gravedad atraiga más material.'}},
+ {key:'st3',t:{en:'Protoplanets',es:'Protoplanetas'},yr:{en:'~10⁵–10⁶ yr',es:'~10⁵–10⁶ años'},d:{en:'Planetesimals collide and merge into protoplanets. Beyond the frost line a core may exceed ~10 Earth masses and begin runaway gas accretion to become a giant.',es:'Los planetesimales chocan y se fusionan en protoplanetas. Más allá de la línea de hielo, un núcleo puede superar ~10 masas terrestres e iniciar la acreción descontrolada de gas para volverse un gigante.'}},
+ {key:'st4',t:{en:'A planetary system',es:'Un sistema planetario'},yr:{en:'~1–10 Myr',es:'~1–10 Myr'},d:{en:'The gas disk disperses (stellar winds, photoevaporation), ending giant growth. Remaining bodies settle, migrate and clear their orbits — leaving the planets, asteroids and comets we see today.',es:'El disco de gas se dispersa (vientos estelares, fotoevaporación), terminando el crecimiento de los gigantes. Los cuerpos restantes se asientan, migran y limpian sus órbitas — dejando los planetas, asteroides y cometas que vemos hoy.'}}
+];
+let stageSel=0;
+function buildTL(){const row=$('#tlRow');row.innerHTML='';STAGES.forEach((s,i)=>{const el=document.createElement('div');el.className='tl-step'+(i===stageSel?' sel':'');
+  el.innerHTML='<div class="tl-node"></div><div class="label">'+s.t[LANG]+'</div><div class="yr">'+s.yr[LANG]+'</div>';
+  el.addEventListener('click',()=>{stageSel=i;buildTL();});row.appendChild(el);});showTL();}
+function showTL(){const s=STAGES[stageSel];$('#tlDetail').innerHTML='<h4>'+s.t[LANG]+'</h4><div class="meta">'+s.yr[LANG]+'</div><p>'+s.d[LANG]+'</p>';}
+rerenderers.push(buildTL);
+
+/* ============ frost line ============ */
+const fl=$('#fl');
+function frost(){const L=Math.pow(10,+fl.value);const d=2.7*Math.sqrt(L);
+  $('#fl-v').textContent=(L<10?L.toFixed(2):L.toFixed(0))+' L☉';
+  $('#fl-d').textContent=d.toFixed(2);
+  const pct=Math.min(96,Math.max(4, (Math.log10(d)-Math.log10(0.5))/(Math.log10(40)-Math.log10(0.5))*100));
+  $('#frostline').style.left=pct+'%';
+}
+fl.addEventListener('input',frost);
+
+/* ============ transit simulator ============ */
+const tpRp=$('#tp-rp'),tpRs=$('#tp-rs'),tc=$('#transit-canvas'),tx=tc.getContext('2d');
+function transit(){const rp=+tpRp.value,rs=+tpRs.value;const ratio=(rp*0.10357)/rs;const depth=ratio*ratio;
+  $('#tp-rp-v').textContent=rp.toFixed(2)+' R♃';$('#tp-rs-v').textContent=rs.toFixed(2)+' R☉';
+  $('#tp-depth').textContent=(depth*100).toFixed(3);$('#tp-ratio').textContent=ratio.toFixed(3);
+  drawTransit(depth);
+}
+function drawTransit(depth){const w=tc.clientWidth,h=tc.height;tc.width=w;tx.clearRect(0,0,w,h);
+  const padL=40,padB=28,padT=30,padR=14;const x0=padL,x1=w-padR,y0=h-padB,y1=padT;
+  const dDraw=Math.min(0.6,depth*6+depth);  // exaggerate small dips for visibility
+  // axes
+  tx.strokeStyle='rgba(36,53,83,.7)';tx.lineWidth=1;tx.beginPath();tx.moveTo(x0,y1);tx.lineTo(x0,y0);tx.lineTo(x1,y0);tx.stroke();
+  tx.font='10px "JetBrains Mono",monospace';tx.fillStyle='#6b769a';tx.textAlign='right';
+  tx.fillText('1.00',x0-5,y1+4);tx.fillText((1-dDraw).toFixed(2),x0-5,y0);
+  tx.textAlign='center';tx.fillText(LANG==='es'?'tiempo':'time',(x0+x1)/2,h-6);
+  // light curve (flat, smooth dip in middle)
+  const base=y1, bottom=y1+(y0-y1)*dDraw;
+  tx.strokeStyle='#ff86c8';tx.lineWidth=2.4;tx.beginPath();
+  for(let i=0;i<=200;i++){const t2=i/200;const px=x0+(x1-x0)*t2;
+    let yy=base; const c=0.5, hw=0.13, ing=0.05;
+    const dd=Math.abs(t2-c);
+    if(dd<hw-ing) yy=bottom; else if(dd<hw+ing){const f=(hw+ing-dd)/(2*ing);yy=base+(bottom-base)*Math.max(0,Math.min(1,f));}
+    i?tx.lineTo(px,yy):tx.moveTo(px,yy);}
+  tx.stroke();
+  // star+planet glyph
+  const sgx=x0+34,sgy=y1-14;
+  // (drawn above plot area suppressed to keep clean)
+}
+[tpRp,tpRs].forEach(e=>e.addEventListener('input',transit));
+rerenderers.push(()=>transit());
+
+/* ============ GAME: transit hunter ============ */
+const gc=$('#game-canvas'),gx=gc.getContext('2d');
+let gScore=0,gRound=1,gStreak=0,gHasPlanet=false,gAnswered=false,gNoise=2,gCurve=[];
+function genGame(){gAnswered=false;gNoise=+$('#g-noise').value;
+  $('#g-noise-v').textContent=gNoise===1?(LANG==='es'?'bajo':'low'):gNoise===2?(LANG==='es'?'medio':'medium'):(LANG==='es'?'alto':'high');
+  gHasPlanet=Math.random()<0.5;
+  const noiseAmp=[0,0.012,0.03,0.06][gNoise];
+  const depth=gHasPlanet?(0.03+Math.random()*0.05):0;
+  const c=0.35+Math.random()*0.3, hw=0.06+Math.random()*0.05;
+  gCurve=[];for(let i=0;i<=240;i++){const t2=i/240;let v=1;const dd=Math.abs(t2-c);
+    if(dd<hw)v-=depth;
+    v+=(Math.random()-0.5)*2*noiseAmp;
+    gCurve.push(v);}
+  drawGame();
+}
+function drawGame(reveal){const w=gc.clientWidth,h=gc.height;gc.width=w;gx.clearRect(0,0,w,h);
+  const padL=20,padB=20,padT=18,padR=14;const x0=padL,x1=w-padR,y0=h-padB,y1=padT;
+  const lo=0.88,hi=1.06;const Y=v=>y0-(y0-y1)*(v-lo)/(hi-lo);
+  gx.strokeStyle='rgba(36,53,83,.6)';gx.lineWidth=1;gx.beginPath();gx.moveTo(x0,Y(1));gx.lineTo(x1,Y(1));gx.stroke();
+  gx.strokeStyle=reveal?(gHasPlanet?'#5fd0a0':'#e0653f'):'#a9dcff';gx.lineWidth=1.6;gx.beginPath();
+  gCurve.forEach((v,i)=>{const px=x0+(x1-x0)*i/(gCurve.length-1);i?gx.lineTo(px,Y(v)):gx.moveTo(px,Y(v));});gx.stroke();
+}
+function gameAnswer(said){if(gAnswered)return;gAnswered=true;
+  const correct=(said===gHasPlanet);
+  if(correct){gScore++;gStreak++;}else{gStreak=0;}
+  drawGame(true);
+  const fb=$('#g-fb');fb.className='feedback '+(correct?'ok':'bad');
+  const truth=gHasPlanet?(LANG==='es'?'Sí había un tránsito real.':'There was a real transit.'):(LANG==='es'?'No había planeta — solo ruido estelar.':'No planet — just stellar noise.');
+  fb.textContent=(correct?(LANG==='es'?'✓ ¡Correcto! ':'✓ Correct! '):(LANG==='es'?'✗ Fallaste. ':'✗ Missed. '))+truth;
+  gRound++;updateGameScore();
+  setTimeout(()=>{genGame();$('#g-fb').className='feedback';$('#g-fb').textContent=t('g.fb0');},1700);
+}
+function updateGameScore(){const s=$('#g-score'),r=$('#g-round'),st=$('#g-streak');if(s)s.textContent=gScore;if(r)r.textContent=gRound;if(st)st.textContent=gStreak;}
+$('#g-yes').addEventListener('click',()=>gameAnswer(true));
+$('#g-no').addEventListener('click',()=>gameAnswer(false));
+$('#g-noise').addEventListener('input',()=>{$('#g-noise-v').textContent=(+$('#g-noise').value)===1?(LANG==='es'?'bajo':'low'):(+$('#g-noise').value)===2?(LANG==='es'?'medio':'medium'):(LANG==='es'?'alto':'high');if(!gAnswered)genGame();});
+rerenderers.push(()=>{updateGameScore();});
+
+/* ============ QUIZ: classify ============ */
+const QBANK=[
+ {specs:{R:'1.0 R⊕',M:'1.0 M⊕',P:'365 d'},type:'rocky',
+  why:{en:'Earth-sized, Earth-mass, moderate orbit: a rocky terrestrial world.',es:'Tamaño y masa de la Tierra, órbita moderada: un mundo rocoso terrestre.'}},
+ {specs:{R:'11 R⊕',M:'318 M⊕',P:'3.5 d'},type:'hotjupiter',
+  why:{en:'Jupiter-sized and Jupiter-mass but orbiting in days — a roasted hot Jupiter, almost certainly migrated inward.',es:'Tamaño y masa de Júpiter pero orbitando en días — un júpiter caliente asado, casi seguro migró hacia adentro.'}},
+ {specs:{R:'1.8 R⊕',M:'5 M⊕',P:'20 d'},type:'superearth',
+  why:{en:'Bigger and heavier than Earth but still rocky-dense: a super-Earth, the most common size in the galaxy.',es:'Más grande y pesado que la Tierra pero aún rocoso-denso: una súper-Tierra, el tamaño más común de la galaxia.'}},
+ {specs:{R:'2.6 R⊕',M:'9 M⊕',P:'40 d'},type:'minineptune',
+  why:{en:'Low density for its size means a thick gas/volatile envelope: a mini-Neptune.',es:'Densidad baja para su tamaño implica una envoltura gruesa de gas/volátiles: un mini-Neptuno.'}},
+ {specs:{R:'13 R⊕',M:'450 M⊕',P:'4000 d'},type:'gasgiant',
+  why:{en:'Massive and far from its star: a classic cold gas giant, formed beyond the frost line.',es:'Masivo y lejos de su estrella: un gigante gaseoso frío clásico, formado más allá de la línea de hielo.'}}
+];
+const QTYPES={rocky:{en:'Rocky / terrestrial',es:'Rocoso / terrestre'},superearth:{en:'Super-Earth',es:'Súper-Tierra'},minineptune:{en:'Mini-Neptune',es:'Mini-Neptuno'},gasgiant:{en:'Cold gas giant',es:'Gigante gaseoso frío'},hotjupiter:{en:'Hot Jupiter',es:'Júpiter caliente'}};
+let qScore=0,qTotal=0,qCur=null,qDone=false;
+function newQuiz(){qDone=false;qCur=QBANK[Math.floor(Math.random()*QBANK.length)];
+  const labels={R:{en:'Radius',es:'Radio'},M:{en:'Mass',es:'Masa'},P:{en:'Period',es:'Período'}};
+  $('#q-specs').innerHTML=Object.keys(qCur.specs).map(k=>'<div class="stat"><div class="k">'+labels[k][LANG]+'</div><div class="v">'+qCur.specs[k]+'</div></div>').join('');
+  // options: correct + 3 distractors
+  const all=Object.keys(QTYPES);const opts=[qCur.type];
+  while(opts.length<4){const c=all[Math.floor(Math.random()*all.length)];if(!opts.includes(c))opts.push(c);}
+  for(let i=opts.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]];}
+  $('#q-opts').innerHTML=opts.map(o=>'<button class="qopt" data-type="'+o+'">'+QTYPES[o][LANG]+'</button>').join('');
+  document.querySelectorAll('#q-opts .qopt').forEach(b=>b.addEventListener('click',()=>quizAnswer(b)));
+  $('#q-fb').className='feedback';$('#q-fb').textContent=t('q.fb0');$('#q-next').style.display='none';
+}
+function quizAnswer(btn){if(qDone)return;qDone=true;qTotal++;const pick=btn.getAttribute('data-type');const correct=pick===qCur.type;
+  if(correct)qScore++;
+  document.querySelectorAll('#q-opts .qopt').forEach(b=>{const ty=b.getAttribute('data-type');if(ty===qCur.type)b.classList.add('right');else if(b===btn)b.classList.add('wrong');b.disabled=true;});
+  const fb=$('#q-fb');fb.className='feedback '+(correct?'ok':'bad');
+  fb.textContent=(correct?(LANG==='es'?'✓ ¡Correcto! ':'✓ Correct! '):(LANG==='es'?'✗ No exactamente. ':'✗ Not quite. '))+qCur.why[LANG];
+  $('#q-next').style.display='inline-flex';updateQuizScore();
+}
+function updateQuizScore(){const s=$('#q-score'),tt=$('#q-total');if(s)s.textContent=qScore;if(tt)tt.textContent=qTotal;}
+$('#q-next').addEventListener('click',newQuiz);
+rerenderers.push(()=>{if(qCur)newQuiz();updateQuizScore();});
+
+/* ============ habitable zone ============ */
+const hzL=$('#hz-l'),hzD=$('#hz-d'),hzc=$('#hz-canvas'),hzx=hzc.getContext('2d');
+function hz(){const L=Math.pow(10,+hzL.value),d=Math.pow(10,+hzD.value);
+  const inner=Math.sqrt(L/1.1),outer=Math.sqrt(L/0.36);
+  // equilibrium temp (A=0.3): Teq=278.5 * L^.25 / sqrt(d)
+  const Teq=278.5*Math.pow(L,0.25)/Math.sqrt(d)*Math.pow(1-0.3,0.25);
+  $('#hz-l-v').textContent=(L<10?L.toFixed(2):L.toFixed(0))+' L☉';
+  $('#hz-d-v').textContent=d.toFixed(2)+' AU';
+  $('#hz-in').textContent=inner.toFixed(2);$('#hz-out').textContent=outer.toFixed(2);
+  $('#hz-teq').textContent=Math.round(Teq);
+  const v=$('#hz-verdict');const inHZ=d>=inner&&d<=outer;
+  v.className='feedback '+(inHZ?'ok':'bad');
+  if(inHZ)v.textContent=(LANG==='es'?'✓ En la zona habitable — posible agua líquida (T_eq ≈ '+Math.round(Teq)+' K).':'✓ In the habitable zone — liquid water possible (T_eq ≈ '+Math.round(Teq)+' K).');
+  else if(d<inner)v.textContent=(LANG==='es'?'✗ Demasiado cerca — demasiado caliente, el agua se evapora (T_eq ≈ '+Math.round(Teq)+' K).':'✗ Too close — too hot, water boils away (T_eq ≈ '+Math.round(Teq)+' K).');
+  else v.textContent=(LANG==='es'?'✗ Demasiado lejos — demasiado frío, el agua se congela (T_eq ≈ '+Math.round(Teq)+' K).':'✗ Too far — too cold, water freezes (T_eq ≈ '+Math.round(Teq)+' K).');
+  drawHZ(L,d,inner,outer);
+}
+function drawHZ(L,d,inner,outer){const w=hzc.clientWidth,h=hzc.height;hzc.width=w;hzx.clearRect(0,0,w,h);
+  const cx=42,cy=h/2;const maxA=Math.max(outer*1.4,d*1.2,2);const sc=(w-70)/maxA;
+  // habitable band
+  hzx.fillStyle='rgba(95,208,160,.18)';hzx.fillRect(cx+inner*sc,cy-50,(outer-inner)*sc,100);
+  hzx.strokeStyle='rgba(95,208,160,.5)';hzx.lineWidth=1;hzx.strokeRect(cx+inner*sc,cy-50,(outer-inner)*sc,100);
+  // axis
+  hzx.strokeStyle='rgba(36,53,83,.8)';hzx.beginPath();hzx.moveTo(cx,cy);hzx.lineTo(w-14,cy);hzx.stroke();
+  // star
+  const sr=Math.max(7,Math.min(16,8+Math.log10(L+0.01)*4));
+  const sg=hzx.createRadialGradient(cx,cy,0,cx,cy,sr);sg.addColorStop(0,'#fff7df');sg.addColorStop(.5,'#ffce6b');sg.addColorStop(1,'rgba(224,101,63,0)');
+  hzx.fillStyle=sg;hzx.beginPath();hzx.arc(cx,cy,sr,0,7);hzx.fill();
+  // planet
+  const px=cx+d*sc;const inHZ=d>=inner&&d<=outer;
+  hzx.fillStyle=inHZ?'#5fd0a0':(d<inner?'#e0653f':'#6f8fd6');
+  hzx.shadowColor=hzx.fillStyle;hzx.shadowBlur=10;hzx.beginPath();hzx.arc(Math.min(px,w-18),cy,6,0,7);hzx.fill();hzx.shadowBlur=0;
+  hzx.font='10px "JetBrains Mono",monospace';hzx.fillStyle='#5fd0a0';hzx.textAlign='center';
+  hzx.fillText('HZ',cx+(inner+outer)/2*sc,cy-56);
+}
+[hzL,hzD].forEach(e=>e.addEventListener('input',hz));
+rerenderers.push(()=>hz());
+
+/* ============ real worlds ============ */
+const WORLDS=[
+ {n:'51 Pegasi b',c:'#f3ad5e',sub:{en:'The first · hot Jupiter',es:'El primero · júpiter caliente'},
+  spec:{Year:'1995',Type:{en:'Hot Jupiter',es:'Júpiter caliente'},Period:'4.2 d',Mass:'~0.46 M♃'},
+  s:[{h:{en:'Why it matters',es:'Por qué importa'},p:{en:'The first planet found around a Sun-like star (Nobel Prize 2019). A Jupiter orbiting in 4 days stunned everyone — giants were supposed to be far out. It forced migration into the theory.',es:'El primer planeta hallado alrededor de una estrella como el Sol (Premio Nobel 2019). Un Júpiter orbitando en 4 días asombró a todos — los gigantes debían estar lejos. Obligó a incorporar la migración a la teoría.'}}]},
+ {n:'TRAPPIST-1 system',c:'#e0653f',sub:{en:'Seven Earth-sized worlds',es:'Siete mundos del tamaño de la Tierra'},
+  spec:{Year:'2017',Star:{en:'Red dwarf',es:'Enana roja'},Planets:'7',HZ:'3'},
+  s:[{h:{en:'Why it matters',es:'Por qué importa'},p:{en:'Seven rocky, roughly Earth-sized planets around a tiny cool star, several in the habitable zone — the richest nearby laboratory for studying potentially habitable worlds, all packed in tighter than Mercury\u2019s orbit.',es:'Siete planetas rocosos de tamaño aproximado al terrestre alrededor de una estrella pequeña y fría, varios en la zona habitable — el laboratorio cercano más rico para estudiar mundos potencialmente habitables, todos más juntos que la órbita de Mercurio.'}}]},
+ {n:'Kepler-16b',c:'#9b8cff',sub:{en:'A circumbinary planet',es:'Planeta circumbinario'},
+  spec:{Year:'2011',Type:{en:'Two suns',es:'Dos soles'},Mass:'~0.33 M♃',Period:'229 d'},
+  s:[{h:{en:'Why it matters',es:'Por qué importa'},p:{en:'A planet orbiting two stars at once — a real "Tatooine". It proved planets can form and stay stable in the chaotic gravity of a binary system.',es:'Un planeta orbitando dos estrellas a la vez — un verdadero "Tatooine". Demostró que los planetas pueden formarse y mantenerse estables en la gravedad caótica de un sistema binario.'}}]},
+ {n:'HR 8799 system',c:'#3cc9e6',sub:{en:'Directly imaged giants',es:'Gigantes fotografiados'},
+  spec:{Year:'2008',Method:{en:'Direct imaging',es:'Imagen directa'},Planets:'4',Age:'~30 Myr'},
+  s:[{h:{en:'Why it matters',es:'Por qué importa'},p:{en:'Four massive young giants photographed directly, even seen moving along their orbits. A rare direct look at a wide-orbit system that challenges core-accretion timing — possibly disk instability.',es:'Cuatro gigantes jóvenes y masivos fotografiados directamente, incluso vistos moviéndose en sus órbitas. Una mirada directa y rara a un sistema de órbitas amplias que desafía los tiempos de la acreción del núcleo — quizá inestabilidad del disco.'}}]},
+ {n:'Proxima Centauri b',c:'#5fd0a0',sub:{en:'The nearest exoplanet',es:'El exoplaneta más cercano'},
+  spec:{Year:'2016',Dist:'4.24 ly',Type:{en:'Rocky',es:'Rocoso'},HZ:{en:'Yes',es:'Sí'}},
+  s:[{h:{en:'Why it matters',es:'Por qué importa'},p:{en:'A roughly Earth-mass planet in the habitable zone of the closest star to the Sun. The nearest possibly-temperate world — though its red-dwarf host bathes it in flares.',es:'Un planeta de masa aproximada a la Tierra en la zona habitable de la estrella más cercana al Sol. El mundo posiblemente templado más cercano — aunque su enana roja anfitriona lo baña en fulguraciones.'}}]},
+ {n:'WASP-12b',c:'#ff86c8',sub:{en:'A planet being devoured',es:'Un planeta devorado'},
+  spec:{Year:'2008',Type:{en:'Hot Jupiter',es:'Júpiter caliente'},Period:'1.1 d',Temp:'~2600 K'},
+  s:[{h:{en:'Why it matters',es:'Por qué importa'},p:{en:'So close to its star it is distorted into an egg shape and losing its atmosphere, slowly being consumed. An extreme look at the fate of migrated giants.',es:'Tan cerca de su estrella que está deformado en forma de huevo y perdiendo su atmósfera, consumido lentamente. Una mirada extrema al destino de los gigantes migrados.'}}]}
+];
+function shade(hex){const n=parseInt(hex.slice(1),16);return 'rgb('+Math.round(((n>>16)&255)*.4)+','+Math.round(((n>>8)&255)*.4)+','+Math.round((n&255)*.45)+')';}
+function worldModal(p){$('#m-name').textContent=p.n;$('#m-sub').textContent=p.sub[LANG];
+  const orb=$('#m-orb');orb.style.color=p.c;orb.style.background='radial-gradient(circle at 34% 32%, #fff, '+p.c+' 45%, '+shade(p.c)+')';
+  let specs='';for(const k in p.spec){const v=p.spec[k];specs+='<div class="spec"><div class="k">'+k+'</div><div class="v">'+(typeof v==='object'?v[LANG]:v)+'</div></div>';}
+  $('#m-body').innerHTML='<div class="spec-grid">'+specs+'</div>'+p.s.map(s=>'<h4>'+s.h[LANG]+'</h4><p>'+s.p[LANG]+'</p>').join('');
+  $('#modalBg').classList.add('open');bindTips();}
+function buildWorlds(){const g=$('#worldGrid');g.innerHTML='';WORLDS.forEach(p=>{const b=document.createElement('button');b.className='body';b.style.color=p.c;
+  b.innerHTML='<div class="orb" style="background:radial-gradient(circle at 34% 32%, #fff, '+p.c+' 50%, '+shade(p.c)+')"></div><h4 style="color:var(--text)">'+p.n+'</h4><div class="d">'+p.sub[LANG]+'</div>';
+  b.addEventListener('click',()=>worldModal(p));g.appendChild(b);});}
+rerenderers.push(buildWorlds);
+$('#modalClose').addEventListener('click',()=>$('#modalBg').classList.remove('open'));
+$('#modalBg').addEventListener('click',e=>{if(e.target===$('#modalBg'))$('#modalBg').classList.remove('open');});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#modalBg').classList.remove('open');});
+
+/* ============ glossary ============ */
+const GLOSS=[
+ {t:{en:'Protoplanetary disk',es:'Disco protoplanetario'},d:{en:'The rotating disk of gas and dust around a young star where planets form.',es:'El disco giratorio de gas y polvo alrededor de una estrella joven donde se forman los planetas.'}},
+ {t:{en:'Planetesimal',es:'Planetesimal'},d:{en:'A kilometre-sized solid body, the building block of planets.',es:'Un cuerpo sólido de kilómetros, el ladrillo de los planetas.'}},
+ {t:{en:'Frost / snow line',es:'Línea de hielo / nieve'},d:{en:'The distance beyond which volatiles freeze, boosting solid material for giant cores.',es:'La distancia más allá de la cual los volátiles se congelan, aumentando el material sólido para núcleos gigantes.'}},
+ {t:{en:'Hot Jupiter',es:'Júpiter caliente'},d:{en:'A gas giant orbiting very close to its star, almost certainly formed farther out and migrated in.',es:'Un gigante gaseoso que orbita muy cerca de su estrella, casi seguro formado más lejos y migrado hacia adentro.'}},
+ {t:{en:'Transit',es:'Tránsito'},d:{en:'A planet passing in front of its star, dimming it by (Rp/R★)².',es:'Un planeta pasando frente a su estrella, atenuándola en (Rp/R★)².'}},
+ {t:{en:'Habitable zone',es:'Zona habitable'},d:{en:'The range of distances where surface liquid water is possible.',es:'El rango de distancias donde es posible el agua líquida en superficie.'}},
+ {t:{en:'Super-Earth',es:'Súper-Tierra'},d:{en:'A rocky planet larger than Earth but smaller than Neptune — the most common known type.',es:'Un planeta rocoso mayor que la Tierra pero menor que Neptuno — el tipo conocido más común.'}},
+ {t:{en:'Equilibrium temperature',es:'Temperatura de equilibrio'},d:{en:'The temperature a planet would reach balancing absorbed starlight against radiated heat.',es:'La temperatura que alcanzaría un planeta al equilibrar la luz estelar absorbida con el calor irradiado.'}}
+];
+function buildGloss(){const dl=$('#glossList');dl.innerHTML=GLOSS.map(g=>'<div><dt>'+g.t[LANG]+'</dt><dd>'+g.d[LANG]+'</dd></div>').join('');}
+rerenderers.push(buildGloss);
+
+/* ============ hero canvas: forming disk ============ */
+const hc=$('#hero-canvas'),hx=hc.getContext('2d');
+const reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+let stars=[],grains=[],hf=0;
+function initHero(){hc.width=hc.clientWidth;hc.height=hc.clientHeight;
+  stars=[];for(let i=0;i<120;i++)stars.push({x:Math.random()*hc.width,y:Math.random()*hc.height,r:Math.random()*1.2+.2,a:Math.random()*.6+.2,tw:Math.random()*.02});
+  grains=[];const cx=hc.width*0.72,cy=hc.height*0.5;
+  for(let i=0;i<160;i++){const ang=Math.random()*7,rad=Math.pow(Math.random(),0.6)*Math.min(hc.width,hc.height)*0.34+20;
+    grains.push({ang,rad,sp:0.0008+0.6/(rad+40),sz:Math.random()*2+0.5,hue:Math.random()});}
+}
+function drawHero(){hx.clearRect(0,0,hc.width,hc.height);
+  stars.forEach(s=>{s.a+=Math.sin(hf*s.tw)*.004;hx.globalAlpha=Math.max(.1,Math.min(.9,s.a));hx.fillStyle='#cfe0ff';hx.beginPath();hx.arc(s.x,s.y,s.r,0,7);hx.fill();});
+  hx.globalAlpha=1;const cx=hc.width*0.72,cy=hc.height*0.5;
+  const g=hx.createRadialGradient(cx,cy,0,cx,cy,Math.min(hc.width,hc.height)*0.4);g.addColorStop(0,'rgba(255,134,200,.10)');g.addColorStop(.5,'rgba(243,173,94,.05)');g.addColorStop(1,'rgba(0,0,0,0)');
+  hx.fillStyle=g;hx.fillRect(0,0,hc.width,hc.height);
+  grains.forEach(gr=>{gr.ang+=gr.sp;const x=cx+Math.cos(gr.ang)*gr.rad,y=cy+Math.sin(gr.ang)*gr.rad*0.42;
+    const heat=1-gr.rad/(Math.min(hc.width,hc.height)*0.34);
+    hx.fillStyle='rgba('+Math.round(255-heat*0)+','+Math.round(134+heat*60)+','+Math.round(200-heat*40)+','+(0.3+heat*0.5)+')';
+    hx.beginPath();hx.arc(x,y,gr.sz,0,7);hx.fill();});
+  const cg=hx.createRadialGradient(cx,cy,0,cx,cy,20);cg.addColorStop(0,'rgba(255,247,223,.7)');cg.addColorStop(.5,'rgba(255,206,107,.3)');cg.addColorStop(1,'rgba(255,134,200,0)');
+  hx.fillStyle=cg;hx.beginPath();hx.arc(cx,cy,20,0,7);hx.fill();
+}
+
+/* loop, nav, reveal */
+function loop(){hf++;if(!reduce)drawHero();requestAnimationFrame(loop);}
+const links=[...document.querySelectorAll('.nav-links a')];
+const secs=links.map(a=>{const h=a.getAttribute('href');return h&&h.startsWith('#')?document.querySelector(h):null;});
+window.addEventListener('scroll',()=>{const sc=window.scrollY,dh=document.documentElement.scrollHeight-window.innerHeight;
+  $('#progress').style.width=(dh>0?sc/dh*100:0)+'%';let c=-1;secs.forEach((s,i)=>{if(s&&s.offsetTop-130<=sc)c=i;});
+  links.forEach((l,i)=>l.classList.toggle('active',i===c));},{passive:true});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+window.addEventListener('resize',()=>{initHero();drawHero();transit();drawGame(gAnswered);hz();});
+
+/* init */
+applyLang();
+buildTL();frost();transit();genGame();newQuiz();hz();buildWorlds();buildGloss();
+initHero();drawHero();
+bindTips();
+if(!reduce)loop();
+</script>
+</body>
+</html>

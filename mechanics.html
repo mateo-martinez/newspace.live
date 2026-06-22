@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Rocket &amp; Orbital Mechanics — A Working Reference</title>
+<meta name="description" content="An in-depth, interactive reference to rocket propulsion and orbital mechanics: the rocket equation, staging, vis-viva, Kepler's laws, orbital elements, maneuvers, and the orbits of planets, moons and satellites with their formulas." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+
+<style>
+:root{
+  --void:#05060d;--cloud:#0b1020;--cloud-2:#111a30;--cloud-3:#16223e;--line:#243353;
+  --cold:#6f8fd6;--ice:#a9dcff;--warm:#f3ad5e;--ir:#e0653f;--sim:#5fd0a0;--law:#9b8cff;--mech:#3cc9e6;
+  --text:#eaeefb;--muted:#93a0c2;--muted-2:#6b769a;
+  --shadow:0 18px 50px -20px rgba(0,0,0,.8);--r:16px;--maxw:1120px;
+  --display:"Space Grotesk",system-ui,sans-serif;--body:"Inter",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--void);color:var(--text);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(1100px 700px at 82% -8%, rgba(60,201,230,.10), transparent 60%),
+    radial-gradient(1000px 800px at 6% 2%, rgba(111,143,214,.12), transparent 60%),
+    radial-gradient(900px 900px at 50% 120%, rgba(243,173,94,.04), transparent 60%);}
+a{color:var(--ice);text-decoration:none}
+h1,h2,h3,h4{font-family:var(--display);font-weight:600;line-height:1.12;letter-spacing:-.01em;margin:0}
+p{margin:0 0 1em}.mono{font-family:var(--mono)}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+section{padding:86px 0;position:relative}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--warm);margin:0 0 14px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:26px;height:1px;background:linear-gradient(90deg,var(--warm),transparent)}
+.sec-title{font-size:clamp(1.7rem,4vw,2.5rem);margin-bottom:14px}
+.lede{color:var(--muted);font-size:1.05rem;max-width:66ch}
+#progress{position:fixed;top:0;left:0;height:2px;width:0;z-index:70;background:linear-gradient(90deg,var(--cold),var(--mech),var(--ice))}
+
+.nav{position:sticky;top:0;z-index:60;backdrop-filter:blur(14px);background:rgba(5,6,13,.72);border-bottom:1px solid var(--line)}
+.nav-inner{max-width:var(--maxw);margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:18px}
+.brand{display:flex;align-items:center;gap:11px;font-family:var(--display);font-weight:700;letter-spacing:-.02em;font-size:1.02rem;white-space:nowrap}
+.brand a{color:inherit}
+.brand .dot{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 32% 32%,var(--ice),var(--mech) 55%,var(--cold) 95%);box-shadow:0 0 16px var(--mech);flex:none}
+.nav-links{display:flex;gap:4px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-links a{color:var(--muted);font-size:.83rem;padding:7px 10px;border-radius:9px;white-space:nowrap;transition:.18s;font-weight:500}
+.nav-links a:hover{color:var(--text);background:var(--cloud-2)}
+.nav-links a.active{color:var(--ice);background:rgba(60,201,230,.14)}
+
+.hero{min-height:78vh;display:flex;align-items:center;padding-top:36px;position:relative;overflow:hidden}
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:-1;opacity:.95}
+.hero-inner{max-width:var(--maxw);margin:0 auto;padding:0 24px;width:100%}
+.hero .kick{font-family:var(--mono);font-size:.78rem;letter-spacing:.24em;text-transform:uppercase;color:var(--mech);margin-bottom:20px}
+.hero h1{font-size:clamp(2.5rem,7vw,5rem);font-weight:700;max-width:17ch;letter-spacing:-.025em}
+.hero h1 .grad{background:linear-gradient(100deg,var(--ice),var(--mech) 50%,var(--cold));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .sub{color:var(--muted);font-size:1.16rem;max-width:60ch;margin-top:22px}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:32px}
+.btn{font-family:var(--body);font-weight:600;font-size:.95rem;border-radius:12px;padding:13px 22px;border:1px solid var(--line);background:var(--cloud-2);color:var(--text);cursor:pointer;transition:transform .15s,border-color .2s;text-decoration:none;display:inline-flex;align-items:center;gap:9px}
+.btn:hover{transform:translateY(-2px);border-color:var(--mech)}
+.btn.primary{background:linear-gradient(100deg,rgba(60,201,230,.18),rgba(111,143,214,.18));border-color:rgba(60,201,230,.45)}
+.scroll-hint{margin-top:40px;color:var(--muted-2);font-size:.8rem;font-family:var(--mono);letter-spacing:.1em;display:flex;align-items:center;gap:8px}
+.scroll-hint .a{animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+@media (prefers-reduced-motion:reduce){.scroll-hint .a{animation:none}}
+
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1!important;transform:none!important}}
+
+.panel{background:linear-gradient(180deg,var(--cloud-2),var(--cloud));border:1px solid var(--line);border-radius:var(--r);padding:26px;box-shadow:var(--shadow)}
+.card{background:var(--cloud-2);border:1px solid var(--line);border-radius:14px;padding:20px;transition:.18s}
+.card:hover{transform:translateY(-3px);border-color:var(--mech)}
+.card h3{font-size:1.06rem;margin-bottom:8px}.card p{color:var(--muted);font-size:.92rem;margin:0}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:820px){.split{grid-template-columns:1fr}}
+.lab{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+@media (max-width:860px){.lab{grid-template-columns:1fr}}
+
+/* tooltips ("i") */
+.term{border-bottom:1px dashed var(--mech);cursor:help;color:var(--ice);text-underline-offset:3px}
+.term:focus{outline:2px solid var(--mech);outline-offset:2px;border-radius:3px}
+#tip{position:fixed;z-index:200;max-width:330px;background:#08131c;border:1px solid var(--mech);border-radius:11px;padding:13px 15px;font-size:.86rem;color:var(--text);line-height:1.55;box-shadow:0 18px 40px -12px rgba(0,0,0,.85);opacity:0;pointer-events:none;transition:opacity .14s}
+#tip.show{opacity:1}#tip b{color:var(--warm)}#tip .f{font-family:var(--mono);color:var(--mech)}
+.help-chip{width:21px;height:21px;border-radius:50%;border:1px solid var(--mech);color:var(--mech);font-size:.74rem;font-family:var(--mono);font-style:italic;display:inline-flex;align-items:center;justify-content:center;cursor:help;background:rgba(60,201,230,.1);font-weight:600;vertical-align:middle}
+.help-chip:hover{background:rgba(60,201,230,.25)}
+
+/* formulas */
+.formula{background:var(--cloud);border:1px solid var(--line);border-left:3px solid var(--warm);border-radius:12px;padding:16px 18px;margin:14px 0;overflow-x:auto}
+.formula.cy{border-left-color:var(--mech)}
+.formula .katex{font-size:1.16em}
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px;margin-top:12px}
+.term-row{display:flex;gap:10px;align-items:flex-start;font-size:.85rem;color:var(--muted)}
+.term-row .sym{font-family:var(--mono);color:var(--ice);min-width:32px;font-weight:600}
+.example{background:rgba(60,201,230,.07);border:1px solid rgba(60,201,230,.28);border-radius:11px;padding:14px 16px;font-size:.9rem;color:var(--muted);margin-top:14px}
+.example b{color:var(--mech)}
+
+/* controls */
+.ctrl{margin-bottom:16px}
+.ctrl-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;gap:8px}
+.ctrl-head label{font-size:.9rem;font-weight:600;display:flex;align-items:center;gap:7px}
+.ctrl-head .val{font-family:var(--mono);font-size:.9rem;color:var(--warm)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:99px;background:linear-gradient(90deg,var(--cold),var(--mech));outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;border-radius:50%;background:var(--ice);border:3px solid var(--void);box-shadow:0 0 0 1px var(--mech),0 0 14px var(--mech);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:19px;height:19px;border-radius:50%;background:var(--ice);border:3px solid var(--void);box-shadow:0 0 0 1px var(--mech);cursor:pointer}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(116px,1fr));gap:11px;margin-top:6px}
+.stat{background:var(--cloud);border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+.stat .k{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2);font-family:var(--mono);margin-bottom:5px}
+.stat .v{font-family:var(--mono);font-size:1.08rem;font-weight:600;color:var(--ice)}
+.stat .u{color:var(--muted);font-size:.74rem}
+canvas.plot{width:100%;display:block;border-radius:12px;background:var(--cloud);border:1px solid var(--line)}
+.budget{display:grid;gap:9px;margin-top:12px}
+.brow{display:grid;grid-template-columns:130px 1fr 70px;gap:10px;align-items:center;font-size:.88rem}
+.btrack{height:18px;border-radius:99px;background:var(--cloud);border:1px solid var(--line);overflow:hidden}
+.bfill{height:100%;border-radius:99px}
+
+/* chips browser */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.achip{font-family:var(--mono);font-size:.82rem;color:var(--muted);background:var(--cloud);border:1px solid var(--line);border-radius:9px;padding:8px 13px;cursor:pointer;transition:.16s}
+.achip:hover{border-color:var(--mech);color:var(--text)}
+.achip.on{background:rgba(60,201,230,.16);border-color:var(--mech);color:var(--ice)}
+.detail{margin-top:16px;background:var(--cloud);border:1px solid var(--line);border-left:3px solid var(--mech);border-radius:12px;padding:20px 22px}
+.detail .meta{font-family:var(--mono);font-size:.78rem;color:var(--mech);margin-bottom:6px}
+.detail h4{font-size:1.1rem;margin-bottom:8px}.detail p{color:var(--muted);margin:0}
+
+/* solar system + bodies */
+.bodygrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:20px}
+.body{background:var(--cloud-2);border:1px solid var(--line);border-radius:13px;padding:15px;cursor:pointer;transition:.18s;text-align:left;color:inherit;font:inherit;width:100%}
+.body:hover{transform:translateY(-3px);border-color:var(--mech)}
+.body .orb{width:34px;height:34px;border-radius:50%;margin-bottom:10px;box-shadow:0 0 18px -3px currentColor}
+.body h4{font-size:1rem;margin-bottom:1px}
+.body .d{font-family:var(--mono);font-size:.72rem;color:var(--warm)}
+.regime-svg{width:100%;height:auto;display:block;background:var(--cloud);border:1px solid var(--line);border-radius:12px;margin-top:8px}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;z-index:120;background:rgba(3,4,10,.78);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:22px}
+.modal-bg.open{display:flex}
+.modal{background:linear-gradient(180deg,var(--cloud-2),var(--cloud));border:1px solid var(--mech);border-radius:18px;max-width:640px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow)}
+.modal-head{padding:22px 26px 16px;border-bottom:1px solid var(--line);display:flex;gap:14px;align-items:center}
+.modal-head .orb{width:46px;height:46px;border-radius:50%;flex:none;box-shadow:0 0 22px -2px currentColor}
+.modal-head h3{font-size:1.4rem}.modal-head .sub{font-family:var(--mono);font-size:.8rem;color:var(--warm)}
+.modal-close{margin-left:auto;background:var(--cloud-3);border:1px solid var(--line);color:var(--text);width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:1.1rem;flex:none}
+.modal-close:hover{border-color:var(--ir)}
+.modal-body{padding:22px 26px 26px}
+.spec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:6px 0 16px}
+.spec{background:var(--cloud);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+.spec .k{font-size:.62rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);font-family:var(--mono);margin-bottom:4px}
+.spec .v{font-family:var(--mono);font-weight:600;color:var(--ice);font-size:.9rem}
+.modal-body h4{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--warm);font-family:var(--mono);margin:16px 0 8px}
+.modal-body p{color:var(--muted);font-size:.93rem}
+
+.note{font-size:.82rem;color:var(--muted-2);font-style:italic;margin-top:12px}
+.gloss{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.gloss dt{font-family:var(--display);font-weight:600;color:var(--ice);margin-bottom:4px}
+.gloss dd{margin:0 0 16px;color:var(--muted);font-size:.9rem}
+footer{border-top:1px solid var(--line);padding:40px 0 60px;color:var(--muted-2);font-size:.85rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="tip" role="tooltip"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="brand"><span class="dot"></span><a href="/">newspace.live</a> <span style="color:var(--muted-2);font-weight:500">/ Mechanics</span></div>
+    <div class="nav-links" id="navlinks">
+      <a href="#rocket">Rocket equation</a>
+      <a href="#thrust">Thrust</a>
+      <a href="#staging">Staging</a>
+      <a href="#twobody">Vis-viva</a>
+      <a href="#kepler">Kepler</a>
+      <a href="#elements">Orbital elements</a>
+      <a href="#maneuvers">Maneuvers</a>
+      <a href="#solar">Solar System</a>
+      <a href="#regimes">Earth orbits</a>
+      <a href="#moons">Moons</a>
+      <a href="#reference">Reference</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-inner">
+    <p class="kick">Propulsion · two-body dynamics · the Solar System</p>
+    <h1>The mechanics of <span class="grad">getting there.</span></h1>
+    <p class="sub">A working reference for how rockets accelerate and how orbits behave — derived from first principles, with live calculators, worked examples, and the real numbers for every planet, moon and satellite regime. Hover every <span class="help-chip">i</span> for the detail.</p>
+    <div class="hero-cta">
+      <a class="btn primary" href="#rocket">Start with the rocket equation →</a>
+      <a class="btn" href="#solar">Jump to the Solar System</a>
+    </div>
+    <div class="scroll-hint"><span class="a">↓</span> eleven sections below</div>
+  </div>
+</header>
+
+<!-- ROCKET EQUATION -->
+<section id="rocket">
+  <div class="wrap">
+    <p class="eyebrow reveal">Propulsion · 1</p>
+    <h2 class="sec-title reveal">The rocket equation</h2>
+    <p class="lede reveal">A rocket carries its own reaction mass and throws it backwards. Conservation of momentum — the exhaust gains backward momentum, the rocket gains an equal forward momentum — leads directly to Tsiolkovsky's 1903 result.</p>
+    <div class="lab" style="margin-top:30px">
+      <div class="panel reveal">
+        <div class="formula cy"><div data-formula="\Delta v = v_e \ln\!\left(\dfrac{m_0}{m_f}\right) = I_{sp}\,g_0\,\ln\!\left(\dfrac{m_0}{m_f}\right)"></div>
+          <div class="terms">
+            <div class="term-row"><span class="sym">Δv</span><span>achievable velocity change — the budget of all spaceflight</span></div>
+            <div class="term-row"><span class="sym">v_e</span><span>effective exhaust velocity = I_sp·g₀</span></div>
+            <div class="term-row"><span class="sym">I_sp</span><span>specific impulse (seconds)</span></div>
+            <div class="term-row"><span class="sym">m₀ / m_f</span><span>wet (fuelled) and dry (empty) mass</span></div>
+          </div>
+        </div>
+        <p style="color:var(--muted);font-size:.92rem">It comes from integrating <span class="term" data-tip="<b>Derivation.</b> From momentum: m·dv = −v_e·dm (the rocket loses mass dm<0 to exhaust at speed v_e). Dividing by m and integrating from m₀ to m_f gives Δv = v_e·ln(m₀/m_f). <span class='f'>m dv = -v_e dm</span>">m·dv = −v_e·dm</span>. Because Δv depends on the <em>logarithm</em> of the mass ratio, gains get punishingly expensive — the tyranny of the rocket equation. To reach <span class="term" data-tip="<b>LEO budget.</b> ~7.8 km/s is orbital velocity at ~200 km; another ~1.5–2 km/s is lost to gravity and drag during the climb, so a launch needs ~9.4 km/s of Δv capability.">low Earth orbit you need ~9.4 km/s</span>.</p>
+      </div>
+      <div class="panel reveal">
+        <h3 style="font-size:1.12rem;margin-bottom:4px">Δv solver <span class="help-chip" data-tip="<b>Set an engine and a vehicle.</b> Move I_sp (engine type) and the mass ratio to see the deliverable Δv, with thresholds marked.">i</span></h3>
+        <div class="ctrl" style="margin-top:14px"><div class="ctrl-head"><label>Specific impulse <span class="help-chip" data-tip="<b>Typical I_sp.</b> Solid ~250 s · kerolox (RP-1/LOX) ~300–340 s · hydrolox (LH2/LOX) ~440–465 s vacuum · hypergolic ~320 s · electric/ion ~2000–4000 s (but micro-thrust).">i</span></label><span class="val" id="re-isp-v">450 s</span></div>
+          <input type="range" id="re-isp" min="200" max="465" value="450" step="5"></div>
+        <div class="ctrl"><div class="ctrl-head"><label>Mass ratio m₀/m_f <span class="help-chip" data-tip="<b>Mass ratio.</b> Wet ÷ dry. A high-performance stage reaches 10–20; the structure, tanks and engines set a hard floor on dry mass, capping how high it can go.">i</span></label><span class="val" id="re-mr-v">10.0</span></div>
+          <input type="range" id="re-mr" min="1.5" max="20" value="10" step="0.5"></div>
+        <div class="readout">
+          <div class="stat"><div class="k">Exhaust vel.</div><div class="v" id="re-ve">—</div><div class="u">km/s</div></div>
+          <div class="stat"><div class="k">Delta-v</div><div class="v" id="re-dv">—</div><div class="u">km/s</div></div>
+        </div>
+        <div class="budget" style="margin-top:14px" id="re-budget"></div>
+        <div class="example" id="re-ex"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THRUST -->
+<section id="thrust">
+  <div class="wrap">
+    <p class="eyebrow reveal">Propulsion · 2</p>
+    <h2 class="sec-title reveal">Thrust, exhaust &amp; thrust-to-weight</h2>
+    <p class="lede reveal">The rocket equation tells you the final speed; thrust tells you how fast you get there and whether you leave the pad at all.</p>
+    <div class="lab" style="margin-top:30px">
+      <div class="panel reveal">
+        <div class="formula"><div data-formula="F = \dot m\,v_e + (p_e - p_a)A_e"></div>
+          <div class="terms">
+            <div class="term-row"><span class="sym">F</span><span>thrust</span></div>
+            <div class="term-row"><span class="sym">ṁ</span><span>propellant mass flow rate</span></div>
+            <div class="term-row"><span class="sym">p_e,p_a</span><span>nozzle-exit and ambient pressure</span></div>
+            <div class="term-row"><span class="sym">A_e</span><span>nozzle exit area</span></div>
+          </div>
+        </div>
+        <p style="color:var(--muted);font-size:.92rem">The pressure term is why engines have <span class="term" data-tip="<b>Sea-level vs vacuum I_sp.</b> In vacuum p_a=0, so the pressure term adds thrust — vacuum I_sp is always higher. A nozzle is 'matched' at one altitude; sea-level engines use shorter nozzles, upper stages use big vacuum bells.">two I_sp ratings</span>, and why <span class="term" data-tip="<b>Specific impulse.</b> I_sp = F/(ṁ·g₀). It is the thrust you get per unit weight-flow of propellant — effectively the engine's fuel economy, measured in seconds.">I_sp = F/(ṁg₀)</span>. Lift-off requires the <span class="term" data-tip="<b>Thrust-to-weight ratio.</b> TWR = F/(m·g). Must exceed 1 to rise. First stages run ~1.2–1.5; too low wastes Δv fighting gravity, too high wastes structure and crushes payloads.">thrust-to-weight ratio</span> to exceed 1.</p>
+        <div class="formula cy"><div data-formula="I_{sp}=\dfrac{F}{\dot m\,g_0}\qquad \mathrm{TWR}=\dfrac{F}{m\,g}"></div></div>
+      </div>
+      <div class="panel reveal">
+        <h3 style="font-size:1.12rem;margin-bottom:14px">Engine &amp; liftoff <span class="help-chip" data-tip="<b>Thrust and flow set I_sp; thrust and mass set TWR.</b> Try matching a real first stage (e.g. ~34 MN, ~2900 t → TWR ≈ 1.2).">i</span></h3>
+        <div class="ctrl"><div class="ctrl-head"><label>Thrust</label><span class="val" id="th-F-v">34000 kN</span></div><input type="range" id="th-F" min="100" max="40000" value="34000" step="100"></div>
+        <div class="ctrl"><div class="ctrl-head"><label>Mass flow rate</label><span class="val" id="th-mdot-v">12500 kg/s</span></div><input type="range" id="th-mdot" min="50" max="15000" value="12500" step="50"></div>
+        <div class="ctrl"><div class="ctrl-head"><label>Vehicle mass</label><span class="val" id="th-m-v">2900 t</span></div><input type="range" id="th-m" min="20" max="4000" value="2900" step="10"></div>
+        <div class="readout">
+          <div class="stat"><div class="k">Exhaust vel.</div><div class="v" id="th-ve">—</div><div class="u">km/s</div></div>
+          <div class="stat"><div class="k">Specific impulse</div><div class="v" id="th-isp">—</div><div class="u">s</div></div>
+          <div class="stat"><div class="k">TWR</div><div class="v" id="th-twr">—</div><div class="u" id="th-twr-u">liftoff</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STAGING -->
+<section id="staging">
+  <div class="wrap">
+    <p class="eyebrow reveal">Propulsion · 3</p>
+    <h2 class="sec-title reveal">Staging — beating the logarithm</h2>
+    <p class="lede reveal">Because Δv grows only with the log of the mass ratio, a single tank can't reach orbit: most of its dry mass is empty structure you keep dragging along. Staging throws that structure away mid-flight, so each stage starts with a fresh, favourable mass ratio. Total Δv is simply the sum.</p>
+    <div class="lab" style="margin-top:30px">
+      <div class="panel reveal">
+        <div class="formula cy"><div data-formula="\Delta v_{total}=\sum_i I_{sp,i}\,g_0\,\ln\!\left(\dfrac{m_{0,i}}{m_{f,i}}\right)"></div></div>
+        <p style="color:var(--muted);font-size:.92rem">Each upper stage is "payload" to the stage below it, so lower stages must lift everything above. The penalty of an extra stage is more dry mass and complexity, so real rockets settle on 2–3 stages. The <span class="term" data-tip="<b>Payload fraction.</b> Payload mass ÷ liftoff mass. For a launch to LEO this is brutally small — typically 2–4%. Everything else is propellant and structure.">payload fraction</span> to LEO is typically just 2–4%.</p>
+        <div class="example" id="st-ex"></div>
+      </div>
+      <div class="panel reveal">
+        <h3 style="font-size:1.12rem;margin-bottom:14px">Two-stage builder <span class="help-chip" data-tip="<b>Ideal staging.</b> Set each stage's engine and mass ratio. Total Δv = sum of stage Δv. Compare it to the ~9.4 km/s LEO target and the ~12.5 km/s needed for escape/Moon.">i</span></h3>
+        <div style="font-size:.78rem;color:var(--mech);font-family:var(--mono);margin-bottom:6px">STAGE 1</div>
+        <div class="ctrl"><div class="ctrl-head"><label>I_sp₁</label><span class="val" id="s1-isp-v">300 s</span></div><input type="range" id="s1-isp" min="220" max="465" value="300" step="5"></div>
+        <div class="ctrl"><div class="ctrl-head"><label>Mass ratio₁</label><span class="val" id="s1-mr-v">4.0</span></div><input type="range" id="s1-mr" min="1.5" max="12" value="4" step="0.1"></div>
+        <div style="font-size:.78rem;color:var(--mech);font-family:var(--mono);margin:10px 0 6px">STAGE 2</div>
+        <div class="ctrl"><div class="ctrl-head"><label>I_sp₂</label><span class="val" id="s2-isp-v">450 s</span></div><input type="range" id="s2-isp" min="220" max="465" value="450" step="5"></div>
+        <div class="ctrl"><div class="ctrl-head"><label>Mass ratio₂</label><span class="val" id="s2-mr-v">5.0</span></div><input type="range" id="s2-mr" min="1.5" max="12" value="5" step="0.1"></div>
+        <div class="readout">
+          <div class="stat"><div class="k">Stage 1 Δv</div><div class="v" id="s1-dv">—</div><div class="u">km/s</div></div>
+          <div class="stat"><div class="k">Stage 2 Δv</div><div class="v" id="s2-dv">—</div><div class="u">km/s</div></div>
+          <div class="stat"><div class="k">Total Δv</div><div class="v" id="st-total" style="color:var(--mech)">—</div><div class="u">km/s</div></div>
+        </div>
+        <div class="budget" style="margin-top:12px" id="st-budget"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TWO BODY / VIS-VIVA -->
+<section id="twobody">
+  <div class="wrap">
+    <p class="eyebrow reveal">Orbital mechanics · 1</p>
+    <h2 class="sec-title reveal">The two-body problem &amp; vis-viva</h2>
+    <p class="lede reveal">Once in space, a vehicle coasts under gravity alone. For one body orbiting a much larger one, the path is a conic section and the motion is governed by energy. The vis-viva equation gives the speed anywhere on any orbit.</p>
+    <div class="lab" style="margin-top:30px">
+      <div class="panel reveal">
+        <div class="formula cy"><div data-formula="v^2=\mu\left(\dfrac{2}{r}-\dfrac{1}{a}\right)\qquad \varepsilon=\dfrac{v^2}{2}-\dfrac{\mu}{r}=-\dfrac{\mu}{2a}"></div>
+          <div class="terms">
+            <div class="term-row"><span class="sym">v</span><span>speed at distance r</span></div>
+            <div class="term-row"><span class="sym">μ</span><span>GM, gravitational parameter of the central body</span></div>
+            <div class="term-row"><span class="sym">a</span><span>semi-major axis (orbit size)</span></div>
+            <div class="term-row"><span class="sym">ε</span><span>specific orbital energy (per kg)</span></div>
+          </div>
+        </div>
+        <p style="color:var(--muted);font-size:.92rem">Energy alone decides the <span class="term" data-tip="<b>Conic sections.</b> Bound: circle (e=0) and ellipse (0&lt;e&lt;1), with ε&lt;0. Escape boundary: parabola (e=1, ε=0). Unbound: hyperbola (e&gt;1, ε&gt;0) — a flyby. Eccentricity e and energy ε are two views of the same thing.">type of orbit</span>: ε&lt;0 is bound (ellipse/circle), ε=0 is the escape parabola, ε&gt;0 is an unbound hyperbola. Set up an orbit and read its full state on the right.</p>
+      </div>
+      <div class="panel reveal">
+        <h3 style="font-size:1.12rem;margin-bottom:10px">Orbit explorer (Earth-centred) <span class="help-chip" data-tip="<b>Set the orbit size (a) and eccentricity (e).</b> The canvas draws it to scale with Earth at the focus; the panel gives perigee/apogee speeds and altitudes, period and energy from vis-viva.">i</span></h3>
+        <canvas class="plot" id="orbit-canvas" height="240"></canvas>
+        <div class="ctrl" style="margin-top:14px"><div class="ctrl-head"><label>Semi-major axis a</label><span class="val" id="oe-a-v">2.0 R⊕</span></div><input type="range" id="oe-a" min="1.1" max="12" value="2" step="0.05"></div>
+        <div class="ctrl"><div class="ctrl-head"><label>Eccentricity e</label><span class="val" id="oe-e-v">0.40</span></div><input type="range" id="oe-e" min="0" max="0.9" value="0.4" step="0.01"></div>
+        <div class="readout">
+          <div class="stat"><div class="k">Perigee v / alt</div><div class="v" id="oe-vp">—</div><div class="u" id="oe-altp">—</div></div>
+          <div class="stat"><div class="k">Apogee v / alt</div><div class="v" id="oe-va">—</div><div class="u" id="oe-alta">—</div></div>
+          <div class="stat"><div class="k">Period</div><div class="v" id="oe-T">—</div><div class="u" id="oe-Tu">min</div></div>
+          <div class="stat"><div class="k">Energy ε</div><div class="v" id="oe-eps">—</div><div class="u">MJ/kg</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEPLER -->
+<section id="kepler">
+  <div class="wrap">
+    <p class="eyebrow reveal">Orbital mechanics · 2</p>
+    <h2 class="sec-title reveal">Kepler's three laws</h2>
+    <p class="lede reveal">Empirical in 1609–1619, derived from Newton's gravity decades later, they still describe every closed orbit.</p>
+    <div class="split reveal" style="margin-top:28px">
+      <div class="card"><h3 style="color:var(--mech)">1 · Ellipses</h3><p>Each planet moves on an ellipse with the Sun at one <span class="term" data-tip="<b>Focus.</b> An ellipse has two foci; the central body sits at one of them, never at the centre. The empty focus has no physical object.">focus</span> — not a circle, not centred on the Sun.</p></div>
+      <div class="card"><h3 style="color:var(--mech)">2 · Equal areas</h3><p>The line from Sun to planet sweeps equal areas in equal times, so a body moves fastest at <span class="term" data-tip="<b>Perihelion / perigee.</b> The closest point to the central body, where speed is greatest. The farthest point is aphelion/apogee, where it is slowest.">perihelion</span>, slowest at aphelion. This is conservation of angular momentum.</p></div>
+      <div class="card"><h3 style="color:var(--mech)">3 · Harmonic law</h3><p>The square of the period is proportional to the cube of the semi-major axis: <span class="mono">T² ∝ a³</span>. Bigger orbits are slower, by a precise rule.</p></div>
+    </div>
+    <div class="lab reveal" style="margin-top:24px">
+      <div class="panel">
+        <h3 style="font-size:1.12rem;margin-bottom:8px">Second law in motion <span class="help-chip" data-tip="<b>Equal areas, equal times.</b> The eight shaded wedges were each swept in one-eighth of the orbital period. They look different but have identical area — watch the dot race through perigee and crawl through apogee.">i</span></h3>
+        <canvas class="plot" id="kepler-canvas" height="240"></canvas>
+        <p class="note">Eight wedges, each swept in T/8 — equal areas, wildly unequal shapes.</p>
+      </div>
+      <div class="panel">
+        <h3 style="font-size:1.12rem;margin-bottom:8px">Third law calculator <span class="help-chip" data-tip="<b>T = 2π·√(a³/μ).</b> Pick a central body and an orbit size; the period follows. Around the Sun with a in AU and T in years, it reduces to the elegant T² = a³.">i</span></h3>
+        <div class="formula cy" style="margin-top:6px"><div data-formula="T = 2\pi\sqrt{\dfrac{a^3}{\mu}}"></div></div>
+        <div class="ctrl"><div class="ctrl-head"><label>Central body</label><span class="val" id="k3-body-v">Sun</span></div>
+          <input type="range" id="k3-body" min="0" max="2" value="0" step="1"></div>
+        <div class="ctrl"><div class="ctrl-head"><label>Semi-major axis</label><span class="val" id="k3-a-v">1.00 AU</span></div><input type="range" id="k3-a" min="-1" max="1.6" value="0" step="0.01"></div>
+        <div class="readout">
+          <div class="stat"><div class="k">Orbital period</div><div class="v" id="k3-T">—</div><div class="u" id="k3-Tu">years</div></div>
+          <div class="stat"><div class="k">Mean speed</div><div class="v" id="k3-v">—</div><div class="u">km/s</div></div>
+        </div>
+        <p class="note" id="k3-note"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ORBITAL ELEMENTS -->
+<section id="elements">
+  <div class="wrap">
+    <p class="eyebrow reveal">Orbital mechanics · 3</p>
+    <h2 class="sec-title reveal">The six orbital elements</h2>
+    <p class="lede reveal">Two numbers fix an orbit's size and shape; three fix its orientation in space; one fixes where the body is right now. Together they pin down a trajectory completely. Tap each element.</p>
+    <div class="panel reveal" style="margin-top:24px">
+      <div class="chips" id="elChips"></div>
+      <div class="detail" id="elDetail"></div>
+    </div>
+  </div>
+</section>
+
+<!-- MANEUVERS -->
+<section id="maneuvers">
+  <div class="wrap">
+    <p class="eyebrow reveal">Orbital mechanics · 4</p>
+    <h2 class="sec-title reveal">Changing orbits — maneuvers</h2>
+    <p class="lede reveal">You can't steer in space; you can only change velocity. Two classic problems: raising an orbit (Hohmann transfer) and tilting it (plane change).</p>
+    <div class="lab" style="margin-top:30px">
+      <div class="panel reveal">
+        <h3 style="font-size:1.12rem;margin-bottom:6px">Hohmann transfer <span class="help-chip" data-tip="<b>The cheapest two-burn transfer.</b> Burn prograde to enter an ellipse touching both circular orbits, coast a half-ellipse, then burn again to circularise at the top. Each burn is computed from vis-viva at the two radii.">i</span></h3>
+        <p style="color:var(--muted);font-size:.88rem;margin-bottom:12px">From a 300 km parking orbit around Earth.</p>
+        <div class="formula"><div data-formula="\Delta v_1=\sqrt{\tfrac{\mu}{r_1}}\!\left(\sqrt{\tfrac{2r_2}{r_1+r_2}}-1\right)"></div></div>
+        <div class="ctrl"><div class="ctrl-head"><label>Target altitude</label><span class="val" id="ho-v">35,786 km (GEO)</span></div><input type="range" id="ho" min="500" max="384400" value="35786" step="100"></div>
+        <canvas class="plot" id="ho-canvas" height="200"></canvas>
+        <div class="readout" style="margin-top:12px">
+          <div class="stat"><div class="k">Δv₁</div><div class="v" id="ho-dv1">—</div><div class="u">km/s</div></div>
+          <div class="stat"><div class="k">Δv₂</div><div class="v" id="ho-dv2">—</div><div class="u">km/s</div></div>
+          <div class="stat"><div class="k">Transfer time</div><div class="v" id="ho-t">—</div><div class="u" id="ho-tu">h</div></div>
+        </div>
+      </div>
+      <div class="panel reveal">
+        <h3 style="font-size:1.12rem;margin-bottom:6px">Plane change <span class="help-chip" data-tip="<b>Tilting an orbit is expensive.</b> Δv = 2·v·sin(Δi/2). Because it scales with orbital speed v, plane changes are far cheaper when done slowly, far from the planet (low v) — which is why launches aim for the right inclination from the start.">i</span></h3>
+        <div class="formula"><div data-formula="\Delta v = 2\,v\,\sin\!\left(\dfrac{\Delta i}{2}\right)"></div></div>
+        <div class="ctrl" style="margin-top:8px"><div class="ctrl-head"><label>Orbital speed v</label><span class="val" id="pc-v-v">7.7 km/s</span></div><input type="range" id="pc-v" min="1" max="10" value="7.7" step="0.1"></div>
+        <div class="ctrl"><div class="ctrl-head"><label>Plane change Δi</label><span class="val" id="pc-di-v">30°</span></div><input type="range" id="pc-di" min="0" max="90" value="30" step="1"></div>
+        <div class="readout"><div class="stat"><div class="k">Required Δv</div><div class="v" id="pc-dv">—</div><div class="u">km/s</div></div></div>
+        <p class="note" style="margin-top:14px">A 30° change in LEO costs ~4 km/s — more than reaching the Moon from LEO. This is why rockets launch toward their target inclination, and why the <span class="term" data-tip="<b>Oberth effect.</b> A given Δv adds more orbital energy when applied at high speed (deep in a gravity well, at perigee). Burning at periapsis is the most efficient place to spend Δv — the basis of powered flybys.">Oberth effect</span> rewards burning low and fast.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLAR SYSTEM -->
+<section id="solar">
+  <div class="wrap">
+    <p class="eyebrow reveal">The Solar System · 1</p>
+    <h2 class="sec-title reveal">Orbits of the planets</h2>
+    <p class="lede reveal">The same equations describe all eight planets. Watch them run (inner planets race, outer ones crawl — Kepler's third law made visible), and click any one for its data and the formulas applied to it.</p>
+    <div class="split reveal" style="margin-top:26px;grid-template-columns:1.25fr .75fr">
+      <div class="panel">
+        <canvas class="plot" id="solar-canvas" height="420"></canvas>
+        <p class="note">Orbit radii compressed for display (∝ √a) — not to scale. Speeds reflect real relative periods.</p>
+      </div>
+      <div class="panel">
+        <h3 style="font-size:1.12rem;margin-bottom:8px">Kepler's 3rd law, verified <span class="help-chip" data-tip="<b>Log–log proof.</b> Plotting log T against log a for all planets gives a straight line of slope 3/2, because T² = a³ (with a in AU, T in years). Every planet lands on the line.">i</span></h3>
+        <canvas class="plot" id="k3plot-canvas" height="240"></canvas>
+        <p class="note">log T vs log a — slope 3/2 for every planet. Click a point.</p>
+      </div>
+    </div>
+    <div class="bodygrid reveal" id="planetGrid"></div>
+  </div>
+</section>
+
+<!-- EARTH ORBIT REGIMES -->
+<section id="regimes">
+  <div class="wrap">
+    <p class="eyebrow reveal">The Solar System · 2</p>
+    <h2 class="sec-title reveal">Earth orbit regimes</h2>
+    <p class="lede reveal">Where satellites live is set entirely by altitude — which fixes period and speed through Kepler's third law. Click a regime for the numbers and what it's used for.</p>
+    <div class="split reveal" style="margin-top:26px;grid-template-columns:.9fr 1.1fr">
+      <div class="panel">
+        <svg class="regime-svg" id="regimeSvg" viewBox="0 0 340 300"></svg>
+        <p class="note">Concentric regimes around Earth (compressed). GEO sits where the orbital period equals one sidereal day.</p>
+      </div>
+      <div>
+        <div class="bodygrid" id="regimeGrid" style="margin-top:0;grid-template-columns:repeat(auto-fill,minmax(160px,1fr))"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MOONS -->
+<section id="moons">
+  <div class="wrap">
+    <p class="eyebrow reveal">The Solar System · 3</p>
+    <h2 class="sec-title reveal">Moons &amp; natural satellites</h2>
+    <p class="lede reveal">Satellites obey the same laws around their planets that planets obey around the Sun — only the value of μ changes. Click any moon for its orbit data.</p>
+    <div class="bodygrid reveal" id="moonGrid"></div>
+  </div>
+</section>
+
+<!-- REFERENCE -->
+<section id="reference">
+  <div class="wrap">
+    <p class="eyebrow reveal">Quick reference</p>
+    <h2 class="sec-title reveal">Formula sheet &amp; glossary</h2>
+    <div class="split reveal" style="margin-top:24px">
+      <div class="panel">
+        <h3 style="font-size:1.1rem;margin-bottom:12px">Formulas</h3>
+        <div class="formula cy" style="margin-top:0"><div data-formula="\Delta v = I_{sp} g_0 \ln(m_0/m_f)"></div></div>
+        <div class="formula"><div data-formula="F=\dot m v_e+(p_e-p_a)A_e,\;\; \mathrm{TWR}=F/mg"></div></div>
+        <div class="formula"><div data-formula="v^2=\mu(2/r-1/a)"></div></div>
+        <div class="formula"><div data-formula="v_{circ}=\sqrt{\mu/r},\;\; v_{esc}=\sqrt{2\mu/r}"></div></div>
+        <div class="formula"><div data-formula="\varepsilon=-\mu/2a,\quad T=2\pi\sqrt{a^3/\mu}"></div></div>
+        <div class="formula"><div data-formula="\Delta v_{plane}=2v\sin(\Delta i/2)"></div></div>
+        <div class="formula"><div data-formula="r=\dfrac{a(1-e^2)}{1+e\cos\nu}\quad(\text{conic})"></div></div>
+      </div>
+      <div class="panel">
+        <h3 style="font-size:1.1rem;margin-bottom:12px">Glossary</h3>
+        <dl class="gloss">
+          <div><dt>μ (mu)</dt><dd>Gravitational parameter G·M of the central body; what actually appears in the orbit equations.</dd></div>
+          <div><dt>Semi-major axis (a)</dt><dd>Half the long axis of the ellipse; sets orbit size, energy and period.</dd></div>
+          <div><dt>Eccentricity (e)</dt><dd>How stretched the orbit is: 0 = circle, →1 = very elongated, 1 = escape.</dd></div>
+          <div><dt>Periapsis / apoapsis</dt><dd>Closest / farthest points (peri- and apo- + the body: perigee, perihelion…).</dd></div>
+          <div><dt>Inclination (i)</dt><dd>Tilt of the orbit plane relative to a reference plane.</dd></div>
+          <div><dt>Vis-viva</dt><dd>The speed-distance-size relation: v² = μ(2/r − 1/a).</dd></div>
+          <div><dt>Hohmann transfer</dt><dd>Minimum-energy two-burn transfer between circular orbits.</dd></div>
+          <div><dt>Oberth effect</dt><dd>Burns are most energy-efficient at high speed, deep in a gravity well.</dd></div>
+        </dl>
+      </div>
+    </div>
+    <p class="note reveal">Planetary and satellite values are standard mean elements rounded for clarity; orbits are idealised two-body (no perturbations). For mission-grade work use full ephemerides (e.g. NASA JPL).</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div><strong style="color:var(--text);font-family:var(--display)">newspace.live</strong> · Rocket &amp; Orbital Mechanics</div>
+    <div>Idealised two-body physics · values rounded for teaching.</div>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-name">
+    <div class="modal-head"><div class="orb" id="m-orb"></div><div><h3 id="m-name"></h3><div class="sub" id="m-sub"></div></div><button class="modal-close" id="modalClose" aria-label="Close">✕</button></div>
+    <div class="modal-body" id="m-body"></div>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const g0=9.80665, MU_E=3.986004418e14, MU_SUN=1.32712440018e20, MU_MOON=4.9028695e12;
+const RE=6371, AU=1.495978707e11, YR=3.15576e7, PC=3.086e16;
+
+/* tooltips */
+const tip=$('#tip');let tipTimer=null;
+function showTip(el){const t=el.getAttribute('data-tip');if(!t)return;tip.innerHTML=t;tip.classList.add('show');
+  const r=el.getBoundingClientRect();const tw=Math.min(330,window.innerWidth-24);tip.style.maxWidth=tw+'px';
+  let x=r.left+r.width/2-tw/2;x=Math.max(12,Math.min(x,window.innerWidth-tw-12));
+  let y=r.bottom+10;if(y+tip.offsetHeight>window.innerHeight-12)y=r.top-tip.offsetHeight-10;
+  tip.style.left=x+'px';tip.style.top=Math.max(12,y)+'px';}
+function hideTip(){tip.classList.remove('show');}
+function bindTips(){document.querySelectorAll('[data-tip]').forEach(el=>{if(el.dataset.tb)return;el.dataset.tb=1;
+  if(!el.hasAttribute('tabindex')&&el.classList.contains('term'))el.setAttribute('tabindex','0');
+  el.addEventListener('mouseenter',()=>showTip(el));el.addEventListener('mouseleave',hideTip);
+  el.addEventListener('focus',()=>showTip(el));el.addEventListener('blur',hideTip);
+  el.addEventListener('click',e=>{e.stopPropagation();showTip(el);clearTimeout(tipTimer);tipTimer=setTimeout(hideTip,5000);});});}
+document.addEventListener('click',hideTip);window.addEventListener('scroll',hideTip,{passive:true});
+
+/* KaTeX */
+function renderFormulas(){if(!window.katex)return;document.querySelectorAll('[data-formula]').forEach(el=>{if(el.dataset.done)return;el.dataset.done=1;try{katex.render(el.getAttribute('data-formula'),el,{throwOnError:false,displayMode:true});}catch(e){}});}
+window.addEventListener('load',()=>{renderFormulas();setTimeout(renderFormulas,300);});
+
+/* number format */
+function fmt(x,d){if(!isFinite(x))return '—';const a=Math.abs(x);if(a!==0&&(a<1e-2||a>=1e5)){const e=Math.floor(Math.log10(a));return (x/Math.pow(10,e)).toFixed(2)+'e'+e;}return x.toFixed(d===undefined?2:d);}
+
+/* ---- rocket equation ---- */
+const reIsp=$('#re-isp'),reMr=$('#re-mr');
+function rocketEq(){const Isp=+reIsp.value,mr=+reMr.value;const ve=Isp*g0,dv=ve*Math.log(mr);
+  $('#re-isp-v').textContent=Isp+' s';$('#re-mr-v').textContent=mr.toFixed(1);
+  $('#re-ve').textContent=(ve/1000).toFixed(2);$('#re-dv').textContent=(dv/1000).toFixed(2);
+  const dvk=dv/1000;
+  const marks=[['LEO',9.4,'var(--sim)'],['Escape / Moon',12.5,'var(--warm)'],['Mars transfer',13.1,'var(--ir)']];
+  $('#re-budget').innerHTML=marks.map(m=>{const pct=Math.min(100,dvk/m[1]*100);
+    return '<div class="brow"><span style="color:var(--muted)">'+m[0]+'</span><div class="btrack"><div class="bfill" style="width:'+pct+'%;background:'+m[2]+'"></div></div><span class="mono" style="color:'+(dvk>=m[1]?m[2]:'var(--muted-2)')+'">'+(dvk>=m[1]?'✓':Math.round(pct)+'%')+'</span></div>';}).join('');
+  $('#re-ex').innerHTML='<b>Worked example.</b> A hydrolox upper stage (I_sp ≈ 450 s) with a mass ratio of 10 delivers ≈ '+(450*g0*Math.log(10)/1000).toFixed(1)+' km/s — about right for a second stage, but well short of orbit on its own. That gap is exactly why we stage.';
+}
+[reIsp,reMr].forEach(e=>e.addEventListener('input',rocketEq));
+
+/* ---- thrust ---- */
+const thF=$('#th-F'),thMdot=$('#th-mdot'),thM=$('#th-m');
+function thrust(){const F=(+thF.value)*1000,mdot=+thMdot.value,m=(+thM.value)*1000;
+  const ve=F/mdot,Isp=ve/g0,twr=F/(m*g0);
+  $('#th-F-v').textContent=(+thF.value)+' kN';$('#th-mdot-v').textContent=mdot+' kg/s';$('#th-m-v').textContent=(+thM.value)+' t';
+  $('#th-ve').textContent=(ve/1000).toFixed(2);$('#th-isp').textContent=Math.round(Isp);
+  $('#th-twr').textContent=twr.toFixed(2);
+  $('#th-twr-u').textContent=twr<1?'cannot lift off':twr<1.2?'slow climb':'healthy';
+}
+[thF,thMdot,thM].forEach(e=>e.addEventListener('input',thrust));
+
+/* ---- staging ---- */
+const s1i=$('#s1-isp'),s1m=$('#s1-mr'),s2i=$('#s2-isp'),s2m=$('#s2-mr');
+function staging(){const d1=(+s1i.value)*g0*Math.log(+s1m.value)/1000,d2=(+s2i.value)*g0*Math.log(+s2m.value)/1000;
+  $('#s1-isp-v').textContent=(+s1i.value)+' s';$('#s1-mr-v').textContent=(+s1m.value).toFixed(1);
+  $('#s2-isp-v').textContent=(+s2i.value)+' s';$('#s2-mr-v').textContent=(+s2m.value).toFixed(1);
+  $('#s1-dv').textContent=d1.toFixed(2);$('#s2-dv').textContent=d2.toFixed(2);
+  const tot=d1+d2;$('#st-total').textContent=tot.toFixed(2);
+  const marks=[['LEO ~9.4',9.4,'var(--sim)'],['Escape ~12.5',12.5,'var(--warm)']];
+  $('#st-budget').innerHTML=marks.map(m=>{const pct=Math.min(100,tot/m[1]*100);
+    return '<div class="brow"><span style="color:var(--muted)">'+m[0]+'</span><div class="btrack"><div class="bfill" style="width:'+pct+'%;background:'+m[2]+'"></div></div><span class="mono" style="color:'+(tot>=m[1]?m[2]:'var(--muted-2)')+'">'+(tot>=m[1]?'✓':Math.round(pct)+'%')+'</span></div>';}).join('');
+}
+[s1i,s1m,s2i,s2m].forEach(e=>e.addEventListener('input',staging));
+$('#st-ex').innerHTML='<b>Why two beats one.</b> A single stage with mass ratio 8 and I_sp 350 s gives ~7.1 km/s — not enough for orbit. Split into two stages of ratio ~4 and ~5 and the same propellant reaches well past 9.4 km/s, because each stage discards the dead weight of the one below.';
+
+/* ---- orbit explorer ---- */
+const oeA=$('#oe-a'),oeE=$('#oe-e'),oc=$('#orbit-canvas'),ox=oc.getContext('2d');
+function orbitExp(){const a=+oeA.value,e=+oeE.value;const aKm=a*RE,aM=aKm*1000;
+  const rp=aM*(1-e),ra=aM*(1+e);
+  const vp=Math.sqrt(MU_E*(2/rp-1/aM)),va=Math.sqrt(MU_E*(2/ra-1/aM));
+  const eps=-MU_E/(2*aM),T=2*Math.PI*Math.sqrt(Math.pow(aM,3)/MU_E);
+  $('#oe-a-v').textContent=a.toFixed(2)+' R⊕';$('#oe-e-v').textContent=e.toFixed(2);
+  $('#oe-vp').textContent=(vp/1000).toFixed(2);$('#oe-va').textContent=(va/1000).toFixed(2);
+  $('#oe-altp').textContent=Math.round(rp/1000-RE).toLocaleString()+' km';
+  $('#oe-alta').textContent=Math.round(ra/1000-RE).toLocaleString()+' km';
+  const Tm=T/60;if(Tm<120){$('#oe-T').textContent=Tm.toFixed(0);$('#oe-Tu').textContent='min';}else{$('#oe-T').textContent=(Tm/60).toFixed(1);$('#oe-Tu').textContent='hours';}
+  $('#oe-eps').textContent=(eps/1e6).toFixed(2);
+  drawOrbit(a,e);
+}
+function drawOrbit(a,e){const w=oc.clientWidth,h=oc.height;oc.width=w;ox.clearRect(0,0,w,h);
+  const cx=w/2,cy=h/2;const sc=(Math.min(w,h)*0.42)/(a*(1+e));
+  const A=a*sc,b=A*Math.sqrt(1-e*e),c=A*e;
+  // orbit ellipse, focus at center (Earth). center of ellipse offset by -c (perigee to the right)
+  const ecx=cx-c;
+  ox.strokeStyle='var(--mech)';ox.strokeStyle='#3cc9e6';ox.lineWidth=1.8;ox.beginPath();ox.ellipse(ecx,cy,A,b,0,0,7);ox.stroke();
+  // Earth at focus (right focus relative to center => ecx + c = cx)
+  const Rpx=Math.max(5,RE*sc/1000*1000);  // RE in same scale: RE(km)*sc but sc is per R⊕ unit
+  const earthR=sc;  // since a is in R⊕, 1 R⊕ = sc px
+  const eg=ox.createRadialGradient(cx-earthR*0.3,cy-earthR*0.3,1,cx,cy,earthR);eg.addColorStop(0,'#cfe9ff');eg.addColorStop(.6,'#5b86c9');eg.addColorStop(1,'#1b3158');
+  ox.fillStyle=eg;ox.beginPath();ox.arc(cx,cy,earthR,0,7);ox.fill();
+  // perigee / apogee markers
+  ox.fillStyle='#5fd0a0';ox.beginPath();ox.arc(ecx+A,cy,3.5,0,7);ox.fill();
+  ox.fillStyle='#f3ad5e';ox.beginPath();ox.arc(ecx-A,cy,3.5,0,7);ox.fill();
+  ox.font='11px "JetBrains Mono",monospace';ox.fillStyle='#5fd0a0';ox.textAlign='center';ox.fillText('perigee',ecx+A,cy-9);
+  ox.fillStyle='#f3ad5e';ox.fillText('apogee',ecx-A,cy-9);
+}
+[oeA,oeE].forEach(e=>e.addEventListener('input',orbitExp));
+
+/* ---- kepler 2nd law ---- */
+const kc=$('#kepler-canvas'),kx=kc.getContext('2d');
+let kAng=0;
+function solveKepler(M,e){let E=M;for(let i=0;i<6;i++){E=E-(E-e*Math.sin(E)-M)/(1-e*Math.cos(E));}return E;}
+function drawKepler(){const w=kc.clientWidth,h=kc.height;kc.width=w;kx.clearRect(0,0,w,h);
+  const e=0.6,cx=w*0.5,cy=h*0.5;const A=Math.min(w,h)*0.4,b=A*Math.sqrt(1-e*e),c=A*e;
+  const ecx=cx-c; // ellipse center; focus(Sun) at cx
+  // shaded equal-time wedges
+  const N=8;
+  for(let s=0;s<N;s++){
+    const M0=2*Math.PI*s/N,M1=2*Math.PI*(s+1)/N;
+    kx.beginPath();kx.moveTo(cx,cy);
+    for(let t=0;t<=12;t++){const M=M0+(M1-M0)*t/12;const E=solveKepler(M,e);
+      const px=ecx+A*Math.cos(E),py=cy+b*Math.sin(E);t?kx.lineTo(px,py):kx.lineTo(px,py);}
+    kx.closePath();kx.fillStyle=s%2? 'rgba(60,201,230,.16)':'rgba(111,143,214,.12)';kx.fill();
+  }
+  // ellipse
+  kx.strokeStyle='#3cc9e6';kx.lineWidth=1.6;kx.beginPath();kx.ellipse(ecx,cy,A,b,0,0,7);kx.stroke();
+  // Sun at focus
+  const sg=kx.createRadialGradient(cx,cy,0,cx,cy,9);sg.addColorStop(0,'#fff5d6');sg.addColorStop(.5,'#ffd27a');sg.addColorStop(1,'#e0653f');
+  kx.fillStyle=sg;kx.beginPath();kx.arc(cx,cy,8,0,7);kx.fill();
+  // body
+  kAng+=0.012;const M=kAng%(2*Math.PI);const E=solveKepler(M,e);
+  const bx=ecx+A*Math.cos(E),by=cy+b*Math.sin(E);
+  kx.strokeStyle='rgba(169,220,255,.5)';kx.lineWidth=1;kx.beginPath();kx.moveTo(cx,cy);kx.lineTo(bx,by);kx.stroke();
+  kx.fillStyle='#fff';kx.shadowColor='#a9dcff';kx.shadowBlur=12;kx.beginPath();kx.arc(bx,by,4,0,7);kx.fill();kx.shadowBlur=0;
+}
+
+/* ---- kepler 3rd law calc ---- */
+const k3body=$('#k3-body'),k3a=$('#k3-a');
+const K3=[{n:'Sun',mu:MU_SUN,unit:'AU',u:AU,Tunit:'years',Tdiv:YR},{n:'Earth',mu:MU_E,unit:'×1000 km',u:1e6,Tunit:'hours',Tdiv:3600},{n:'Jupiter',mu:1.26687e17,unit:'×1000 km',u:1e6,Tunit:'days',Tdiv:86400}];
+function k3(){const body=K3[+k3body.value];const logA=+k3a.value;const aVal=Math.pow(10,logA);
+  const aM=aVal*body.u;const T=2*Math.PI*Math.sqrt(Math.pow(aM,3)/body.mu);const v=Math.sqrt(body.mu/aM);
+  $('#k3-body-v').textContent=body.n;
+  $('#k3-a-v').textContent=(aVal<10?aVal.toFixed(2):aVal.toFixed(0))+' '+body.unit;
+  $('#k3-T').textContent=(T/body.Tdiv)<1000?(T/body.Tdiv).toFixed(2):(T/body.Tdiv).toExponential(1);$('#k3-Tu').textContent=body.Tunit;
+  $('#k3-v').textContent=(v/1000).toFixed(2);
+  $('#k3-note').textContent=body.n==='Sun'?'Around the Sun with a in AU and T in years, this is exactly T² = a³.':'';
+}
+[k3body,k3a].forEach(e=>e.addEventListener('input',k3));
+
+/* ---- orbital elements ---- */
+const EL=[
+  {n:'a',t:'Semi-major axis — size',d:'Half the long axis of the ellipse. It alone fixes the orbital energy (ε = −μ/2a) and the period (T = 2π√(a³/μ)). Bigger a = larger, slower, higher-energy orbit.'},
+  {n:'e',t:'Eccentricity — shape',d:'How elongated the orbit is. e = 0 is a perfect circle; 0 < e < 1 is an ellipse; e = 1 is the escape parabola; e > 1 is a hyperbolic flyby. With a and e you know periapsis a(1−e) and apoapsis a(1+e).'},
+  {n:'i',t:'Inclination — tilt',d:'The angle between the orbit plane and a reference plane (Earth\u2019s equator for satellites, the ecliptic for planets). i = 0° is equatorial; 90° is polar; >90° is retrograde. Changing it is one of the most expensive maneuvers.'},
+  {n:'Ω',t:'RAAN — swivel',d:'Right ascension of the ascending node: where the orbit crosses the reference plane going north, measured from a fixed direction. It rotates the orbit plane about the pole — the orbit\u2019s "compass heading".'},
+  {n:'ω',t:'Argument of periapsis',d:'The angle within the orbit plane from the ascending node to periapsis. It says which way the ellipse points — where the low point of the orbit sits.'},
+  {n:'ν',t:'True anomaly — where now',d:'The body\u2019s current angular position measured from periapsis. It is the only element that changes with time; the related mean anomaly M advances uniformly and connects to ν through Kepler\u2019s equation M = E − e·sin E.'}
+];
+function buildEl(){const c=$('#elChips');EL.forEach((a,i)=>{const b=document.createElement('button');b.className='achip'+(i===0?' on':'');
+  b.textContent=a.n+' · '+a.t.split(' — ')[0].replace(a.n+' ','');b.textContent=a.n;
+  b.addEventListener('click',()=>{document.querySelectorAll('#elChips .achip').forEach(x=>x.classList.remove('on'));b.classList.add('on');showEl(i);});c.appendChild(b);});showEl(0);}
+function showEl(i){const a=EL[i];$('#elDetail').innerHTML='<div class="meta">Element '+(i+1)+' of 6 · '+a.n+'</div><h4>'+a.t+'</h4><p>'+a.d+'</p>';}
+
+/* ---- Hohmann ---- */
+const ho=$('#ho'),hoc=$('#ho-canvas'),hx=hoc.getContext('2d');
+function hohmann(){const r1=(RE+300)*1000,altKm=+ho.value,r2=(RE+altKm)*1000,at=(r1+r2)/2;
+  const dv1=Math.sqrt(MU_E/r1)*(Math.sqrt(2*r2/(r1+r2))-1),dv2=Math.sqrt(MU_E/r2)*(1-Math.sqrt(2*r1/(r1+r2)));
+  const tt=Math.PI*Math.sqrt(Math.pow(at,3)/MU_E);
+  $('#ho-v').textContent=altKm>=384400?'384,400 km (Moon dist.)':altKm.toLocaleString()+' km'+(Math.abs(altKm-35786)<300?' (GEO)':'');
+  $('#ho-dv1').textContent=(dv1/1000).toFixed(2);$('#ho-dv2').textContent=(dv2/1000).toFixed(2);
+  const th=tt/3600;if(th<48){$('#ho-t').textContent=th.toFixed(1);$('#ho-tu').textContent='h';}else{$('#ho-t').textContent=(th/24).toFixed(1);$('#ho-tu').textContent='days';}
+  drawHo(r1,r2);
+}
+function drawHo(r1,r2){const w=hoc.clientWidth,h=hoc.height;hoc.width=w;hx.clearRect(0,0,w,h);
+  const cx=w*0.4,cy=h/2,maxr=Math.max(r1,r2),sc=(Math.min(w,h)*0.42)/maxr,R1=r1*sc,R2=r2*sc;
+  hx.strokeStyle='rgba(111,143,214,.6)';hx.lineWidth=1.4;hx.beginPath();hx.arc(cx,cy,R1,0,7);hx.stroke();
+  hx.strokeStyle='rgba(60,201,230,.6)';hx.beginPath();hx.arc(cx,cy,R2,0,7);hx.stroke();
+  const a=(R1+R2)/2,c=Math.abs(R2-R1)/2,b=Math.sqrt(Math.max(0,a*a-c*c)),ecx=cx+(R1>R2?c:-c);
+  hx.strokeStyle='#f3ad5e';hx.setLineDash([5,4]);hx.lineWidth=1.6;hx.beginPath();
+  for(let t=-Math.PI/2;t<=Math.PI/2+0.02;t+=0.05){const x=ecx+a*Math.cos(t)*(R2>R1?-1:1),y=cy+b*Math.sin(t);t===-Math.PI/2?hx.moveTo(x,y):hx.lineTo(x,y);}hx.stroke();hx.setLineDash([]);
+  const eg=hx.createRadialGradient(cx,cy,0,cx,cy,8);eg.addColorStop(0,'#a9dcff');eg.addColorStop(1,'#274a86');hx.fillStyle=eg;hx.beginPath();hx.arc(cx,cy,8,0,7);hx.fill();
+}
+ho.addEventListener('input',hohmann);
+
+/* ---- plane change ---- */
+const pcV=$('#pc-v'),pcDi=$('#pc-di');
+function planeChange(){const v=+pcV.value,di=+pcDi.value*Math.PI/180;const dv=2*v*Math.sin(di/2);
+  $('#pc-v-v').textContent=(+pcV.value).toFixed(1)+' km/s';$('#pc-di-v').textContent=(+pcDi.value)+'°';
+  $('#pc-dv').textContent=dv.toFixed(2);}
+[pcV,pcDi].forEach(e=>e.addEventListener('input',planeChange));
+
+/* ---- generic modal ---- */
+function openModal(d){$('#m-name').textContent=d.name;$('#m-sub').textContent=d.sub;
+  const orb=$('#m-orb');orb.style.color=d.color;orb.style.background='radial-gradient(circle at 34% 32%, #fff, '+d.color+' 45%, '+shade(d.color)+' 95%)';
+  let specs='';for(const k in d.spec)specs+='<div class="spec"><div class="k">'+k+'</div><div class="v">'+d.spec[k]+'</div></div>';
+  let body='<div class="spec-grid">'+specs+'</div>';d.sections.forEach(s=>{body+='<h4>'+s.h+'</h4><p>'+s.p+'</p>';});
+  $('#m-body').innerHTML=body;$('#modalBg').classList.add('open');bindTips();}
+function shade(hex){const n=parseInt(hex.slice(1),16);let r=(n>>16)&255,gg=(n>>8)&255,b=n&255;return 'rgb('+Math.round(r*.4)+','+Math.round(gg*.4)+','+Math.round(b*.45)+')';}
+$('#modalClose').addEventListener('click',()=>$('#modalBg').classList.remove('open'));
+$('#modalBg').addEventListener('click',e=>{if(e.target===$('#modalBg'))$('#modalBg').classList.remove('open');});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#modalBg').classList.remove('open');});
+
+/* ---- planets ---- */
+const PLANETS=[
+  {n:'Mercury',a:0.387,e:0.2056,i:7.0,T:0.241,v:47.4,c:'#b0a08c'},
+  {n:'Venus',a:0.723,e:0.0068,i:3.39,T:0.615,v:35.0,c:'#e8c690'},
+  {n:'Earth',a:1.000,e:0.0167,i:0.0,T:1.000,v:29.8,c:'#6fa9e0'},
+  {n:'Mars',a:1.524,e:0.0934,i:1.85,T:1.881,v:24.1,c:'#d9663b'},
+  {n:'Jupiter',a:5.204,e:0.0489,i:1.30,T:11.86,v:13.1,c:'#d8a878'},
+  {n:'Saturn',a:9.583,e:0.0565,i:2.49,T:29.46,v:9.7,c:'#e3d29a'},
+  {n:'Uranus',a:19.19,e:0.0457,i:0.77,T:84.01,v:6.8,c:'#9fe0e0'},
+  {n:'Neptune',a:30.07,e:0.0113,i:1.77,T:164.8,v:5.4,c:'#5b7bd8'}
+];
+function planetModal(p){const aM=p.a*AU,Tcalc=2*Math.PI*Math.sqrt(Math.pow(aM,3)/MU_SUN)/YR;
+  const rp=aM*(1-p.e),ra=aM*(1+p.e);
+  const vp=Math.sqrt(MU_SUN*(2/rp-1/aM))/1000,va=Math.sqrt(MU_SUN*(2/ra-1/aM))/1000;
+  openModal({name:p.n,sub:'Planet · orbit around the Sun',color:p.c,
+    spec:{'Semi-major a':p.a.toFixed(3)+' AU','Eccentricity':p.e.toFixed(4),'Inclination':p.i.toFixed(2)+'°','Period':p.T+' yr','Mean speed':p.v+' km/s'},
+    sections:[
+      {h:'Period from Kepler\u2019s 3rd law',p:'Using T = 2π√(a³/μ☉) with a = '+p.a.toFixed(3)+' AU gives T ≈ '+Tcalc.toFixed(2)+' years — matching the measured '+p.T+' yr. In AU/years this is just T² = a³.'},
+      {h:'Speeds from vis-viva',p:'At perihelion the planet moves ≈ '+vp.toFixed(1)+' km/s; at aphelion ≈ '+va.toFixed(1)+' km/s. The '+(p.e>0.05?'noticeable':'small')+' difference reflects its eccentricity of '+p.e.toFixed(4)+'.'},
+      {h:'Perihelion & aphelion',p:'Closest to the Sun: '+(rp/AU).toFixed(3)+' AU. Farthest: '+(ra/AU).toFixed(3)+' AU.'}
+    ]});
+}
+function buildPlanets(){const g=$('#planetGrid');PLANETS.forEach(p=>{const b=document.createElement('button');b.className='body';b.style.color=p.c;
+  b.innerHTML='<div class="orb" style="background:radial-gradient(circle at 34% 32%, #fff, '+p.c+' 50%, '+shade(p.c)+')"></div><h4 style="color:var(--text)">'+p.n+'</h4><div class="d">'+p.a+' AU · '+p.T+' yr</div>';
+  b.addEventListener('click',()=>planetModal(p));g.appendChild(b);});}
+
+/* ---- solar system canvas ---- */
+const sc2=$('#solar-canvas'),sx=sc2.getContext('2d');
+let solarAng=PLANETS.map(()=>Math.random()*7);
+function drawSolar(){const w=sc2.clientWidth,h=sc2.height;sc2.width=w;sx.clearRect(0,0,w,h);
+  const cx=w/2,cy=h/2;const maxR=Math.min(w,h)*0.46;const sc=maxR/Math.pow(30.07,0.5);
+  // sun
+  const sg=sx.createRadialGradient(cx,cy,0,cx,cy,16);sg.addColorStop(0,'#fff7df');sg.addColorStop(.5,'#ffce6b');sg.addColorStop(1,'rgba(224,101,63,0)');
+  sx.fillStyle=sg;sx.beginPath();sx.arc(cx,cy,16,0,7);sx.fill();
+  PLANETS.forEach((p,i)=>{const r=sc*Math.pow(p.a,0.5);
+    sx.strokeStyle='rgba(111,143,214,.22)';sx.lineWidth=1;sx.beginPath();sx.arc(cx,cy,r,0,7);sx.stroke();
+    solarAng[i]+=(0.0009/p.T)*60;  // relative speed ~ 1/T
+    const x=cx+Math.cos(solarAng[i])*r,y=cy+Math.sin(solarAng[i])*r;
+    const rad=p.a>4?4.5:2.8;
+    sx.fillStyle=p.c;sx.shadowColor=p.c;sx.shadowBlur=8;sx.beginPath();sx.arc(x,y,rad,0,7);sx.fill();sx.shadowBlur=0;
+    p._x=x;p._y=y;p._r=rad;
+  });
+}
+sc2.addEventListener('click',ev=>{const rect=sc2.getBoundingClientRect();const mx=ev.clientX-rect.left,my=ev.clientY-rect.top;
+  for(const p of PLANETS){if(p._x&&Math.hypot(mx-p._x,my-p._y)<10){planetModal(p);return;}}});
+sc2.style.cursor='pointer';
+
+/* ---- kepler 3rd law plot ---- */
+const k3p=$('#k3plot-canvas'),k3x=k3p.getContext('2d');
+function drawK3plot(){const w=k3p.clientWidth,h=k3p.height;k3p.width=w;k3x.clearRect(0,0,w,h);
+  const padL=38,padB=30,padT=14,padR=14;const x0=padL,x1=w-padR,y0=h-padB,y1=padT;
+  const xmin=Math.log10(0.3),xmax=Math.log10(32),ymin=Math.log10(0.2),ymax=Math.log10(180);
+  const X=v=>x0+(x1-x0)*(v-xmin)/(xmax-xmin),Y=v=>y0-(y0-y1)*(v-ymin)/(ymax-ymin);
+  // grid
+  k3x.strokeStyle='rgba(36,53,83,.6)';k3x.lineWidth=1;k3x.font='9px "JetBrains Mono",monospace';k3x.fillStyle='#6b769a';k3x.textAlign='center';
+  [0.3,1,3,10,30].forEach(t=>{const px=X(Math.log10(t));k3x.beginPath();k3x.moveTo(px,y1);k3x.lineTo(px,y0);k3x.stroke();k3x.fillText(t,px,y0+13);});
+  k3x.fillText('a (AU)',(x0+x1)/2,h-2);
+  k3x.save();k3x.translate(11,(y0+y1)/2);k3x.rotate(-Math.PI/2);k3x.fillText('T (yr)',0,0);k3x.restore();
+  // theory line slope 3/2
+  k3x.strokeStyle='rgba(243,173,94,.7)';k3x.setLineDash([5,4]);k3x.lineWidth=1.5;k3x.beginPath();
+  k3x.moveTo(X(xmin),Y(1.5*xmin));k3x.lineTo(X(xmax),Y(1.5*xmax));k3x.stroke();k3x.setLineDash([]);
+  // points
+  PLANETS.forEach(p=>{const px=X(Math.log10(p.a)),py=Y(Math.log10(p.T));
+    k3x.fillStyle=p.c;k3x.shadowColor=p.c;k3x.shadowBlur=7;k3x.beginPath();k3x.arc(px,py,4,0,7);k3x.fill();k3x.shadowBlur=0;p._px=px;p._py=py;});
+}
+k3p.addEventListener('click',ev=>{const rect=k3p.getBoundingClientRect();const mx=ev.clientX-rect.left,my=ev.clientY-rect.top;
+  for(const p of PLANETS){if(p._px&&Math.hypot(mx-p._px,my-p._py)<9){planetModal(p);return;}}});
+k3p.style.cursor='pointer';
+
+/* ---- earth orbit regimes ---- */
+const REGIMES=[
+  {n:'LEO',sub:'Low Earth Orbit',color:'#5fd0a0',alt:'160–2,000 km',
+   spec:{'Altitude':'~400 km (ISS)','Period':'~92 min','Speed':'~7.66 km/s','Inclination':'any'},
+   why:'Cheapest to reach and closest for imaging and crewed stations (ISS). Short periods mean a satellite circles Earth ~16 times a day. Air drag eventually decays low orbits.'},
+  {n:'SSO',sub:'Sun-synchronous',color:'#a9dcff',alt:'~600–800 km',
+   spec:{'Altitude':'~700 km','Inclination':'~98°','Period':'~99 min','Use':'imaging'},
+   why:'A near-polar orbit whose plane precesses to keep a constant local solar time at each pass — every image of a spot is taken under the same lighting. The workhorse of Earth-observation satellites.'},
+  {n:'MEO',sub:'Medium / navigation',color:'#3cc9e6',alt:'2,000–35,786 km',
+   spec:{'Altitude':'~20,200 km (GPS)','Period':'~11h 58m','Speed':'~3.87 km/s','Use':'GNSS'},
+   why:'Home of navigation constellations (GPS, Galileo, GLONASS, BeiDou). The ~12-hour period gives broad, stable coverage with a manageable number of satellites.'},
+  {n:'GEO',sub:'Geostationary',color:'#f3ad5e',alt:'35,786 km',
+   spec:{'Altitude':'35,786 km','Period':'23h 56m','Speed':'~3.07 km/s','Inclination':'0°'},
+   why:'At exactly one sidereal day and zero inclination, the satellite appears fixed over one spot on the equator — perfect for broadcast, weather and comms. A finite, regulated ring of slots.'},
+  {n:'GTO',sub:'Geostationary transfer',color:'#9b8cff',alt:'≈200 × 35,786 km',
+   spec:{'Perigee':'~200 km','Apogee':'35,786 km','Type':'ellipse','Use':'staging to GEO'},
+   why:'The elliptical Hohmann-style waypoint to GEO: rockets drop payloads here, then the satellite circularises at apogee with its own engine.'},
+  {n:'Molniya',sub:'High elliptical',color:'#e0653f',alt:'≈600 × 39,800 km',
+   spec:{'Eccentricity':'~0.74','Inclination':'63.4°','Period':'~12 h','Use':'high-lat comms'},
+   why:'A highly eccentric orbit that loiters for hours over high latitudes near apogee — coverage GEO can\u2019t give to polar regions. The 63.4° inclination freezes the apogee location.'}
+];
+function regimeModal(r){openModal({name:r.n,sub:r.sub,color:r.color,spec:r.spec,sections:[{h:'What it\u2019s for',p:r.why}]});}
+function buildRegimes(){const g=$('#regimeGrid');REGIMES.forEach(r=>{const b=document.createElement('button');b.className='body';b.style.color=r.color;
+  b.innerHTML='<div class="orb" style="background:radial-gradient(circle at 34% 32%, #fff, '+r.color+' 50%, '+shade(r.color)+')"></div><h4 style="color:var(--text)">'+r.n+'</h4><div class="d">'+r.alt+'</div>';
+  b.addEventListener('click',()=>regimeModal(r));g.appendChild(b);});}
+function buildRegimeSvg(){const s=$('#regimeSvg');const cx=170,cy=150;
+  const rings=[{r:38,c:'#5fd0a0',l:'LEO'},{r:78,c:'#3cc9e6',l:'MEO'},{r:120,c:'#f3ad5e',l:'GEO'}];
+  let svg='<defs><radialGradient id="eg"><stop offset="0%" stop-color="#cfe9ff"/><stop offset="60%" stop-color="#5b86c9"/><stop offset="100%" stop-color="#1b3158"/></radialGradient></defs>';
+  rings.forEach(rg=>{svg+='<circle cx="'+cx+'" cy="'+cy+'" r="'+rg.r+'" fill="none" stroke="'+rg.c+'" stroke-opacity=".55" stroke-width="1.3"/>';
+    svg+='<text x="'+cx+'" y="'+(cy-rg.r-4)+'" fill="'+rg.c+'" font-size="10" font-family="JetBrains Mono,monospace" text-anchor="middle">'+rg.l+'</text>';});
+  // GTO ellipse
+  svg+='<ellipse cx="'+(cx-41)+'" cy="'+cy+'" rx="79" ry="30" fill="none" stroke="#9b8cff" stroke-opacity=".6" stroke-width="1.2" stroke-dasharray="4 4"/>';
+  svg+='<text x="'+(cx-90)+'" y="'+(cy+44)+'" fill="#9b8cff" font-size="9" font-family="JetBrains Mono,monospace">GTO</text>';
+  // sats
+  svg+='<circle cx="'+(cx+38)+'" cy="'+cy+'" r="3" fill="#5fd0a0"/>';
+  svg+='<circle cx="'+cx+'" cy="'+(cy-78)+'" r="3" fill="#3cc9e6"/>';
+  svg+='<circle cx="'+(cx+120)+'" cy="'+cy+'" r="3.5" fill="#f3ad5e"/>';
+  svg+='<circle cx="'+cx+'" cy="'+cy+'" r="13" fill="url(#eg)"/>';
+  s.innerHTML=svg;
+}
+
+/* ---- moons ---- */
+const MOONS=[
+  {n:'Moon',pl:'Earth',mu:MU_E,a:384400,T:27.32,v:1.02,e:0.0549,c:'#cfcfd8'},
+  {n:'Phobos',pl:'Mars',mu:4.2828e13,a:9376,T:0.319,v:2.14,e:0.0151,c:'#9a8b7a'},
+  {n:'Deimos',pl:'Mars',mu:4.2828e13,a:23463,T:1.263,v:1.35,e:0.0002,c:'#a99a86'},
+  {n:'Io',pl:'Jupiter',mu:1.26687e17,a:421700,T:1.769,v:17.3,e:0.0041,c:'#e6d77a'},
+  {n:'Europa',pl:'Jupiter',mu:1.26687e17,a:671034,T:3.551,v:13.7,e:0.009,c:'#cdb89a'},
+  {n:'Ganymede',pl:'Jupiter',mu:1.26687e17,a:1070400,T:7.155,v:10.9,e:0.0013,c:'#b3a596'},
+  {n:'Callisto',pl:'Jupiter',mu:1.26687e17,a:1882700,T:16.69,v:8.2,e:0.0074,c:'#8c8278'},
+  {n:'Titan',pl:'Saturn',mu:3.7931e16,a:1221870,T:15.95,v:5.57,e:0.0288,c:'#e0a85a'},
+  {n:'Triton',pl:'Neptune',mu:6.8351e15,a:354759,T:5.877,v:4.39,e:0.0,c:'#bcd0d8'}
+];
+function moonModal(m){const aM=m.a*1000;const Tcalc=2*Math.PI*Math.sqrt(Math.pow(aM,3)/m.mu)/86400;const vc=Math.sqrt(m.mu/aM)/1000;
+  openModal({name:m.n,sub:'Moon of '+m.pl,color:m.c,
+    spec:{'Orbit radius':m.a.toLocaleString()+' km','Period':m.T+' d','Speed':m.v+' km/s','Eccentricity':m.e.toFixed(4),'Parent':m.pl},
+    sections:[
+      {h:'Period from Kepler\u2019s 3rd law',p:'With μ of '+m.pl+' and a = '+m.a.toLocaleString()+' km, T = 2π√(a³/μ) ≈ '+Tcalc.toFixed(2)+' days — matching the observed '+m.T+' d. Same law as the planets, different μ.'},
+      {h:'Orbital speed',p:'Circular-orbit speed √(μ/a) ≈ '+vc.toFixed(2)+' km/s'+(m.n==='Triton'?'. Triton orbits retrograde — backwards relative to Neptune\u2019s spin — hinting it was a captured Kuiper-belt object.':'.')}
+    ]});
+}
+function buildMoons(){const g=$('#moonGrid');MOONS.forEach(m=>{const b=document.createElement('button');b.className='body';b.style.color=m.c;
+  b.innerHTML='<div class="orb" style="background:radial-gradient(circle at 34% 32%, #fff, '+m.c+' 50%, '+shade(m.c)+')"></div><h4 style="color:var(--text)">'+m.n+'</h4><div class="d">'+m.pl+' · '+m.T+' d</div>';
+  b.addEventListener('click',()=>moonModal(m));g.appendChild(b);});}
+
+/* ---- hero canvas ---- */
+const hc=$('#hero-canvas'),hctx=hc.getContext('2d');
+const reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+let stars=[],bodies=[],hf=0;
+function initHero(){hc.width=hc.clientWidth;hc.height=hc.clientHeight;
+  stars=[];for(let i=0;i<120;i++)stars.push({x:Math.random()*hc.width,y:Math.random()*hc.height,r:Math.random()*1.2+.2,a:Math.random()*.6+.2,tw:Math.random()*.02});
+  bodies=[];const base=Math.min(hc.width,hc.height);for(let i=0;i<4;i++)bodies.push({a:base*(0.12+i*0.075),e:0.1+i*0.12,ph:Math.random()*7,sp:0.006-i*0.0011,col:['#3cc9e6','#a9dcff','#6f8fd6','#f3ad5e'][i]});
+}
+function drawHero(){hctx.clearRect(0,0,hc.width,hc.height);
+  stars.forEach(s=>{s.a+=Math.sin(hf*s.tw)*.004;hctx.globalAlpha=Math.max(.1,Math.min(.9,s.a));hctx.fillStyle='#cfe0ff';hctx.beginPath();hctx.arc(s.x,s.y,s.r,0,7);hctx.fill();});
+  hctx.globalAlpha=1;const cx=hc.width*0.7,cy=hc.height*0.5;
+  const sg=hctx.createRadialGradient(cx,cy,0,cx,cy,18);sg.addColorStop(0,'rgba(255,247,223,.7)');sg.addColorStop(.5,'rgba(255,206,107,.3)');sg.addColorStop(1,'rgba(224,101,63,0)');
+  hctx.fillStyle=sg;hctx.beginPath();hctx.arc(cx,cy,18,0,7);hctx.fill();
+  bodies.forEach(o=>{const A=o.a,b=A*Math.sqrt(1-o.e*o.e),c=A*o.e;const ecx=cx-c;
+    hctx.strokeStyle=o.col;hctx.globalAlpha=.18;hctx.lineWidth=1;hctx.beginPath();hctx.ellipse(ecx,cy,A,b,0,0,7);hctx.stroke();hctx.globalAlpha=1;
+    o.ph+=o.sp;const E=o.ph;const x=ecx+A*Math.cos(E),y=cy+b*Math.sin(E);
+    hctx.fillStyle=o.col;hctx.shadowColor=o.col;hctx.shadowBlur=10;hctx.beginPath();hctx.arc(x,y,3,0,7);hctx.fill();hctx.shadowBlur=0;});
+}
+
+/* ---- loop, nav, reveal ---- */
+function loop(){hf++;if(!reduce){drawHero();drawKepler();drawSolar();}requestAnimationFrame(loop);}
+const links=[...document.querySelectorAll('.nav-links a')];
+const secs=links.map(a=>{const h=a.getAttribute('href');return h&&h.startsWith('#')?document.querySelector(h):null;});
+window.addEventListener('scroll',()=>{const sc=window.scrollY,dh=document.documentElement.scrollHeight-window.innerHeight;
+  $('#progress').style.width=(dh>0?sc/dh*100:0)+'%';let c=-1;secs.forEach((s,i)=>{if(s&&s.offsetTop-130<=sc)c=i;});
+  links.forEach((l,i)=>l.classList.toggle('active',i===c));},{passive:true});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+window.addEventListener('resize',()=>{initHero();drawHero();orbitExp();drawKepler();hohmann();drawSolar();drawK3plot();});
+
+/* init */
+rocketEq();thrust();staging();orbitExp();k3();buildEl();hohmann();planeChange();
+buildPlanets();buildRegimes();buildRegimeSvg();buildMoons();drawK3plot();
+initHero();drawHero();
+bindTips();
+if(!reduce)loop();else{drawKepler();drawSolar();}
+</script>
+</body>
+</html>

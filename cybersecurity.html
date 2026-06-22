@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Space Cybersecurity — Risks &amp; Needs Across the Mission</title>
+<meta name="description" content="An interactive, bilingual reference to cybersecurity in space: the attack surface by segment, the CIA+A model, jamming and spoofing, a threat taxonomy, defenses and frameworks (SDLS, OSNMA, SPD-5, NIST, IEC 62443), real incidents, games and challenges." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+
+<style>
+:root{
+  --void:#05060d;--cloud:#0b1020;--cloud-2:#111a30;--cloud-3:#16223e;--line:#243353;
+  --cold:#6f8fd6;--ice:#a9dcff;--warm:#f3ad5e;--ir:#e0653f;--sim:#5fd0a0;--law:#9b8cff;--mech:#3cc9e6;--exo:#ff86c8;--cy:#9be35a;
+  --text:#eaeefb;--muted:#93a0c2;--muted-2:#6b769a;
+  --shadow:0 18px 50px -20px rgba(0,0,0,.8);--r:16px;--maxw:1120px;
+  --display:"Space Grotesk",system-ui,sans-serif;--body:"Inter",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--void);color:var(--text);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(1100px 700px at 82% -8%, rgba(155,227,90,.08), transparent 60%),
+    radial-gradient(1000px 800px at 6% 2%, rgba(111,143,214,.12), transparent 60%),
+    radial-gradient(900px 900px at 50% 120%, rgba(224,101,63,.05), transparent 60%);}
+a{color:var(--ice);text-decoration:none}
+h1,h2,h3,h4{font-family:var(--display);font-weight:600;line-height:1.12;letter-spacing:-.01em;margin:0}
+p{margin:0 0 1em}.mono{font-family:var(--mono)}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+section{padding:84px 0;position:relative}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--warm);margin:0 0 14px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:26px;height:1px;background:linear-gradient(90deg,var(--warm),transparent)}
+.sec-title{font-size:clamp(1.7rem,4vw,2.5rem);margin-bottom:14px}
+.lede{color:var(--muted);font-size:1.05rem;max-width:66ch}
+#progress{position:fixed;top:0;left:0;height:2px;width:0;z-index:70;background:linear-gradient(90deg,var(--cold),var(--cy),var(--ice))}
+
+.nav{position:sticky;top:0;z-index:60;backdrop-filter:blur(14px);background:rgba(5,6,13,.72);border-bottom:1px solid var(--line)}
+.nav-inner{max-width:var(--maxw);margin:0 auto;padding:12px 24px;padding-right:120px;display:flex;align-items:center;gap:18px}
+.brand{display:flex;align-items:center;gap:11px;font-family:var(--display);font-weight:700;letter-spacing:-.02em;font-size:1.02rem;white-space:nowrap}
+.brand a{color:inherit}
+.brand .dot{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 32% 32%,var(--ice),var(--cy) 55%,var(--cold) 95%);box-shadow:0 0 16px var(--cy);flex:none}
+.nav-links{display:flex;gap:4px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-links a{color:var(--muted);font-size:.83rem;padding:7px 10px;border-radius:9px;white-space:nowrap;transition:.18s;font-weight:500}
+.nav-links a:hover{color:var(--text);background:var(--cloud-2)}
+.nav-links a.active{color:var(--ice);background:rgba(155,227,90,.14)}
+
+/* language flag (top-right, consistent placement) */
+.langflag{position:fixed;top:11px;right:16px;z-index:90;display:inline-flex;align-items:center;gap:7px;background:rgba(11,16,32,.9);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:10px;padding:6px 10px;cursor:pointer;color:var(--text);font:600 .8rem var(--body);transition:border-color .2s}
+.langflag:hover{border-color:var(--cy)}
+.langflag svg{width:22px;height:15px;border-radius:2px;display:block;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+
+.hero{min-height:78vh;display:flex;align-items:center;padding-top:36px;position:relative;overflow:hidden}
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:-1;opacity:.95}
+.hero-inner{max-width:var(--maxw);margin:0 auto;padding:0 24px;width:100%}
+.hero .kick{font-family:var(--mono);font-size:.78rem;letter-spacing:.24em;text-transform:uppercase;color:var(--cy);margin-bottom:20px}
+.hero h1{font-size:clamp(2.5rem,7vw,4.9rem);font-weight:700;max-width:17ch;letter-spacing:-.025em}
+.hero h1 .grad{background:linear-gradient(100deg,var(--ice),var(--cy) 50%,var(--cold));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .sub{color:var(--muted);font-size:1.16rem;max-width:60ch;margin-top:22px}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:32px}
+.btn{font-family:var(--body);font-weight:600;font-size:.95rem;border-radius:12px;padding:13px 22px;border:1px solid var(--line);background:var(--cloud-2);color:var(--text);cursor:pointer;transition:transform .15s,border-color .2s;text-decoration:none;display:inline-flex;align-items:center;gap:9px}
+.btn:hover{transform:translateY(-2px);border-color:var(--cy)}
+.btn.primary{background:linear-gradient(100deg,rgba(155,227,90,.18),rgba(111,143,214,.18));border-color:rgba(155,227,90,.45)}
+.scroll-hint{margin-top:40px;color:var(--muted-2);font-size:.8rem;font-family:var(--mono);letter-spacing:.1em;display:flex;align-items:center;gap:8px}
+.scroll-hint .a{animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+@media (prefers-reduced-motion:reduce){.scroll-hint .a{animation:none}}
+
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1!important;transform:none!important}}
+
+.panel{background:linear-gradient(180deg,var(--cloud-2),var(--cloud));border:1px solid var(--line);border-radius:var(--r);padding:26px;box-shadow:var(--shadow)}
+.card{background:var(--cloud-2);border:1px solid var(--line);border-radius:14px;padding:20px;transition:.18s}
+.card:hover{transform:translateY(-3px);border-color:var(--cy)}
+.card h3{font-size:1.06rem;margin-bottom:8px}.card p{color:var(--muted);font-size:.92rem;margin:0}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:820px){.split{grid-template-columns:1fr}}
+.lab{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+@media (max-width:860px){.lab{grid-template-columns:1fr}}
+
+/* tooltips ("i") */
+.term{border-bottom:1px dashed var(--cy);cursor:help;color:var(--ice);text-underline-offset:3px}
+.term:focus{outline:2px solid var(--cy);outline-offset:2px;border-radius:3px}
+#tip{position:fixed;z-index:200;max-width:330px;background:#0a160a;border:1px solid var(--cy);border-radius:11px;padding:13px 15px;font-size:.86rem;color:var(--text);line-height:1.55;box-shadow:0 18px 40px -12px rgba(0,0,0,.85);opacity:0;pointer-events:none;transition:opacity .14s}
+#tip.show{opacity:1}#tip b{color:var(--warm)}
+.help-chip{width:21px;height:21px;border-radius:50%;border:1px solid var(--cy);color:var(--cy);font-size:.74rem;font-family:var(--mono);font-style:italic;display:inline-flex;align-items:center;justify-content:center;cursor:help;background:rgba(155,227,90,.1);font-weight:600;vertical-align:middle}
+.help-chip:hover{background:rgba(155,227,90,.25)}
+
+/* formulas */
+.formula{background:var(--cloud);border:1px solid var(--line);border-left:3px solid var(--warm);border-radius:12px;padding:16px 18px;margin:14px 0;overflow-x:auto}
+.formula.cy{border-left-color:var(--cy)}
+.formula .katex{font-size:1.14em}
+.example{background:rgba(155,227,90,.07);border:1px solid rgba(155,227,90,.28);border-radius:11px;padding:14px 16px;font-size:.9rem;color:var(--muted);margin-top:14px}
+.example b{color:var(--cy)}
+
+/* controls */
+.ctrl{margin-bottom:16px}
+.ctrl-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;gap:8px}
+.ctrl-head label{font-size:.9rem;font-weight:600;display:flex;align-items:center;gap:7px}
+.ctrl-head .val{font-family:var(--mono);font-size:.9rem;color:var(--warm)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:99px;background:linear-gradient(90deg,var(--sim),var(--ir));outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;border-radius:50%;background:var(--ice);border:3px solid var(--void);box-shadow:0 0 0 1px var(--cy),0 0 14px var(--cy);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:19px;height:19px;border-radius:50%;background:var(--ice);border:3px solid var(--void);box-shadow:0 0 0 1px var(--cy);cursor:pointer}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(116px,1fr));gap:11px;margin-top:6px}
+.stat{background:var(--cloud);border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+.stat .k{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2);font-family:var(--mono);margin-bottom:5px}
+.stat .v{font-family:var(--mono);font-size:1.08rem;font-weight:600;color:var(--ice)}
+.stat .u{color:var(--muted);font-size:.74rem}
+canvas.plot{width:100%;display:block;border-radius:12px;background:var(--cloud);border:1px solid var(--line)}
+
+.verdict{margin-top:14px;border-radius:12px;padding:14px 16px;font-weight:600;border:1px solid var(--line);display:flex;align-items:center;gap:12px;transition:.25s;font-size:.95rem}
+.verdict .icon{font-size:1.3rem}
+.verdict.ok{background:rgba(95,208,160,.13);border-color:var(--sim);color:#bff0db}
+.verdict.warn{background:rgba(243,177,61,.13);border-color:var(--warm);color:#ffe6b8}
+.verdict.bad{background:rgba(224,101,63,.14);border-color:var(--ir);color:#ffd0bf}
+
+/* link status bar */
+.linkbar{height:26px;border-radius:99px;background:var(--cloud);border:1px solid var(--line);overflow:hidden;margin-top:6px;position:relative}
+.linkbar .fill{height:100%;border-radius:99px;transition:width .2s,background .2s}
+
+/* chips / pillars browser */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.achip{font-family:var(--mono);font-size:.82rem;color:var(--muted);background:var(--cloud);border:1px solid var(--line);border-radius:9px;padding:8px 13px;cursor:pointer;transition:.16s}
+.achip:hover{border-color:var(--cy);color:var(--text)}
+.achip.on{background:rgba(155,227,90,.16);border-color:var(--cy);color:var(--ice)}
+.detail{margin-top:16px;background:var(--cloud);border:1px solid var(--line);border-left:3px solid var(--cy);border-radius:12px;padding:20px 22px}
+.detail .meta{font-family:var(--mono);font-size:.78rem;color:var(--cy);margin-bottom:6px}
+.detail h4{font-size:1.1rem;margin-bottom:8px}.detail p{color:var(--muted);margin:0 0 8px}
+
+/* attack-surface diagram */
+.surface-svg{width:100%;height:auto;display:block;background:radial-gradient(ellipse at 50% 0%,rgba(155,227,90,.05),transparent 60%),var(--cloud);border:1px solid var(--line);border-radius:14px}
+.seg-node{cursor:pointer}
+.seg-node rect,.seg-node circle{transition:.18s}
+.seg-node:hover rect,.seg-node.on rect{stroke:var(--cy);fill:rgba(155,227,90,.12)}
+
+/* card grids + modal */
+.bodygrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:20px}
+.tcard{background:var(--cloud-2);border:1px solid var(--line);border-radius:13px;padding:17px;cursor:pointer;transition:.18s;text-align:left;color:inherit;font:inherit;width:100%;position:relative;border-top:3px solid var(--cy)}
+.tcard:hover{transform:translateY(-3px);border-color:var(--cy)}
+.tcard h4{font-size:1.02rem;margin:0 0 6px}
+.tcard p{color:var(--muted);font-size:.86rem;margin:0}
+.tcard .pill{display:inline-block;margin-top:10px;font-family:var(--mono);font-size:.64rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:99px;padding:3px 8px;color:var(--muted-2)}
+.modal-bg{position:fixed;inset:0;z-index:120;background:rgba(3,4,10,.78);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:22px}
+.modal-bg.open{display:flex}
+.modal{background:linear-gradient(180deg,var(--cloud-2),var(--cloud));border:1px solid var(--cy);border-radius:18px;max-width:640px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow)}
+.modal-head{padding:22px 26px 16px;border-bottom:1px solid var(--line);display:flex;gap:14px;align-items:flex-start}
+.modal-head h3{font-size:1.4rem;line-height:1.2}.modal-head .sub{font-family:var(--mono);font-size:.8rem;color:var(--warm);margin-top:4px}
+.modal-close{margin-left:auto;background:var(--cloud-3);border:1px solid var(--line);color:var(--text);width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:1.1rem;flex:none}
+.modal-close:hover{border-color:var(--ir)}
+.modal-body{padding:22px 26px 26px}
+.modal-body h4{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--warm);font-family:var(--mono);margin:16px 0 7px}
+.modal-body h4:first-child{margin-top:0}
+.modal-body p{color:var(--muted);font-size:.93rem;margin:0}
+.tagrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.tg{font-family:var(--mono);font-size:.68rem;border-radius:99px;padding:4px 10px;border:1px solid var(--line);color:var(--muted)}
+.tg.c{color:var(--ice);border-color:rgba(169,220,255,.4)}
+.tg.s{color:var(--warm);border-color:rgba(243,173,94,.4)}
+
+/* quiz / games */
+.quiz{background:var(--cloud);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+.quiz .score{font-family:var(--mono);font-size:.82rem;color:var(--cy);background:rgba(155,227,90,.1);border:1px solid rgba(155,227,90,.3);border-radius:99px;padding:5px 12px;display:inline-block;margin-bottom:14px}
+.quiz .q{font-weight:600;font-size:1.02rem;margin-bottom:14px}
+.qopts{display:grid;gap:10px}
+@media (min-width:560px){.qopts.two{grid-template-columns:1fr 1fr}}
+.qopt{background:var(--cloud-2);border:1px solid var(--line);border-radius:11px;padding:13px 15px;cursor:pointer;transition:.16s;text-align:left;color:inherit;font:inherit}
+.qopt:hover{border-color:var(--cy)}
+.qopt.correct{border-color:var(--sim);background:rgba(95,208,160,.14)}
+.qopt.wrong{border-color:var(--ir);background:rgba(224,101,63,.14)}
+.qfb{margin-top:14px;font-size:.9rem;color:var(--muted);min-height:20px}
+.qfb b{color:var(--cy)}
+.qnext{margin-top:14px}
+
+.note{font-size:.82rem;color:var(--muted-2);font-style:italic;margin-top:12px}
+.gloss{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.gloss dt{font-family:var(--display);font-weight:600;color:var(--ice);margin-bottom:4px}
+.gloss dd{margin:0 0 16px;color:var(--muted);font-size:.9rem}
+.disclaimer{background:rgba(155,227,90,.07);border:1px solid rgba(155,227,90,.28);border-radius:12px;padding:14px 18px;color:var(--muted);font-size:.88rem;margin-top:24px;display:flex;gap:12px;align-items:flex-start}
+.disclaimer b{color:var(--cy)}.disclaimer .i{font-size:1.1rem;flex:none}
+footer{border-top:1px solid var(--line);padding:40px 0 60px;color:var(--muted-2);font-size:.85rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="tip" role="tooltip"></div>
+<button id="langBtn" class="langflag" aria-label="Switch language / Cambiar idioma"></button>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="brand"><span class="dot"></span><a href="/">newspace.live</a> <span style="color:var(--muted-2);font-weight:500" data-i18n="nav.crumb">/ Space Cyber</span></div>
+    <div class="nav-links" id="navlinks">
+      <a href="#surface" data-i18n="nav.surface">Attack surface</a>
+      <a href="#triad" data-i18n="nav.triad">CIA + A</a>
+      <a href="#jamming" data-i18n="nav.jam">Jamming</a>
+      <a href="#spoofing" data-i18n="nav.spoof">Spoofing</a>
+      <a href="#threats" data-i18n="nav.threats">Threats</a>
+      <a href="#defenses" data-i18n="nav.def">Defenses</a>
+      <a href="#incidents" data-i18n="nav.inc">Real incidents</a>
+      <a href="#game" data-i18n="nav.game">Games</a>
+      <a href="#reference" data-i18n="nav.ref">Reference</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-inner">
+    <p class="kick" data-i18n="hero.kick">Threats · CIA+A · defenses</p>
+    <h1 data-i18n-html="hero.h1">Securing the <span class="grad">space mission</span>.</h1>
+    <p class="sub" data-i18n-html="hero.sub">A satellite is a computer in a hostile place, reachable only over radio. This is an interactive, hands-on guide to its cyber risks and what protects them — the attack surface, jamming and spoofing, the CIA+A model, and the controls that keep a mission trustworthy. Hover every <span class="help-chip">i</span> for detail.</p>
+    <div class="hero-cta">
+      <a class="btn primary" href="#surface" data-i18n="hero.cta1">Map the attack surface →</a>
+      <a class="btn" href="#game" data-i18n="hero.cta2">Play the challenges</a>
+    </div>
+    <div class="scroll-hint"><span class="a">↓</span> <span data-i18n="hero.scroll">interactive throughout</span></div>
+  </div>
+</header>
+
+<!-- ATTACK SURFACE -->
+<section id="surface">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="su.eyebrow">Where the risk lives</p>
+    <h2 class="sec-title reveal" data-i18n="su.title">The four segments of a space system</h2>
+    <p class="lede reveal" data-i18n="su.lede">A space mission is not just the satellite. It is four connected segments — and an attacker only needs the weakest one. Click each part of the system to see what can go wrong there. In practice, most successful attacks never touch the satellite: they hit the ground.</p>
+    <div class="lab reveal" style="margin-top:28px">
+      <div class="panel">
+        <svg class="surface-svg" id="surfaceSvg" viewBox="0 0 360 320"></svg>
+      </div>
+      <div class="panel">
+        <div class="detail" id="segDetail" style="margin-top:0"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CIA + A -->
+<section id="triad">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="tr.eyebrow">The security model</p>
+    <h2 class="sec-title reveal" data-i18n="tr.title">CIA + A — what we are protecting</h2>
+    <p class="lede reveal" data-i18n="tr.lede">Every security control exists to defend one of these properties. The classic triad — Confidentiality, Integrity, Availability — is extended in space (and PNT) with Authenticity, because the worst attacks are not about stealing data but about making a system trust a lie. Tap each pillar.</p>
+    <div class="panel reveal" style="margin-top:24px">
+      <div class="chips" id="ciaChips"></div>
+      <div class="detail" id="ciaDetail"></div>
+    </div>
+  </div>
+</section>
+
+<!-- JAMMING -->
+<section id="jamming">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="jm.eyebrow">Denial</p>
+    <h2 class="sec-title reveal" data-i18n="jm.title">Jamming — drowning the signal</h2>
+    <p class="lede reveal" data-i18n="jm.lede">Jamming is brute force: flood the receiver with enough radio noise on the right frequency that it can no longer hear the real signal. It does not break encryption or steal data — it simply denies the link. It is the most common form of attack on space systems because it is cheap and needs no access. It primarily attacks Availability.</p>
+    <div class="lab" style="margin-top:28px">
+      <div class="panel reveal">
+        <div class="formula cy"><div data-formula="\frac{J}{S}\;(\text{dB}) = 10\log_{10}\!\frac{P_{jam}}{P_{signal}}"></div></div>
+        <p style="color:var(--muted);font-size:.92rem" data-i18n-html="jm.body">What matters is the <span class="term" data-i18n-tip="tip.js">jam-to-signal ratio</span> at the receiver, not raw power. A receiver tolerates noise up to a margin; beyond it, the bit errors overwhelm error-correction and the link drops. Defenders raise that margin with spread spectrum, directional antennas and power — attackers raise jammer power or get closer. Move the slider (a teaching model, not real attack parameters).</p>
+        <div class="ctrl" style="margin-top:10px"><div class="ctrl-head"><label data-i18n="jm.power">Jammer strength <span class="help-chip" data-i18n-tip="tip.jpow">i</span></label><span class="val" id="jm-p-v">0 dB</span></div><input type="range" id="jm-p" min="-20" max="40" value="0" step="1"></div>
+        <div class="ctrl"><div class="ctrl-head"><label data-i18n="jm.margin">Link protection margin <span class="help-chip" data-i18n-tip="tip.jmar">i</span></label><span class="val" id="jm-m-v">12 dB</span></div><input type="range" id="jm-m" min="0" max="40" value="12" step="1"></div>
+      </div>
+      <div class="panel reveal">
+        <h3 style="font-size:1.1rem;margin-bottom:6px" data-i18n="jm.status">Link status</h3>
+        <div class="linkbar"><div class="fill" id="jm-fill"></div></div>
+        <div class="verdict ok" id="jm-verd"><span class="icon">●</span><span id="jm-txt">—</span></div>
+        <h4 style="font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--warm);margin:18px 0 8px" data-i18n="jm.kindsh">Kinds of jamming</h4>
+        <p style="color:var(--muted);font-size:.9rem;margin:0" data-i18n-html="jm.kinds"><b style="color:var(--cy)">Uplink</b> jamming blinds the satellite's command receiver; <b style="color:var(--cy)">downlink</b> jamming denies users on the ground; <b style="color:var(--cy)">GNSS</b> jamming wipes out positioning and timing over a wide area — often the most disruptive of all, since timing underpins power grids, finance and telecoms.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SPOOFING -->
+<section id="spoofing">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="sp.eyebrow">Deception</p>
+    <h2 class="sec-title reveal" data-i18n="sp.title">Spoofing — feeding a believable lie</h2>
+    <p class="lede reveal" data-i18n="sp.lede">Spoofing is the dangerous cousin of jamming. Instead of denying the signal, it transmits a fake one that looks authentic — so the victim keeps working, but on false data. A spoofed GNSS receiver reports a confident, wrong position. A spoofed command could make a satellite act on an order that never came from its operator. Spoofing attacks Integrity and Authenticity, and it is far harder to detect than jamming.</p>
+    <div class="lab" style="margin-top:28px">
+      <div class="panel reveal">
+        <h3 style="font-size:1.1rem;margin-bottom:8px" data-i18n="sp.demoh">GNSS spoofing — the "walk-off" <span class="help-chip" data-i18n-tip="tip.walk">i</span></h3>
+        <canvas class="plot" id="spoofCanvas" height="240"></canvas>
+        <div class="ctrl" style="margin-top:12px"><div class="ctrl-head"><label data-i18n="sp.off">Spoof offset</label><span class="val" id="sp-o-v">0 km</span></div><input type="range" id="sp-o" min="0" max="100" value="0" step="1"></div>
+        <p class="note" data-i18n="sp.cap">The receiver (green) is slowly "walked off" its true position (white) by a signal it still believes. No alarm fires — that is the danger.</p>
+      </div>
+      <div class="panel reveal">
+        <h4 style="font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--warm);margin:0 0 8px" data-i18n="sp.whyh">Why it works — and how we stop it</h4>
+        <p style="color:var(--muted);font-size:.92rem" data-i18n-html="sp.why">Civil GNSS signals (like GPS L1 C/A) carry no signature, so a receiver cannot tell a genuine satellite from a clever fake. The fixes are authentication and cross-checks: <span class="term" data-i18n-tip="tip.osnma">Galileo OSNMA</span> signs the navigation message, encrypted military codes resist it by design, and receivers can sanity-check against inertial sensors, multiple constellations and known clock behaviour.</p>
+        <div class="example" data-i18n-html="sp.ex"><b>Jamming vs spoofing.</b> Jamming is loud and obvious — you notice the outage. Spoofing is quiet and you may never know: the system reports success while doing the wrong thing. That is why integrity and authenticity, not just availability, sit at the centre of space cyber.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THREATS -->
+<section id="threats">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="th.eyebrow">The full taxonomy</p>
+    <h2 class="sec-title reveal" data-i18n="th.title">Threats beyond the radio</h2>
+    <p class="lede reveal" data-i18n="th.lede">Jamming and spoofing are the famous ones, but most real compromises are ordinary cyberattacks against the ground and supply chain. Each card shows what the threat is, which CIA+A property it breaks, which segment it hits, and the control that stops it.</p>
+    <div class="bodygrid reveal" id="threatGrid"></div>
+  </div>
+</section>
+
+<!-- DEFENSES -->
+<section id="defenses">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="de.eyebrow">What we need</p>
+    <h2 class="sec-title reveal" data-i18n="de.title">Defenses &amp; frameworks</h2>
+    <p class="lede reveal" data-i18n="de.lede">Security in space is engineered in, not bolted on. These are the core controls and the real frameworks that codify them — from the data-link layer up to national policy. Click any for detail.</p>
+    <div class="bodygrid reveal" id="defenseGrid"></div>
+  </div>
+</section>
+
+<!-- INCIDENTS -->
+<section id="incidents">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="in.eyebrow">It already happened</p>
+    <h2 class="sec-title reveal" data-i18n="in.title">Real incidents</h2>
+    <p class="lede reveal" data-i18n="in.lede">Space cyber is not theoretical. These documented public cases show the patterns — and that the ground segment is usually the way in.</p>
+    <div class="bodygrid reveal" id="incidentGrid"></div>
+  </div>
+</section>
+
+<!-- GAMES -->
+<section id="game">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="ga.eyebrow">Test yourself</p>
+    <h2 class="sec-title reveal" data-i18n="ga.title">Challenges</h2>
+    <p class="lede reveal" data-i18n="ga.lede">Two quick games. Read each scenario and choose — you will get instant feedback and a running score.</p>
+    <div class="split" style="margin-top:26px">
+      <div class="quiz reveal"><div class="score" id="q1-score">0 / 0</div><div class="q" id="q1-q"></div><div class="qopts two" id="q1-opts"></div><div class="qfb" id="q1-fb"></div><button class="btn qnext" id="q1-next" data-i18n="ga.next">Next →</button></div>
+      <div class="quiz reveal"><div class="score" id="q2-score">0 / 0</div><div class="q" id="q2-q"></div><div class="qopts two" id="q2-opts"></div><div class="qfb" id="q2-fb"></div><button class="btn qnext" id="q2-next" data-i18n="ga.next">Next →</button></div>
+    </div>
+    <p class="note reveal" data-i18n="ga.h1">Left: is it <b>jamming</b> (denial) or <b>spoofing</b> (deception)? Right: which <b>CIA+A</b> property does the attack break?</p>
+  </div>
+</section>
+
+<!-- REFERENCE -->
+<section id="reference">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="re.eyebrow">Quick reference</p>
+    <h2 class="sec-title reveal" data-i18n="re.title">Glossary &amp; frameworks</h2>
+    <div class="panel reveal" style="margin-top:24px">
+      <dl class="gloss" id="glossList"></dl>
+    </div>
+    <div class="disclaimer reveal"><span class="i">🛡</span><div data-i18n-html="re.disc"><b>Educational &amp; defensive.</b> This page explains how threats work so that systems can be defended. It deliberately contains no operational instructions, parameters or code for conducting attacks. The interactive models are simplified teaching tools, not real attack tooling. For real systems, follow frameworks such as SPD-5, NIST and IEC 62443, and qualified security engineering.</div></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div><strong style="color:var(--text);font-family:var(--display)">newspace.live</strong> · <span data-i18n="ft.t">Space Cybersecurity reference</span></div>
+    <div data-i18n="ft.d">Educational &amp; defensive · models are simplified.</div>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-name">
+    <div class="modal-head"><div><h3 id="m-name"></h3><div class="sub" id="m-sub"></div></div><button class="modal-close" id="modalClose" aria-label="Close">✕</button></div>
+    <div class="modal-body" id="m-body"></div>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+let LANG='en';
+
+/* ---------- i18n dictionary ---------- */
+const I18N={
+ 'nav.crumb':{en:'/ Space Cyber',es:'/ Ciber Espacial'},
+ 'nav.surface':{en:'Attack surface',es:'Superficie de ataque'},
+ 'nav.triad':{en:'CIA + A',es:'CIA + A'},
+ 'nav.jam':{en:'Jamming',es:'Jamming'},
+ 'nav.spoof':{en:'Spoofing',es:'Spoofing'},
+ 'nav.threats':{en:'Threats',es:'Amenazas'},
+ 'nav.def':{en:'Defenses',es:'Defensas'},
+ 'nav.inc':{en:'Real incidents',es:'Incidentes reales'},
+ 'nav.game':{en:'Games',es:'Juegos'},
+ 'nav.ref':{en:'Reference',es:'Referencia'},
+ 'hero.kick':{en:'Threats · CIA+A · defenses',es:'Amenazas · CIA+A · defensas'},
+ 'hero.h1':{en:'Securing the <span class="grad">space mission</span>.',es:'Asegurar la <span class="grad">misión espacial</span>.'},
+ 'hero.sub':{en:'A satellite is a computer in a hostile place, reachable only over radio. This is an interactive, hands-on guide to its cyber risks and what protects them — the attack surface, jamming and spoofing, the CIA+A model, and the controls that keep a mission trustworthy. Hover every <span class="help-chip">i</span> for detail.',es:'Un satélite es una computadora en un lugar hostil, alcanzable solo por radio. Esta es una guía interactiva y práctica de sus riesgos de ciberseguridad y de lo que los protege — la superficie de ataque, jamming y spoofing, el modelo CIA+A, y los controles que mantienen confiable a una misión. Pasá el cursor por cada <span class="help-chip">i</span> para ver más detalle.'},
+ 'hero.cta1':{en:'Map the attack surface →',es:'Mapeá la superficie de ataque →'},
+ 'hero.cta2':{en:'Play the challenges',es:'Jugá los desafíos'},
+ 'hero.scroll':{en:'interactive throughout',es:'interactivo de punta a punta'},
+
+ 'su.eyebrow':{en:'Where the risk lives',es:'Dónde vive el riesgo'},
+ 'su.title':{en:'The four segments of a space system',es:'Los cuatro segmentos de un sistema espacial'},
+ 'su.lede':{en:'A space mission is not just the satellite. It is four connected segments — and an attacker only needs the weakest one. Click each part of the system to see what can go wrong there. In practice, most successful attacks never touch the satellite: they hit the ground.',es:'Una misión espacial no es solo el satélite. Son cuatro segmentos conectados — y a un atacante le basta el más débil. Hacé clic en cada parte del sistema para ver qué puede fallar ahí. En la práctica, la mayoría de los ataques exitosos nunca tocan el satélite: golpean el segmento terreno.'},
+
+ 'tr.eyebrow':{en:'The security model',es:'El modelo de seguridad'},
+ 'tr.title':{en:'CIA + A — what we are protecting',es:'CIA + A — qué estamos protegiendo'},
+ 'tr.lede':{en:'Every security control exists to defend one of these properties. The classic triad — Confidentiality, Integrity, Availability — is extended in space (and PNT) with Authenticity, because the worst attacks are not about stealing data but about making a system trust a lie. Tap each pillar.',es:'Todo control de seguridad existe para defender una de estas propiedades. La tríada clásica — Confidencialidad, Integridad, Disponibilidad — se extiende en el espacio (y en PNT) con Autenticidad, porque los peores ataques no buscan robar datos sino lograr que un sistema confíe en una mentira. Tocá cada pilar.'},
+
+ 'jm.eyebrow':{en:'Denial',es:'Denegación'},
+ 'jm.title':{en:'Jamming — drowning the signal',es:'Jamming — ahogar la señal'},
+ 'jm.lede':{en:'Jamming is brute force: flood the receiver with enough radio noise on the right frequency that it can no longer hear the real signal. It does not break encryption or steal data — it simply denies the link. It is the most common form of attack on space systems because it is cheap and needs no access. It primarily attacks Availability.',es:'El jamming es fuerza bruta: inundar al receptor con suficiente ruido de radio en la frecuencia correcta para que ya no pueda oír la señal real. No rompe el cifrado ni roba datos — simplemente niega el enlace. Es la forma más común de ataque a sistemas espaciales porque es barata y no requiere acceso. Ataca principalmente la Disponibilidad.'},
+ 'jm.body':{en:'What matters is the <span class="term" data-i18n-tip="tip.js">jam-to-signal ratio</span> at the receiver, not raw power. A receiver tolerates noise up to a margin; beyond it, the bit errors overwhelm error-correction and the link drops. Defenders raise that margin with spread spectrum, directional antennas and power — attackers raise jammer power or get closer. Move the slider (a teaching model, not real attack parameters).',es:'Lo que importa es la <span class="term" data-i18n-tip="tip.js">relación interferencia-señal</span> en el receptor, no la potencia bruta. Un receptor tolera ruido hasta un margen; superado, los errores de bit desbordan la corrección y el enlace cae. El defensor sube ese margen con espectro ensanchado, antenas directivas y potencia — el atacante sube la potencia del jammer o se acerca. Movés el control (modelo didáctico, no parámetros reales de ataque).'},
+ 'jm.power':{en:'Jammer strength',es:'Potencia del jammer'},
+ 'jm.margin':{en:'Link protection margin',es:'Margen de protección del enlace'},
+ 'jm.status':{en:'Link status',es:'Estado del enlace'},
+ 'jm.kindsh':{en:'Kinds of jamming',es:'Tipos de jamming'},
+ 'jm.kinds':{en:'<b style="color:var(--cy)">Uplink</b> jamming blinds the satellite\u2019s command receiver; <b style="color:var(--cy)">downlink</b> jamming denies users on the ground; <b style="color:var(--cy)">GNSS</b> jamming wipes out positioning and timing over a wide area — often the most disruptive of all, since timing underpins power grids, finance and telecoms.',es:'El jamming de <b style="color:var(--cy)">subida</b> ciega el receptor de comandos del satélite; el de <b style="color:var(--cy)">bajada</b> niega a los usuarios en tierra; el de <b style="color:var(--cy)">GNSS</b> borra el posicionamiento y la sincronización en un área amplia — a menudo el más disruptivo, porque el tiempo sostiene a las redes eléctricas, las finanzas y las telecomunicaciones.'},
+
+ 'sp.eyebrow':{en:'Deception',es:'Engaño'},
+ 'sp.title':{en:'Spoofing — feeding a believable lie',es:'Spoofing — alimentar una mentira creíble'},
+ 'sp.lede':{en:'Spoofing is the dangerous cousin of jamming. Instead of denying the signal, it transmits a fake one that looks authentic — so the victim keeps working, but on false data. A spoofed GNSS receiver reports a confident, wrong position. A spoofed command could make a satellite act on an order that never came from its operator. Spoofing attacks Integrity and Authenticity, and it is far harder to detect than jamming.',es:'El spoofing es el primo peligroso del jamming. En vez de negar la señal, transmite una falsa que parece auténtica — así la víctima sigue operando, pero con datos falsos. Un receptor GNSS suplantado reporta una posición errónea con total confianza. Un comando suplantado podría hacer que un satélite ejecute una orden que nunca vino de su operador. El spoofing ataca la Integridad y la Autenticidad, y es mucho más difícil de detectar que el jamming.'},
+ 'sp.demoh':{en:'GNSS spoofing — the "walk-off" <span class="help-chip" data-i18n-tip="tip.walk">i</span>',es:'Spoofing GNSS — el "arrastre" <span class="help-chip" data-i18n-tip="tip.walk">i</span>'},
+ 'sp.off':{en:'Spoof offset',es:'Desvío del spoofing'},
+ 'sp.cap':{en:'The receiver (green) is slowly "walked off" its true position (white) by a signal it still believes. No alarm fires — that is the danger.',es:'El receptor (verde) es "arrastrado" lentamente de su posición real (blanco) por una señal en la que sigue confiando. No salta ninguna alarma — ahí está el peligro.'},
+ 'sp.whyh':{en:'Why it works — and how we stop it',es:'Por qué funciona — y cómo se frena'},
+ 'sp.why':{en:'Civil GNSS signals (like GPS L1 C/A) carry no signature, so a receiver cannot tell a genuine satellite from a clever fake. The fixes are authentication and cross-checks: <span class="term" data-i18n-tip="tip.osnma">Galileo OSNMA</span> signs the navigation message, encrypted military codes resist it by design, and receivers can sanity-check against inertial sensors, multiple constellations and known clock behaviour.',es:'Las señales GNSS civiles (como GPS L1 C/A) no llevan firma, así que un receptor no puede distinguir un satélite genuino de una falsificación hábil. Las soluciones son autenticación y verificaciones cruzadas: <span class="term" data-i18n-tip="tip.osnma">OSNMA de Galileo</span> firma el mensaje de navegación, los códigos militares cifrados lo resisten por diseño, y los receptores pueden contrastar con sensores inerciales, múltiples constelaciones y el comportamiento esperado del reloj.'},
+ 'sp.ex':{en:'<b>Jamming vs spoofing.</b> Jamming is loud and obvious — you notice the outage. Spoofing is quiet and you may never know: the system reports success while doing the wrong thing. That is why integrity and authenticity, not just availability, sit at the centre of space cyber.',es:'<b>Jamming vs spoofing.</b> El jamming es ruidoso y evidente — notás la caída. El spoofing es silencioso y quizás nunca lo sepas: el sistema reporta éxito mientras hace lo incorrecto. Por eso la integridad y la autenticidad, no solo la disponibilidad, están en el centro de la ciberseguridad espacial.'},
+
+ 'th.eyebrow':{en:'The full taxonomy',es:'La taxonomía completa'},
+ 'th.title':{en:'Threats beyond the radio',es:'Amenazas más allá de la radio'},
+ 'th.lede':{en:'Jamming and spoofing are the famous ones, but most real compromises are ordinary cyberattacks against the ground and supply chain. Each card shows what the threat is, which CIA+A property it breaks, which segment it hits, and the control that stops it.',es:'Jamming y spoofing son los famosos, pero la mayoría de los compromisos reales son ciberataques comunes contra el segmento terreno y la cadena de suministro. Cada tarjeta muestra qué es la amenaza, qué propiedad CIA+A rompe, qué segmento golpea y el control que la frena.'},
+
+ 'de.eyebrow':{en:'What we need',es:'Lo que necesitamos'},
+ 'de.title':{en:'Defenses & frameworks',es:'Defensas y marcos'},
+ 'de.lede':{en:'Security in space is engineered in, not bolted on. These are the core controls and the real frameworks that codify them — from the data-link layer up to national policy. Click any for detail.',es:'La seguridad en el espacio se diseña desde el inicio, no se agrega al final. Estos son los controles clave y los marcos reales que los codifican — desde la capa de enlace de datos hasta la política nacional. Hacé clic en cualquiera para ver detalle.'},
+
+ 'in.eyebrow':{en:'It already happened',es:'Ya ocurrió'},
+ 'in.title':{en:'Real incidents',es:'Incidentes reales'},
+ 'in.lede':{en:'Space cyber is not theoretical. These documented public cases show the patterns — and that the ground segment is usually the way in.',es:'La ciberseguridad espacial no es teórica. Estos casos públicos documentados muestran los patrones — y que el segmento terreno suele ser la vía de entrada.'},
+
+ 'ga.eyebrow':{en:'Test yourself',es:'Ponete a prueba'},
+ 'ga.title':{en:'Challenges',es:'Desafíos'},
+ 'ga.lede':{en:'Two quick games. Read each scenario and choose — you will get instant feedback and a running score.',es:'Dos juegos rápidos. Leé cada escenario y elegí — recibís devolución al instante y un puntaje acumulado.'},
+ 'ga.next':{en:'Next →',es:'Siguiente →'},
+ 'ga.h1':{en:'Left: is it <b>jamming</b> (denial) or <b>spoofing</b> (deception)? Right: which <b>CIA+A</b> property does the attack break?',es:'Izquierda: ¿es <b>jamming</b> (denegación) o <b>spoofing</b> (engaño)? Derecha: ¿qué propiedad <b>CIA+A</b> rompe el ataque?'},
+
+ 're.eyebrow':{en:'Quick reference',es:'Referencia rápida'},
+ 're.title':{en:'Glossary & frameworks',es:'Glosario y marcos'},
+ 're.disc':{en:'<b>Educational & defensive.</b> This page explains how threats work so that systems can be defended. It deliberately contains no operational instructions, parameters or code for conducting attacks. The interactive models are simplified teaching tools, not real attack tooling. For real systems, follow frameworks such as SPD-5, NIST and IEC 62443, and qualified security engineering.',es:'<b>Educativo y defensivo.</b> Esta página explica cómo funcionan las amenazas para poder defender los sistemas. Deliberadamente no contiene instrucciones operativas, parámetros ni código para ejecutar ataques. Los modelos interactivos son herramientas didácticas simplificadas, no herramientas reales de ataque. Para sistemas reales, seguí marcos como SPD-5, NIST e IEC 62443, e ingeniería de seguridad calificada.'},
+ 'ft.t':{en:'Space Cybersecurity reference',es:'Referencia de Ciberseguridad Espacial'},
+ 'ft.d':{en:'Educational & defensive · models are simplified.',es:'Educativo y defensivo · los modelos están simplificados.'},
+
+ /* tooltips */
+ 'tip.js':{en:'<b>Jam-to-signal ratio (J/S).</b> How much stronger the jammer is than the wanted signal at the receiver, in decibels. A link survives while J/S stays below its protection margin.',es:'<b>Relación interferencia-señal (J/S).</b> Cuánto más fuerte es el jammer que la señal deseada en el receptor, en decibeles. El enlace sobrevive mientras J/S se mantenga por debajo de su margen de protección.'},
+ 'tip.jpow':{en:'<b>Jammer strength (abstract).</b> A teaching value combining transmit power, distance and antenna gain into a single relative number. It is deliberately not a real attack parameter.',es:'<b>Potencia del jammer (abstracta).</b> Un valor didáctico que combina potencia, distancia y ganancia de antena en un único número relativo. A propósito no es un parámetro real de ataque.'},
+ 'tip.jmar':{en:'<b>Protection margin.</b> The noise headroom a link is engineered with — raised by spread spectrum, directional/nulling antennas, higher power and error coding. The bigger the margin, the harder to jam.',es:'<b>Margen de protección.</b> El colchón de ruido con el que se diseña un enlace — elevado con espectro ensanchado, antenas directivas/anuladoras, mayor potencia y codificación de errores. Cuanto mayor el margen, más difícil de interferir.'},
+ 'tip.walk':{en:'<b>Walk-off attack.</b> A spoofer first matches the real signal, then very slowly drags the receiver\u2019s computed position or clock away — gradually, so nothing looks suspicious.',es:'<b>Ataque de arrastre.</b> El spoofer primero iguala la señal real y luego arrastra muy lentamente la posición o el reloj calculados por el receptor — de a poco, para que nada parezca sospechoso.'},
+ 'tip.osnma':{en:'<b>OSNMA.</b> Open Service Navigation Message Authentication — Galileo\u2019s free service that cryptographically signs the navigation message, letting civil receivers verify the signal is genuine and reject spoofing.',es:'<b>OSNMA.</b> Autenticación del Mensaje de Navegación del Servicio Abierto — el servicio gratuito de Galileo que firma criptográficamente el mensaje de navegación, permitiendo a los receptores civiles verificar que la señal es genuina y rechazar el spoofing.'}
+};
+function t(k){const e=I18N[k];return e?(e[LANG]||e.en):k;}
+
+/* ---------- flags ---------- */
+function flagSVG(lang){
+  if(lang==='es') return '<svg viewBox="0 0 24 16"><rect width="24" height="16" fill="#c60b1e"/><rect y="4" width="24" height="8" fill="#ffc400"/></svg>';
+  return '<svg viewBox="0 0 24 16"><rect width="24" height="16" fill="#012169"/><path d="M0,0 L24,16 M24,0 L0,16" stroke="#fff" stroke-width="3"/><path d="M0,0 L24,16 M24,0 L0,16" stroke="#C8102E" stroke-width="1.6"/><rect x="9.5" width="5" height="16" fill="#fff"/><rect y="5.5" width="24" height="5" fill="#fff"/><rect x="10.5" width="3" height="16" fill="#C8102E"/><rect y="6.5" width="24" height="3" fill="#C8102E"/></svg>';
+}
+
+const rerenderers=[];
+function applyLang(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(!I18N[k])return;const val=t(k);
+    if(/[<>]/.test(val)){el.innerHTML=val;return;}
+    const kids=[...el.childNodes].filter(n=>n.nodeType===1);
+    if(kids.length){el.textContent=val+' ';kids.forEach(n=>el.appendChild(n));}
+    else el.textContent=val;});
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{const k=el.getAttribute('data-i18n-html');if(I18N[k])el.innerHTML=t(k);});
+  document.querySelectorAll('[data-i18n-tip]').forEach(el=>{const k=el.getAttribute('data-i18n-tip');if(I18N[k])el.setAttribute('data-tip',t(k));});
+  const tgt=LANG==='en'?'es':'en';const name=LANG==='en'?'Español':'English';
+  $('#langBtn').innerHTML=flagSVG(tgt)+'<span>'+name+'</span>';
+  rerenderers.forEach(fn=>{try{fn();}catch(e){}});
+  bindTips();renderFormulas();
+}
+function toggleLang(){LANG=LANG==='en'?'es':'en';try{localStorage.setItem('nslang',LANG);}catch(e){}applyLang();}
+$('#langBtn').addEventListener('click',toggleLang);
+
+/* ---------- tooltips ---------- */
+const tip=$('#tip');let tipTimer=null;
+function showTip(el){const x=el.getAttribute('data-tip');if(!x)return;tip.innerHTML=x;tip.classList.add('show');
+  const r=el.getBoundingClientRect();const tw=Math.min(330,window.innerWidth-24);tip.style.maxWidth=tw+'px';
+  let px=r.left+r.width/2-tw/2;px=Math.max(12,Math.min(px,window.innerWidth-tw-12));
+  let py=r.bottom+10;if(py+tip.offsetHeight>window.innerHeight-12)py=r.top-tip.offsetHeight-10;
+  tip.style.left=px+'px';tip.style.top=Math.max(12,py)+'px';}
+function hideTip(){tip.classList.remove('show');}
+function bindTips(){document.querySelectorAll('[data-tip]').forEach(el=>{if(el.dataset.tb)return;el.dataset.tb=1;
+  if(!el.hasAttribute('tabindex')&&el.classList.contains('term'))el.setAttribute('tabindex','0');
+  el.addEventListener('mouseenter',()=>showTip(el));el.addEventListener('mouseleave',hideTip);
+  el.addEventListener('focus',()=>showTip(el));el.addEventListener('blur',hideTip);
+  el.addEventListener('click',e=>{e.stopPropagation();showTip(el);clearTimeout(tipTimer);tipTimer=setTimeout(hideTip,5000);});});}
+document.addEventListener('click',hideTip);window.addEventListener('scroll',hideTip,{passive:true});
+
+/* ---------- KaTeX ---------- */
+function renderFormulas(){if(!window.katex)return;document.querySelectorAll('[data-formula]').forEach(el=>{if(el.dataset.done)return;el.dataset.done=1;try{katex.render(el.getAttribute('data-formula'),el,{throwOnError:false,displayMode:true});}catch(e){}});}
+window.addEventListener('load',()=>{renderFormulas();setTimeout(renderFormulas,300);});
+
+/* ---------- attack surface ---------- */
+const SEGMENTS={
+ space:{name:{en:'Space segment',es:'Segmento espacial'},sub:{en:'Satellite bus & payload',es:'Plataforma y carga útil'},
+   d:{en:'The spacecraft itself: flight software, the onboard computer, the command receiver and the payload. Risks: malicious or forged commands, flight-software bugs, no patching once in orbit, and limited compute for strong crypto. Compromise here can be permanent.',es:'La nave en sí: software de vuelo, computadora de a bordo, receptor de comandos y carga útil. Riesgos: comandos maliciosos o falsificados, bugs en el software de vuelo, imposibilidad de parchear en órbita y poca capacidad de cómputo para criptografía fuerte. Un compromiso aquí puede ser permanente.'}},
+ link:{name:{en:'Link / RF segment',es:'Segmento de enlace / RF'},sub:{en:'Uplink, downlink, TT&C',es:'Subida, bajada, TT&C'},
+   d:{en:'The radio links carrying telemetry, tracking and commands (TT&C) and payload data. Risks: jamming (denial), spoofing and command injection (deception), and eavesdropping if the link is unencrypted. This is the segment unique to space — and the one anyone with a transmitter can reach.',es:'Los enlaces de radio que llevan telemetría, seguimiento y comandos (TT&C) y datos de la carga. Riesgos: jamming (denegación), spoofing e inyección de comandos (engaño), y escucha si el enlace no está cifrado. Es el segmento propio del espacio — y el que cualquiera con un transmisor puede alcanzar.'}},
+ ground:{name:{en:'Ground segment',es:'Segmento terreno'},sub:{en:'Mission control & stations',es:'Control de misión y estaciones'},
+   d:{en:'Mission control, antennas, networks and the IT/OT that operate the mission. This is where most real attacks land: ordinary intrusions, stolen credentials, ransomware, OT exposure. Own the ground and you can command the satellite legitimately — no RF wizardry needed.',es:'Control de misión, antenas, redes y la IT/OT que opera la misión. Aquí aterrizan la mayoría de los ataques reales: intrusiones comunes, credenciales robadas, ransomware, exposición OT. Si controlás el terreno, podés comandar el satélite legítimamente — sin magia de RF.'}},
+ user:{name:{en:'User segment',es:'Segmento de usuario'},sub:{en:'Receivers & end devices',es:'Receptores y dispositivos'},
+   d:{en:'The receivers and devices that consume the service — GNSS chips in phones, ships, aircraft, power grids and weapons. Risks: spoofing and jamming of position and timing, and trusting unauthenticated signals. The blast radius is huge because so much critical infrastructure depends on it.',es:'Los receptores y dispositivos que consumen el servicio — chips GNSS en teléfonos, barcos, aviones, redes eléctricas y armas. Riesgos: spoofing y jamming de posición y tiempo, y confiar en señales no autenticadas. El radio de impacto es enorme porque mucha infraestructura crítica depende de él.'}}
+};
+function buildSurface(){
+  const s=$('#surfaceSvg');
+  const lbl=k=>SEGMENTS[k].name[LANG];
+  s.innerHTML=`
+   <line x1="180" y1="58" x2="180" y2="150" stroke="#9be35a" stroke-opacity=".4" stroke-dasharray="4 4"/>
+   <line x1="180" y1="150" x2="180" y2="210" stroke="#9be35a" stroke-opacity=".25" stroke-dasharray="4 4"/>
+   <line x1="120" y1="240" x2="240" y2="240" stroke="#6f8fd6" stroke-opacity=".3"/>
+   <g class="seg-node" data-seg="space">
+     <rect x="120" y="24" width="120" height="40" rx="9" fill="var(--cloud-2)" stroke="var(--line)"/>
+     <circle cx="138" cy="44" r="7" fill="#9be35a" fill-opacity=".4" stroke="#9be35a"/>
+     <text x="152" y="40" fill="#eaeefb" font-size="11" font-family="Inter,sans-serif" font-weight="600">${lbl('space')}</text>
+     <text x="152" y="54" fill="#93a0c2" font-size="9" font-family="JetBrains Mono,monospace">SAT</text>
+   </g>
+   <g class="seg-node" data-seg="link">
+     <rect x="232" y="120" width="116" height="38" rx="9" fill="var(--cloud-2)" stroke="var(--line)"/>
+     <text x="246" y="136" fill="#eaeefb" font-size="11" font-family="Inter,sans-serif" font-weight="600">${lbl('link')}</text>
+     <text x="246" y="150" fill="#93a0c2" font-size="9" font-family="JetBrains Mono,monospace">RF · TT&amp;C</text>
+   </g>
+   <g class="seg-node" data-seg="ground">
+     <rect x="110" y="210" width="140" height="40" rx="9" fill="var(--cloud-2)" stroke="var(--line)"/>
+     <text x="126" y="226" fill="#eaeefb" font-size="11" font-family="Inter,sans-serif" font-weight="600">${lbl('ground')}</text>
+     <text x="126" y="240" fill="#93a0c2" font-size="9" font-family="JetBrains Mono,monospace">MISSION CONTROL · IT/OT</text>
+   </g>
+   <g class="seg-node" data-seg="user">
+     <rect x="20" y="262" width="150" height="40" rx="9" fill="var(--cloud-2)" stroke="var(--line)"/>
+     <text x="36" y="278" fill="#eaeefb" font-size="11" font-family="Inter,sans-serif" font-weight="600">${lbl('user')}</text>
+     <text x="36" y="292" fill="#93a0c2" font-size="9" font-family="JetBrains Mono,monospace">RECEIVERS · GNSS</text>
+   </g>`;
+  s.querySelectorAll('.seg-node').forEach(n=>n.addEventListener('click',()=>{
+    s.querySelectorAll('.seg-node').forEach(x=>x.classList.remove('on'));n.classList.add('on');showSeg(n.dataset.seg);}));
+  if(!s._sel)s._sel='space';
+  s.querySelector('[data-seg="'+s._sel+'"]').classList.add('on');showSeg(s._sel);
+}
+function showSeg(k){$('#surfaceSvg')._sel=k;const g=SEGMENTS[k];
+  $('#segDetail').innerHTML='<div class="meta">'+g.sub[LANG]+'</div><h4>'+g.name[LANG]+'</h4><p>'+g.d[LANG]+'</p>';}
+rerenderers.push(buildSurface);
+
+/* ---------- CIA + A ---------- */
+const PILLARS=[
+ {n:'C',t:{en:'Confidentiality',es:'Confidencialidad'},d:{en:'Keeping data secret from those who should not see it — telemetry, imagery, keys, mission plans. Broken by eavesdropping on an unencrypted link or stealing data on the ground. Defended by encryption.',es:'Mantener los datos en secreto de quienes no deben verlos — telemetría, imágenes, claves, planes de misión. Se rompe escuchando un enlace sin cifrar o robando datos en tierra. Se defiende con cifrado.'}},
+ {n:'I',t:{en:'Integrity',es:'Integridad'},d:{en:'Ensuring data and commands are not altered. Broken by spoofing, command injection or replay attacks that change what the system acts on. Defended by message authentication codes, signing and sequence/anti-replay protection.',es:'Asegurar que los datos y comandos no sean alterados. Se rompe con spoofing, inyección de comandos o ataques de repetición que cambian aquello sobre lo que actúa el sistema. Se defiende con códigos de autenticación de mensajes, firma y protección de secuencia/anti-repetición.'}},
+ {n:'A',t:{en:'Availability',es:'Disponibilidad'},d:{en:'The service being there when needed. Broken by jamming, denial-of-service or ransomware on the ground. Defended by anti-jam techniques, redundancy, multiple ground sites and resilient design.',es:'Que el servicio esté cuando se lo necesita. Se rompe con jamming, denegación de servicio o ransomware en tierra. Se defiende con técnicas anti-jam, redundancia, múltiples estaciones terrenas y diseño resiliente.'}},
+ {n:'+A',t:{en:'Authenticity',es:'Autenticidad'},d:{en:'Proving a signal or command really comes from who it claims — and cannot be repudiated. This is the extra pillar that matters most in space, because spoofing defeats systems that protect data but never check who is speaking. Defended by cryptographic authentication (e.g. SDLS, OSNMA) and strong identity.',es:'Probar que una señal o comando realmente viene de quien dice — y que no puede ser negado. Es el pilar extra que más importa en el espacio, porque el spoofing vence a sistemas que protegen los datos pero nunca verifican quién habla. Se defiende con autenticación criptográfica (p. ej. SDLS, OSNMA) e identidad fuerte.'}}
+];
+function buildCIA(){const c=$('#ciaChips');c.innerHTML='';PILLARS.forEach((p,i)=>{const b=document.createElement('button');b.className='achip'+(i===(c._sel||0)?' on':'');b.textContent=p.n+' · '+p.t[LANG];
+  b.addEventListener('click',()=>{c._sel=i;c.querySelectorAll('.achip').forEach(x=>x.classList.remove('on'));b.classList.add('on');showCIA(i);});c.appendChild(b);});showCIA(c._sel||0);}
+function showCIA(i){$('#ciaChips')._sel=i;const p=PILLARS[i];$('#ciaDetail').innerHTML='<div class="meta">'+p.n+'</div><h4>'+p.t[LANG]+'</h4><p>'+p.d[LANG]+'</p>';}
+rerenderers.push(buildCIA);
+
+/* ---------- jamming model ---------- */
+const jmP=$('#jm-p'),jmM=$('#jm-m');
+function jamming(){const P=+jmP.value,M=+jmM.value;
+  $('#jm-p-v').textContent=(P>0?'+':'')+P+' dB';$('#jm-m-v').textContent=M+' dB';
+  const over=P-M; // how far jammer exceeds margin
+  const f=$('#jm-fill'),v=$('#jm-verd'),txt=$('#jm-txt');
+  let pct,col,cls,icon,msg;
+  if(over< -3){pct=Math.max(12,100+over*1.5);col='var(--sim)';cls='ok';icon='●';msg=LANG==='es'?'<b>Enlace estable.</b> El jammer está por debajo del margen — la corrección de errores absorbe el ruido.':'<b>Link healthy.</b> The jammer is below the margin — error-correction absorbs the noise.';}
+  else if(over<6){pct=55;col='var(--warm)';cls='warn';icon='◐';msg=LANG==='es'?'<b>Enlace degradado.</b> Subiendo la tasa de errores; caídas intermitentes y menor caudal.':'<b>Link degraded.</b> Error rate climbing; intermittent dropouts and reduced throughput.';}
+  else{pct=Math.max(8,40-over);col='var(--ir)';cls='bad';icon='○';msg=LANG==='es'?'<b>Enlace perdido.</b> El ruido supera al margen — denegación de servicio. Suben potencia/espectro ensanchado o se pierde el contacto.':'<b>Link lost.</b> Noise overwhelms the margin — denial of service. Raise power/spread spectrum, or contact is lost.';}
+  f.style.width=Math.min(100,Math.max(6,pct))+'%';f.style.background=col;
+  v.className='verdict '+cls;v.querySelector('.icon').textContent=icon;txt.innerHTML=msg;
+}
+[jmP,jmM].forEach(e=>e.addEventListener('input',jamming));
+rerenderers.push(()=>jamming());
+
+/* ---------- spoofing walk-off ---------- */
+const spO=$('#sp-o'),spc=$('#spoofCanvas'),sx=spc.getContext('2d');
+function drawSpoof(){const w=spc.clientWidth,h=spc.height;spc.width=w;sx.clearRect(0,0,w,h);
+  // grid
+  sx.strokeStyle='rgba(36,53,83,.5)';sx.lineWidth=1;for(let gx=0;gx<w;gx+=40){sx.beginPath();sx.moveTo(gx,0);sx.lineTo(gx,h);sx.stroke();}for(let gy=0;gy<h;gy+=40){sx.beginPath();sx.moveTo(0,gy);sx.lineTo(w,gy);sx.stroke();}
+  const off=+spO.value;const tx=w*0.32,ty=h*0.5;const dx=tx+off/100*(w*0.5);
+  // true position
+  sx.strokeStyle='rgba(255,255,255,.5)';sx.setLineDash([4,4]);sx.beginPath();sx.arc(tx,ty,16,0,7);sx.stroke();sx.setLineDash([]);
+  sx.fillStyle='#fff';sx.beginPath();sx.arc(tx,ty,5,0,7);sx.fill();
+  sx.font='11px "JetBrains Mono",monospace';sx.fillStyle='#cfe0ff';sx.textAlign='center';sx.fillText(LANG==='es'?'posición real':'true position',tx,ty+30);
+  // drift arrow
+  if(off>2){sx.strokeStyle='rgba(224,101,63,.6)';sx.lineWidth=1.5;sx.setLineDash([5,4]);sx.beginPath();sx.moveTo(tx+8,ty);sx.lineTo(dx-8,ty);sx.stroke();sx.setLineDash([]);}
+  // spoofed (believed) position
+  sx.fillStyle='#9be35a';sx.shadowColor='#9be35a';sx.shadowBlur=12;sx.beginPath();sx.arc(dx,ty,6,0,7);sx.fill();sx.shadowBlur=0;
+  sx.fillStyle='#9be35a';sx.fillText(LANG==='es'?'posición que el receptor cree':'where receiver thinks it is',dx,ty-22);
+  // error label
+  sx.fillStyle=off>2?'#e0653f':'#6b769a';sx.textAlign='left';sx.fillText((LANG==='es'?'error: ':'error: ')+off+' km',12,h-12);
+}
+function spoof(){$('#sp-o-v').textContent=(+spO.value)+' km';drawSpoof();}
+spO.addEventListener('input',spoof);
+rerenderers.push(spoof);
+
+/* ---------- generic modal ---------- */
+function openModal(title,sub,tags,sections){
+  $('#m-name').textContent=title;$('#m-sub').textContent=sub;
+  let body=tags?'<div class="tagrow">'+tags+'</div>':'';
+  sections.forEach(s=>{body+='<h4>'+s.h+'</h4><p>'+s.p+'</p>';});
+  $('#m-body').innerHTML=body;$('#modalBg').classList.add('open');bindTips();
+}
+$('#modalClose').addEventListener('click',()=>$('#modalBg').classList.remove('open'));
+$('#modalBg').addEventListener('click',e=>{if(e.target===$('#modalBg'))$('#modalBg').classList.remove('open');});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#modalBg').classList.remove('open');});
+
+/* ---------- threats ---------- */
+const THREATS=[
+ {n:{en:'Eavesdropping',es:'Escucha (eavesdropping)'},pillar:'C',seg:{en:'Link',es:'Enlace'},
+  blurb:{en:'Intercepting an unencrypted downlink to read telemetry or payload data.',es:'Interceptar una bajada sin cifrar para leer telemetría o datos de la carga.'},
+  what:{en:'Anyone with the right antenna can receive a satellite\u2019s radio downlink. If it is not encrypted, they can read it — imagery, telemetry, even keys sent in the clear.',es:'Cualquiera con la antena adecuada puede recibir la bajada de radio de un satélite. Si no está cifrada, puede leerla — imágenes, telemetría, incluso claves enviadas en claro.'},
+  def:{en:'Link-layer encryption (e.g. CCSDS SDLS) and disciplined key management.',es:'Cifrado en la capa de enlace (p. ej. CCSDS SDLS) y gestión disciplinada de claves.'}},
+ {n:{en:'Command injection',es:'Inyección de comandos'},pillar:'I/+A',seg:{en:'Link / Space',es:'Enlace / Espacio'},
+  blurb:{en:'Sending forged but valid-looking commands to the spacecraft.',es:'Enviar comandos falsificados pero de apariencia válida a la nave.'},
+  what:{en:'If the command link does not authenticate the sender, an attacker who can transmit (or who owns the ground system) can issue real commands — slewing antennas, dumping fuel, changing orbit.',es:'Si el enlace de comandos no autentica al emisor, un atacante que pueda transmitir (o que controle el segmento terreno) puede emitir comandos reales — orientar antenas, vaciar combustible, cambiar la órbita.'},
+  def:{en:'Authenticated commanding (SDLS), strict access control, and anti-replay counters.',es:'Comandos autenticados (SDLS), control de acceso estricto y contadores anti-repetición.'}},
+ {n:{en:'Replay attack',es:'Ataque de repetición'},pillar:'+A',seg:{en:'Link',es:'Enlace'},
+  blurb:{en:'Re-transmitting a previously valid command to trigger it again.',es:'Re-transmitir un comando válido anterior para volver a dispararlo.'},
+  what:{en:'Even encrypted commands can be captured and replayed later if there is no freshness check, causing the spacecraft to repeat an action.',es:'Incluso comandos cifrados pueden capturarse y repetirse luego si no hay verificación de frescura, haciendo que la nave repita una acción.'},
+  def:{en:'Sequence numbers, timestamps and nonces (anti-replay), part of SDLS.',es:'Números de secuencia, marcas de tiempo y nonces (anti-repetición), parte de SDLS.'}},
+ {n:{en:'Ground / IT-OT intrusion',es:'Intrusión en terreno / IT-OT'},pillar:'C/I/A',seg:{en:'Ground',es:'Terreno'},
+  blurb:{en:'Classic network intrusion into mission control — the most common real attack.',es:'Intrusión de red clásica en el control de misión — el ataque real más común.'},
+  what:{en:'Phishing, stolen credentials or unpatched servers give an attacker a foothold in the operations network. From there they can read data, disrupt operations, or command the satellite legitimately. Ground OT (antennas, power) adds an industrial-control attack surface.',es:'Phishing, credenciales robadas o servidores sin parchear le dan al atacante un punto de apoyo en la red de operaciones. Desde ahí puede leer datos, interrumpir operaciones o comandar el satélite legítimamente. La OT del terreno (antenas, energía) suma una superficie de control industrial.'},
+  def:{en:'Segmentation, zero trust, MFA, patching, and OT security (IEC 62443 / NIST 800-82).',es:'Segmentación, zero trust, MFA, parcheo y seguridad OT (IEC 62443 / NIST 800-82).'}},
+ {n:{en:'Supply-chain compromise',es:'Compromiso de cadena de suministro'},pillar:'I/+A',seg:{en:'All',es:'Todos'},
+  blurb:{en:'Malicious or vulnerable components/software inserted before launch.',es:'Componentes o software maliciosos o vulnerables insertados antes del lanzamiento.'},
+  what:{en:'Flight software, ground tools and COTS parts come from many vendors. A backdoor or critical bug introduced upstream ships straight into a system you can no longer physically reach.',es:'El software de vuelo, las herramientas de tierra y los componentes COTS vienen de muchos proveedores. Una puerta trasera o un bug crítico introducido aguas arriba viaja directo a un sistema que ya no podés alcanzar físicamente.'},
+  def:{en:'Secure SDLC, SBOM, code signing, vendor assurance and SAST/SCA on flight & ground code.',es:'SDLC seguro, SBOM, firma de código, aseguramiento de proveedores y SAST/SCA sobre el código de vuelo y de tierra.'}},
+ {n:{en:'Malware / wiper',es:'Malware / wiper'},pillar:'A/I',seg:{en:'Ground / User',es:'Terreno / Usuario'},
+  blurb:{en:'Destructive code disabling modems or operations systems.',es:'Código destructivo que inutiliza módems o sistemas de operación.'},
+  what:{en:'Wiper malware can brick large fleets of ground terminals or operations machines at once — denial of service at scale, as seen in the Viasat KA-SAT case.',es:'El malware tipo wiper puede inutilizar de golpe grandes flotas de terminales terrenas o máquinas de operación — denegación de servicio a escala, como en el caso Viasat KA-SAT.'},
+  def:{en:'Hardening, backups, network segmentation, EDR and incident response.',es:'Endurecimiento, copias de seguridad, segmentación de red, EDR y respuesta a incidentes.'}}
+];
+function pillTag(p){return '<span class="tg c">CIA+A: '+p+'</span>';}
+function buildThreats(){const g=$('#threatGrid');g.innerHTML='';THREATS.forEach((th,i)=>{const b=document.createElement('button');b.className='tcard';
+  b.innerHTML='<h4>'+th.n[LANG]+'</h4><p>'+th.blurb[LANG]+'</p><span class="pill">'+(LANG==='es'?'rompe ':'breaks ')+th.pillar+' · '+th.seg[LANG]+'</span>';
+  b.addEventListener('click',()=>openModal(th.n[LANG],(LANG==='es'?'Amenaza · segmento: ':'Threat · segment: ')+th.seg[LANG],
+    pillTag(th.pillar)+'<span class="tg s">'+th.seg[LANG]+'</span>',
+    [{h:LANG==='es'?'Qué es':'What it is',p:th.what[LANG]},{h:LANG==='es'?'Cómo se defiende':'How it\u2019s defended',p:th.def[LANG]}]));g.appendChild(b);});}
+rerenderers.push(buildThreats);
+
+/* ---------- defenses ---------- */
+const DEFENSES=[
+ {n:{en:'Link encryption & authentication',es:'Cifrado y autenticación de enlace'},fw:'CCSDS SDLS',
+  d:{en:'The Space Data Link Security protocol adds confidentiality, authentication and anti-replay directly to the TT&C and payload data links — so commands are both secret and provably from the operator.',es:'El protocolo Space Data Link Security agrega confidencialidad, autenticación y anti-repetición directamente a los enlaces de TT&C y de datos — para que los comandos sean secretos y demostrablemente del operador.'},
+  m:{en:'Confidentiality · Integrity · Authenticity',es:'Confidencialidad · Integridad · Autenticidad'}},
+ {n:{en:'GNSS signal authentication',es:'Autenticación de señal GNSS'},fw:'Galileo OSNMA · GPS M-code',
+  d:{en:'Cryptographically signing the navigation message (OSNMA) or using encrypted military codes lets receivers verify signals are genuine — the front-line defence against spoofing.',es:'Firmar criptográficamente el mensaje de navegación (OSNMA) o usar códigos militares cifrados permite a los receptores verificar que las señales son genuinas — la defensa de primera línea contra el spoofing.'},
+  m:{en:'Integrity · Authenticity',es:'Integridad · Autenticidad'}},
+ {n:{en:'Anti-jam techniques',es:'Técnicas anti-jamming'},fw:'DSSS · frequency hopping',
+  d:{en:'Spread-spectrum (DSSS), frequency hopping, directional and null-steering antennas and power control raise the protection margin so a jammer needs far more power to deny the link.',es:'Espectro ensanchado (DSSS), salto de frecuencia, antenas directivas y de anulación, y control de potencia elevan el margen de protección, de modo que un jammer necesita mucha más potencia para negar el enlace.'},
+  m:{en:'Availability',es:'Disponibilidad'}},
+ {n:{en:'Segmentation & zero trust',es:'Segmentación y zero trust'},fw:'NIST 800-207 · IEC 62443',
+  d:{en:'Separate IT from OT, enforce least privilege and multi-factor authentication, and verify every access — so a foothold in one place does not become control of the mission.',es:'Separar IT de OT, aplicar mínimo privilegio y autenticación multifactor, y verificar cada acceso — para que un punto de apoyo en un lugar no se convierta en control de la misión.'},
+  m:{en:'Confidentiality · Integrity · Availability',es:'Confidencialidad · Integridad · Disponibilidad'}},
+ {n:{en:'Secure software supply chain',es:'Cadena de suministro de software segura'},fw:'Secure SDLC · SAST/SCA · SBOM',
+  d:{en:'Build security into flight and ground software: static and dependency analysis, code signing, a software bill of materials, and review — because you cannot patch a backdoor once it is in orbit.',es:'Construir la seguridad dentro del software de vuelo y de tierra: análisis estático y de dependencias, firma de código, un inventario de componentes (SBOM) y revisión — porque no podés parchear una puerta trasera una vez en órbita.'},
+  m:{en:'Integrity · Authenticity',es:'Integridad · Autenticidad'}},
+ {n:{en:'Resilience & redundancy',es:'Resiliencia y redundancia'},fw:'Multi-station · failover',
+  d:{en:'Multiple ground sites, diverse links, backups and graceful degradation keep the mission running through an attack — assume compromise and design to survive it.',es:'Múltiples estaciones terrenas, enlaces diversos, copias de seguridad y degradación elegante mantienen la misión en marcha durante un ataque — asumí el compromiso y diseñá para sobrevivirlo.'},
+  m:{en:'Availability',es:'Disponibilidad'}},
+ {n:{en:'Monitoring & threat intel',es:'Monitoreo e inteligencia de amenazas'},fw:'SOC · SPARTA',
+  d:{en:'Continuous monitoring of ground and RF, plus a space-specific threat framework — the Aerospace SPARTA matrix maps adversary tactics and techniques against spacecraft, the space analogue of MITRE ATT&CK.',es:'Monitoreo continuo de tierra y RF, más un marco de amenazas específico del espacio — la matriz SPARTA de Aerospace mapea tácticas y técnicas adversarias contra naves, el análogo espacial de MITRE ATT&CK.'},
+  m:{en:'All properties',es:'Todas las propiedades'}},
+ {n:{en:'Governance & policy',es:'Gobernanza y política'},fw:'SPD-5 · NIST IR 8270/8401',
+  d:{en:'Policy that makes cybersecurity a design requirement for space systems. SPD-5 sets US principles; NIST guidance covers commercial satellite operations and the ground segment. Security becomes a programme requirement, not an afterthought.',es:'Política que convierte la ciberseguridad en un requisito de diseño para sistemas espaciales. SPD-5 fija los principios de EE.UU.; las guías NIST cubren operaciones satelitales comerciales y el segmento terreno. La seguridad pasa a ser un requisito del programa, no algo posterior.'},
+  m:{en:'Governance',es:'Gobernanza'}}
+];
+function buildDefenses(){const g=$('#defenseGrid');g.innerHTML='';DEFENSES.forEach(d=>{const b=document.createElement('button');b.className='tcard';
+  b.innerHTML='<h4>'+d.n[LANG]+'</h4><p>'+d.m[LANG]+'</p><span class="pill">'+d.fw+'</span>';
+  b.addEventListener('click',()=>openModal(d.n[LANG],d.fw,'<span class="tg s">'+(LANG==='es'?'protege: ':'protects: ')+d.m[LANG]+'</span>',
+    [{h:LANG==='es'?'Qué hace':'What it does',p:d.d[LANG]}]));g.appendChild(b);});}
+rerenderers.push(buildDefenses);
+
+/* ---------- incidents ---------- */
+const INCIDENTS=[
+ {n:'Viasat KA-SAT',y:'2022',
+  blurb:{en:'A wiper attack disabled tens of thousands of modems across Europe.',es:'Un ataque tipo wiper inutilizó decenas de miles de módems en Europa.'},
+  what:{en:'At the start of the 2022 invasion of Ukraine, destructive "AcidRain" malware was pushed through Viasat\u2019s KA-SAT management network, bricking tens of thousands of satellite modems across Europe and even knocking out remote monitoring of thousands of wind turbines. The satellite was fine — the ground/management network was the way in.',es:'Al inicio de la invasión de Ucrania en 2022, el malware destructivo "AcidRain" se distribuyó a través de la red de gestión de KA-SAT de Viasat, inutilizando decenas de miles de módems satelitales en Europa e incluso dejando sin monitoreo remoto a miles de aerogeneradores. El satélite estaba bien — la vía de entrada fue la red de gestión en tierra.'},
+  lesson:{en:'The ground/management segment is the soft underbelly. Segment it, monitor it, and assume it is targeted.',es:'El segmento de gestión en tierra es el punto débil. Segmentalo, monitorealo y asumí que es un objetivo.'}},
+ {n:{en:'GNSS jamming & spoofing in conflict',es:'Jamming y spoofing GNSS en conflictos'},y:'ongoing',
+  blurb:{en:'Widespread positioning/timing disruption around conflict zones.',es:'Disrupción amplia de posición/tiempo alrededor de zonas de conflicto.'},
+  what:{en:'Around several conflict regions, persistent GNSS jamming and spoofing have disrupted civil aviation, shipping and timing services over wide areas — aircraft receiving false positions, ships pushed off track. It shows how a cheap, mobile capability can have a regional blast radius.',es:'Alrededor de varias regiones en conflicto, el jamming y spoofing GNSS persistentes han afectado a la aviación civil, la navegación marítima y los servicios de sincronización en áreas amplias — aviones recibiendo posiciones falsas, barcos desviados. Muestra cómo una capacidad barata y móvil puede tener un radio de impacto regional.'},
+  lesson:{en:'PNT is critical infrastructure. Authenticated GNSS and resilient timing (inertial, multi-constellation, holdover clocks) are essential.',es:'El PNT es infraestructura crítica. El GNSS autenticado y la sincronización resiliente (inercial, multiconstelación, relojes de respaldo) son esenciales.'}},
+ {n:{en:'Satellite links abused for C2',es:'Enlaces satelitales abusados para C2'},y:'documented',
+  blurb:{en:'Attackers hiding command-and-control traffic inside satellite downlinks.',es:'Atacantes ocultando tráfico de comando y control dentro de bajadas satelitales.'},
+  what:{en:'Advanced threat groups have hijacked the downlink of unencrypted satellite internet to anonymise their command-and-control channels — exploiting the openness of the RF medium rather than the satellite itself.',es:'Grupos de amenaza avanzados han secuestrado la bajada de internet satelital sin cifrar para anonimizar sus canales de comando y control — explotando la apertura del medio RF más que al satélite en sí.'},
+  lesson:{en:'Unencrypted RF is a public broadcast. Confidentiality on the link is not optional.',es:'La RF sin cifrar es una transmisión pública. La confidencialidad en el enlace no es opcional.'}}
+];
+function buildIncidents(){const g=$('#incidentGrid');g.innerHTML='';INCIDENTS.forEach(it=>{const nm=typeof it.n==='string'?it.n:it.n[LANG];const b=document.createElement('button');b.className='tcard';
+  b.innerHTML='<h4>'+nm+'</h4><p>'+it.blurb[LANG]+'</p><span class="pill">'+it.y+'</span>';
+  b.addEventListener('click',()=>openModal(nm,(LANG==='es'?'Incidente · ':'Incident · ')+it.y,null,
+    [{h:LANG==='es'?'Qué pasó':'What happened',p:it.what[LANG]},{h:LANG==='es'?'La lección':'The lesson',p:it.lesson[LANG]}]));g.appendChild(b);});}
+rerenderers.push(buildIncidents);
+
+/* ---------- quizzes ---------- */
+const Q1=[
+ {q:{en:'A satellite TV region suddenly goes dark; a strong broadband noise source is detected on the downlink frequency.',es:'Una región de TV satelital queda a oscuras de golpe; se detecta una fuente de ruido de banda ancha potente en la frecuencia de bajada.'},a:'jam'},
+ {q:{en:'A ship\u2019s GPS shows it sailing in a straight line through a port — confidently, with no error flag — while it is actually drifting.',es:'El GPS de un barco lo muestra navegando en línea recta por un puerto — con total confianza y sin bandera de error — mientras en realidad va a la deriva.'},a:'spoof'},
+ {q:{en:'An aircraft receiver reports a position 30 km from where the plane truly is, matching a valid-looking signal.',es:'Un receptor de avión reporta una posición a 30 km de donde el avión realmente está, coincidiendo con una señal de apariencia válida.'},a:'spoof'},
+ {q:{en:'A ground station can no longer command its satellite during a pass; the command channel is buried in noise.',es:'Una estación terrena ya no puede comandar su satélite durante un pase; el canal de comandos está enterrado en ruido.'},a:'jam'}
+];
+const Q2=[
+ {q:{en:'An attacker eavesdrops on an unencrypted downlink and reads the mission\u2019s imagery.',es:'Un atacante escucha una bajada sin cifrar y lee las imágenes de la misión.'},a:'C'},
+ {q:{en:'A forged but valid-looking command is accepted by the spacecraft and slews its antenna.',es:'Un comando falsificado pero de apariencia válida es aceptado por la nave y orienta su antena.'},a:'+A'},
+ {q:{en:'A jammer floods the receiver so the service is unusable during a critical pass.',es:'Un jammer inunda el receptor y el servicio queda inutilizable durante un pase crítico.'},a:'A'},
+ {q:{en:'Telemetry values are altered in transit so operators see a false (but plausible) reading.',es:'Los valores de telemetría son alterados en tránsito para que los operadores vean una lectura falsa (pero plausible).'},a:'I'}
+];
+function makeQuiz(prefix,data,opts){
+  let idx=0,correct=0,total=0,answered=false;
+  function optLabel(o){const m={jam:{en:'Jamming (denial)',es:'Jamming (denegación)'},spoof:{en:'Spoofing (deception)',es:'Spoofing (engaño)'},
+    C:{en:'Confidentiality',es:'Confidencialidad'},I:{en:'Integrity',es:'Integridad'},A:{en:'Availability',es:'Disponibilidad'},'+A':{en:'Authenticity',es:'Autenticidad'}};return m[o][LANG];}
+  function render(){answered=false;const it=data[idx];
+    $('#'+prefix+'-q').textContent=it.q[LANG];
+    $('#'+prefix+'-score').textContent=correct+' / '+total;
+    const box=$('#'+prefix+'-opts');box.innerHTML='';
+    opts.forEach(o=>{const b=document.createElement('button');b.className='qopt';b.textContent=optLabel(o);b.dataset.o=o;
+      b.addEventListener('click',()=>choose(o,it));box.appendChild(b);});
+    $('#'+prefix+'-fb').innerHTML='';
+  }
+  function choose(o,it){if(answered)return;answered=true;total++;
+    const right=o===it.a;if(right)correct++;
+    $('#'+prefix+'-score').textContent=correct+' / '+total;
+    document.querySelectorAll('#'+prefix+'-opts .qopt').forEach(b=>{if(b.dataset.o===it.a)b.classList.add('correct');else if(b.dataset.o===o)b.classList.add('wrong');});
+    const ok=LANG==='es'?'Correcto.':'Correct.';const no=LANG==='es'?'No exactamente.':'Not quite.';
+    const ans=optLabel(it.a);
+    $('#'+prefix+'-fb').innerHTML=(right?'<b>'+ok+'</b> ':'<b style="color:var(--ir)">'+no+'</b> ')+(LANG==='es'?'Respuesta: ':'Answer: ')+ans+'.';
+  }
+  $('#'+prefix+'-next').addEventListener('click',()=>{idx=(idx+1)%data.length;render();});
+  return {render};
+}
+let quiz1,quiz2;
+function buildQuizzes(){
+  quiz1=makeQuiz('q1',Q1,['jam','spoof']);
+  quiz2=makeQuiz('q2',Q2,['C','I','A','+A']);
+  quiz1.render();quiz2.render();
+}
+rerenderers.push(()=>{if(quiz1){quiz1.render();quiz2.render();}});
+
+/* ---------- glossary ---------- */
+const GLOSS=[
+ {t:'CIA + A',d:{en:'Confidentiality, Integrity, Availability + Authenticity — the properties security protects.',es:'Confidencialidad, Integridad, Disponibilidad + Autenticidad — las propiedades que protege la seguridad.'}},
+ {t:'TT&C',d:{en:'Telemetry, Tracking & Command — the control link between operator and spacecraft.',es:'Telemetría, Seguimiento y Comando — el enlace de control entre operador y nave.'}},
+ {t:'Jamming',d:{en:'Denial of a link by overpowering it with radio noise. Attacks Availability.',es:'Denegación de un enlace saturándolo con ruido de radio. Ataca la Disponibilidad.'}},
+ {t:'Spoofing',d:{en:'Transmitting a fake but authentic-looking signal to deceive a receiver. Attacks Integrity/Authenticity.',es:'Transmitir una señal falsa pero de apariencia auténtica para engañar a un receptor. Ataca Integridad/Autenticidad.'}},
+ {t:'GNSS',d:{en:'Global Navigation Satellite Systems — GPS, Galileo, GLONASS, BeiDou — providing position, navigation and timing.',es:'Sistemas Globales de Navegación por Satélite — GPS, Galileo, GLONASS, BeiDou — que proveen posición, navegación y tiempo.'}},
+ {t:'SDLS',d:{en:'CCSDS Space Data Link Security — encryption + authentication for space links.',es:'Space Data Link Security de CCSDS — cifrado + autenticación para enlaces espaciales.'}},
+ {t:'OSNMA',d:{en:'Galileo\u2019s navigation-message authentication — civil anti-spoofing.',es:'Autenticación del mensaje de navegación de Galileo — anti-spoofing civil.'}},
+ {t:'SPD-5',d:{en:'US Space Policy Directive 5 (2020): cybersecurity principles for space systems.',es:'Directiva de Política Espacial 5 de EE.UU. (2020): principios de ciberseguridad para sistemas espaciales.'}},
+ {t:'SPARTA',d:{en:'Aerospace Corp\u2019s space adversary TTP matrix — the space analogue of MITRE ATT&CK.',es:'Matriz de TTP adversarias espaciales de Aerospace Corp — el análogo espacial de MITRE ATT&CK.'}},
+ {t:'IT / OT',d:{en:'Information vs Operational Technology; ground stations converge both, widening the attack surface.',es:'Tecnología de la Información vs de Operación; las estaciones terrenas convergen ambas, ampliando la superficie de ataque.'}}
+];
+function buildGloss(){const dl=$('#glossList');dl.innerHTML='';GLOSS.forEach(g=>{dl.innerHTML+='<div><dt>'+g.t+'</dt><dd>'+g.d[LANG]+'</dd></div>';});}
+rerenderers.push(buildGloss);
+
+/* ---------- hero canvas ---------- */
+const hc=$('#hero-canvas'),hx=hc.getContext('2d');
+const reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+let stars=[],pkts=[],hf=0;
+function initHero(){hc.width=hc.clientWidth;hc.height=hc.clientHeight;
+  stars=[];for(let i=0;i<110;i++)stars.push({x:Math.random()*hc.width,y:Math.random()*hc.height,r:Math.random()*1.2+.2,a:Math.random()*.6+.2,tw:Math.random()*.02});
+  pkts=[];for(let i=0;i<5;i++)pkts.push({p:Math.random(),sp:0.0016+Math.random()*0.002,bad:i%3===0});}
+function drawHero(){hx.clearRect(0,0,hc.width,hc.height);
+  stars.forEach(s=>{s.a+=Math.sin(hf*s.tw)*.004;hx.globalAlpha=Math.max(.1,Math.min(.9,s.a));hx.fillStyle='#cfe0ff';hx.beginPath();hx.arc(s.x,s.y,s.r,0,7);hx.fill();});
+  hx.globalAlpha=1;
+  const sat={x:hc.width*0.78,y:hc.height*0.28},gnd={x:hc.width*0.5,y:hc.height*0.9};
+  // link line
+  hx.strokeStyle='rgba(155,227,90,.25)';hx.lineWidth=1;hx.setLineDash([5,5]);hx.beginPath();hx.moveTo(sat.x,sat.y);hx.lineTo(gnd.x,gnd.y);hx.stroke();hx.setLineDash([]);
+  // packets travelling
+  pkts.forEach(pk=>{pk.p+=pk.sp;if(pk.p>1)pk.p=0;const x=sat.x+(gnd.x-sat.x)*pk.p,y=sat.y+(gnd.y-sat.y)*pk.p;
+    const col=pk.bad?'#e0653f':'#9be35a';hx.fillStyle=col;hx.shadowColor=col;hx.shadowBlur=8;hx.beginPath();hx.arc(x,y,3,0,7);hx.fill();hx.shadowBlur=0;});
+  // satellite
+  hx.fillStyle='#a9dcff';hx.shadowColor='#a9dcff';hx.shadowBlur=14;hx.beginPath();hx.arc(sat.x,sat.y,6,0,7);hx.fill();hx.shadowBlur=0;
+  hx.strokeStyle='rgba(169,220,255,.5)';hx.lineWidth=2;hx.beginPath();hx.moveTo(sat.x-12,sat.y);hx.lineTo(sat.x+12,sat.y);hx.stroke();
+  // ground
+  hx.fillStyle='#6f8fd6';hx.beginPath();hx.moveTo(gnd.x-9,gnd.y);hx.lineTo(gnd.x,gnd.y-12);hx.lineTo(gnd.x+9,gnd.y);hx.closePath();hx.fill();
+}
+
+/* ---------- loop / nav / reveal ---------- */
+function loop(){hf++;if(!reduce)drawHero();requestAnimationFrame(loop);}
+const links=[...document.querySelectorAll('.nav-links a')];
+const secs=links.map(a=>{const h=a.getAttribute('href');return h&&h.startsWith('#')?document.querySelector(h):null;});
+window.addEventListener('scroll',()=>{const sc=window.scrollY,dh=document.documentElement.scrollHeight-window.innerHeight;
+  $('#progress').style.width=(dh>0?sc/dh*100:0)+'%';let c=-1;secs.forEach((s,i)=>{if(s&&s.offsetTop-130<=sc)c=i;});
+  links.forEach((l,i)=>l.classList.toggle('active',i===c));},{passive:true});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+window.addEventListener('resize',()=>{initHero();drawHero();drawSpoof();});
+
+/* ---------- init ---------- */
+buildQuizzes();
+let saved='en';try{saved=localStorage.getItem('nslang')||'en';}catch(e){}
+LANG=saved;
+applyLang();
+initHero();drawHero();
+if(!reduce)loop();
+</script>
+</body>
+</html>

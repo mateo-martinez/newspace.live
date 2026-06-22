@@ -1,0 +1,1057 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Stellar Genesis — How Stars and Their Disks Are Born</title>
+<meta name="description" content="An interactive, physics-grounded guide to star formation: the Jeans criterion, free-fall collapse, protoplanetary disks, infrared-excess detection, real young stars, and the nebular theory of the Solar System." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- KaTeX for crisp formula rendering -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+
+<style>
+:root{
+  /* Palette derived from the physics of temperature → colour (blackbody axis) */
+  --void:#05060d;        /* molecular-cloud interior */
+  --cloud:#0b1020;       /* base panel */
+  --cloud-2:#111a30;     /* raised card */
+  --cloud-3:#16223e;     /* hover / inset */
+  --line:#243353;        /* hairlines */
+  --cold:#6f8fd6;        /* cold molecular gas (blue) */
+  --ice:#a9dcff;         /* hot stellar photosphere (blue-white) */
+  --warm:#f3ad5e;        /* warm dust / near-IR */
+  --ir:#e0653f;          /* infrared excess (reprocessed dust glow) */
+  --text:#eaeefb;
+  --muted:#93a0c2;
+  --muted-2:#6b769a;
+  --ok:#5fd0a0;
+  --shadow:0 18px 50px -20px rgba(0,0,0,.8);
+  --r:16px;
+  --maxw:1120px;
+  --display:"Space Grotesk",system-ui,sans-serif;
+  --body:"Inter",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{
+  margin:0;background:var(--void);color:var(--text);
+  font-family:var(--body);line-height:1.6;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+/* gentle deep-space wash */
+body::before{
+  content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(1100px 700px at 78% -8%, rgba(224,101,63,.10), transparent 60%),
+    radial-gradient(1000px 800px at 10% 4%, rgba(111,143,214,.12), transparent 60%),
+    radial-gradient(900px 900px at 50% 120%, rgba(169,220,255,.05), transparent 60%);
+}
+a{color:var(--ice);text-decoration:none}
+h1,h2,h3,h4{font-family:var(--display);font-weight:600;line-height:1.12;letter-spacing:-.01em;margin:0}
+p{margin:0 0 1em}
+.mono{font-family:var(--mono)}
+
+/* ---------- layout ---------- */
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+section{padding:96px 0;position:relative}
+.eyebrow{
+  font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--warm);margin:0 0 14px;display:flex;align-items:center;gap:10px;
+}
+.eyebrow::before{content:"";width:26px;height:1px;background:linear-gradient(90deg,var(--warm),transparent)}
+.sec-title{font-size:clamp(1.8rem,4vw,2.8rem);margin-bottom:14px}
+.lede{color:var(--muted);font-size:1.06rem;max-width:62ch;margin-bottom:8px}
+
+/* ---------- nav ---------- */
+.nav{
+  position:sticky;top:0;z-index:60;backdrop-filter:blur(14px);
+  background:rgba(5,6,13,.72);border-bottom:1px solid var(--line);
+}
+.nav-inner{max-width:var(--maxw);margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:18px}
+.brand{display:flex;align-items:center;gap:11px;font-family:var(--display);font-weight:700;letter-spacing:-.02em;font-size:1.05rem;white-space:nowrap}
+.brand .dot{width:13px;height:13px;border-radius:50%;
+  background:radial-gradient(circle at 32% 32%,var(--ice),var(--cold) 45%,var(--ir) 95%);
+  box-shadow:0 0 16px var(--cold);flex:none}
+.nav-links{display:flex;gap:4px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-links a{
+  color:var(--muted);font-size:.84rem;padding:7px 11px;border-radius:9px;white-space:nowrap;
+  transition:color .18s,background .18s;font-weight:500;
+}
+.nav-links a:hover{color:var(--text);background:var(--cloud-2)}
+.nav-links a.active{color:var(--ice);background:rgba(169,220,255,.10)}
+#progress{position:fixed;top:0;left:0;height:2px;width:0;z-index:70;
+  background:linear-gradient(90deg,var(--cold),var(--ice),var(--warm),var(--ir));}
+
+/* ---------- hero ---------- */
+.hero{min-height:92vh;display:flex;align-items:center;padding-top:40px;position:relative;overflow:hidden}
+#cloud-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:-1;opacity:.9}
+.hero-inner{max-width:var(--maxw);margin:0 auto;padding:0 24px;width:100%}
+.hero h1{font-size:clamp(2.6rem,7vw,5.2rem);font-weight:700;max-width:16ch;letter-spacing:-.025em}
+.hero h1 .grad{
+  background:linear-gradient(100deg,var(--ice),var(--cold) 38%,var(--warm) 72%,var(--ir));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hero p.kick{font-family:var(--mono);font-size:.78rem;letter-spacing:.24em;text-transform:uppercase;color:var(--cold);margin-bottom:22px}
+.hero .sub{color:var(--muted);font-size:1.18rem;max-width:58ch;margin-top:22px}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:34px}
+.btn{
+  font-family:var(--body);font-weight:600;font-size:.95rem;border-radius:12px;padding:13px 22px;
+  border:1px solid var(--line);background:var(--cloud-2);color:var(--text);cursor:pointer;
+  transition:transform .15s,border-color .2s,background .2s;text-decoration:none;display:inline-flex;align-items:center;gap:9px;
+}
+.btn:hover{transform:translateY(-2px);border-color:var(--cold)}
+.btn.primary{
+  background:linear-gradient(100deg,rgba(111,143,214,.22),rgba(224,101,63,.22));
+  border-color:rgba(169,220,255,.4);color:var(--text);
+}
+.btn.primary:hover{border-color:var(--ice)}
+.scroll-hint{margin-top:46px;color:var(--muted-2);font-size:.8rem;font-family:var(--mono);letter-spacing:.1em;display:flex;align-items:center;gap:8px}
+.scroll-hint .a{animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+@media (prefers-reduced-motion:reduce){.scroll-hint .a{animation:none}}
+
+/* ---------- cards & grids ---------- */
+.grid{display:grid;gap:20px}
+.panel{
+  background:linear-gradient(180deg,var(--cloud-2),var(--cloud));
+  border:1px solid var(--line);border-radius:var(--r);padding:26px;box-shadow:var(--shadow);
+}
+.card{
+  background:var(--cloud-2);border:1px solid var(--line);border-radius:14px;padding:20px;
+  transition:transform .18s,border-color .2s;
+}
+.card:hover{transform:translateY(-3px);border-color:var(--cold)}
+.card h3{font-size:1.12rem;margin-bottom:8px}
+.card p{color:var(--muted);font-size:.94rem;margin:0}
+
+/* reveal on scroll */
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1!important;transform:none!important}}
+
+/* ---------- tooltips (help everywhere) ---------- */
+.term{
+  border-bottom:1px dashed var(--cold);cursor:help;color:var(--ice);
+  text-underline-offset:3px;
+}
+.term:focus{outline:2px solid var(--cold);outline-offset:2px;border-radius:3px}
+#tip{
+  position:fixed;z-index:200;max-width:300px;background:#0a1326;border:1px solid var(--cold);
+  border-radius:11px;padding:12px 14px;font-size:.86rem;color:var(--text);line-height:1.5;
+  box-shadow:0 18px 40px -12px rgba(0,0,0,.85);opacity:0;pointer-events:none;transition:opacity .14s;
+}
+#tip.show{opacity:1}
+#tip b{color:var(--warm)}
+.help-chip{
+  width:20px;height:20px;border-radius:50%;border:1px solid var(--cold);color:var(--cold);
+  font-size:.72rem;font-family:var(--mono);display:inline-flex;align-items:center;justify-content:center;
+  cursor:help;flex:none;background:rgba(111,143,214,.1);font-weight:600;vertical-align:middle;
+}
+.help-chip:hover{background:rgba(111,143,214,.25)}
+
+/* ---------- formula blocks ---------- */
+.formula{
+  background:var(--cloud);border:1px solid var(--line);border-left:3px solid var(--warm);
+  border-radius:12px;padding:18px 20px;margin:16px 0;overflow-x:auto;
+}
+.formula .katex{font-size:1.22em}
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:14px}
+.term-row{display:flex;gap:10px;align-items:flex-start;font-size:.86rem;color:var(--muted)}
+.term-row .sym{font-family:var(--mono);color:var(--ice);min-width:34px;font-weight:600}
+
+/* ---------- interactive controls ---------- */
+.lab{display:grid;grid-template-columns:1.05fr 1fr;gap:26px;align-items:start}
+@media (max-width:860px){.lab{grid-template-columns:1fr}}
+.ctrl{margin-bottom:18px}
+.ctrl-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;gap:8px}
+.ctrl-head label{font-size:.9rem;font-weight:600;color:var(--text);display:flex;align-items:center;gap:7px}
+.ctrl-head .val{font-family:var(--mono);font-size:.9rem;color:var(--warm)}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:99px;
+  background:linear-gradient(90deg,var(--cold),var(--ir));outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:19px;height:19px;border-radius:50%;background:var(--ice);
+  border:3px solid var(--void);box-shadow:0 0 0 1px var(--cold),0 0 14px var(--cold);cursor:pointer;
+}
+input[type=range]::-moz-range-thumb{
+  width:19px;height:19px;border-radius:50%;background:var(--ice);border:3px solid var(--void);
+  box-shadow:0 0 0 1px var(--cold),0 0 14px var(--cold);cursor:pointer;
+}
+.toggle{display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none;font-size:.92rem;font-weight:600}
+.toggle input{display:none}
+.toggle .tk{width:42px;height:24px;border-radius:99px;background:var(--cloud-3);border:1px solid var(--line);position:relative;transition:background .2s}
+.toggle .tk::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s}
+.toggle input:checked + .tk{background:rgba(224,101,63,.35);border-color:var(--ir)}
+.toggle input:checked + .tk::after{transform:translateX(18px);background:var(--ir)}
+
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-top:6px}
+.stat{background:var(--cloud);border:1px solid var(--line);border-radius:11px;padding:13px 15px}
+.stat .k{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-2);font-family:var(--mono);margin-bottom:5px}
+.stat .v{font-family:var(--mono);font-size:1.18rem;font-weight:600;color:var(--ice)}
+.stat .u{color:var(--muted);font-size:.78rem}
+
+.verdict{
+  margin-top:16px;border-radius:12px;padding:15px 18px;font-weight:600;font-size:1rem;
+  border:1px solid var(--line);display:flex;align-items:center;gap:12px;transition:.25s;
+}
+.verdict .icon{font-size:1.4rem}
+.verdict.collapse{background:rgba(224,101,63,.14);border-color:var(--ir);color:#ffd0bf}
+.verdict.stable{background:rgba(111,143,214,.13);border-color:var(--cold);color:#cfe0ff}
+
+canvas.plot{width:100%;display:block;border-radius:12px;background:var(--cloud);border:1px solid var(--line)}
+
+/* ---------- timeline ---------- */
+.timeline{position:relative;margin-top:30px}
+.tl-track{position:absolute;left:0;right:0;top:26px;height:2px;background:var(--line)}
+.tl-fill{position:absolute;left:0;top:26px;height:2px;background:linear-gradient(90deg,var(--cold),var(--ir));border-radius:2px}
+.tl-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;position:relative}
+@media (max-width:760px){.tl-row{grid-template-columns:1fr;gap:14px}.tl-track,.tl-fill{display:none}}
+.tl-step{cursor:pointer}
+.tl-node{width:14px;height:14px;border-radius:50%;background:var(--cloud-3);border:2px solid var(--cold);margin:20px auto 14px;transition:.2s;position:relative;z-index:2}
+@media (max-width:760px){.tl-node{margin:6px 0 8px}}
+.tl-step:hover .tl-node,.tl-step.sel .tl-node{background:var(--ir);border-color:var(--ir);box-shadow:0 0 16px var(--ir);transform:scale(1.25)}
+.tl-step .label{font-family:var(--display);font-weight:600;font-size:.92rem;text-align:center}
+@media (max-width:760px){.tl-step .label{text-align:left}}
+.tl-step .time{font-family:var(--mono);font-size:.74rem;color:var(--warm);text-align:center;margin-top:3px}
+@media (max-width:760px){.tl-step .time{text-align:left}}
+.tl-detail{margin-top:26px;background:var(--cloud);border:1px solid var(--line);border-left:3px solid var(--ir);border-radius:12px;padding:20px 22px}
+.tl-detail h4{font-size:1.18rem;margin-bottom:4px}
+.tl-detail .meta{font-family:var(--mono);font-size:.78rem;color:var(--warm);margin-bottom:10px}
+.tl-detail p{color:var(--muted);margin:0}
+
+/* ---------- star drill-down ---------- */
+.star-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.star{
+  background:var(--cloud-2);border:1px solid var(--line);border-radius:14px;padding:18px;cursor:pointer;
+  transition:transform .18s,border-color .2s;position:relative;overflow:hidden;text-align:left;color:inherit;font:inherit;width:100%;
+}
+.star:hover{transform:translateY(-3px);border-color:var(--cold)}
+.star .orb{width:46px;height:46px;border-radius:50%;margin-bottom:12px;box-shadow:0 0 22px -2px currentColor}
+.star h3{font-size:1.08rem;margin-bottom:2px}
+.star .type{font-family:var(--mono);font-size:.76rem;color:var(--warm)}
+.star .tag{position:absolute;top:14px;right:14px;font-size:.66rem;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2);border:1px solid var(--line);border-radius:99px;padding:3px 8px}
+.star .blurb{color:var(--muted);font-size:.86rem;margin-top:9px}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;z-index:120;background:rgba(3,4,10,.78);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;padding:22px}
+.modal-bg.open{display:flex}
+.modal{
+  background:linear-gradient(180deg,var(--cloud-2),var(--cloud));border:1px solid var(--cold);
+  border-radius:18px;max-width:640px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow);
+}
+.modal-head{padding:24px 26px 16px;border-bottom:1px solid var(--line);display:flex;gap:16px;align-items:center}
+.modal-head .orb{width:54px;height:54px;border-radius:50%;flex:none;box-shadow:0 0 26px -2px currentColor}
+.modal-head h3{font-size:1.5rem}
+.modal-head .type{font-family:var(--mono);font-size:.82rem;color:var(--warm)}
+.modal-close{margin-left:auto;background:var(--cloud-3);border:1px solid var(--line);color:var(--text);
+  width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:1.1rem;flex:none}
+.modal-close:hover{border-color:var(--ir)}
+.modal-body{padding:22px 26px 26px}
+.spec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:6px 0 18px}
+.spec{background:var(--cloud);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+.spec .k{font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-2);font-family:var(--mono);margin-bottom:4px}
+.spec .v{font-family:var(--mono);font-weight:600;color:var(--ice);font-size:.98rem}
+.modal-body h4{font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--warm);font-family:var(--mono);margin:18px 0 8px}
+.modal-body p{color:var(--muted);font-size:.94rem}
+.bar{height:7px;border-radius:99px;background:var(--cloud-3);overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--cold),var(--ir))}
+
+/* condensation / nebular */
+.steps{display:grid;gap:14px;counter-reset:step}
+.step{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start;background:var(--cloud-2);
+  border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.step .n{counter-increment:step;font-family:var(--mono);font-weight:600;color:var(--void);
+  width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none;
+  background:linear-gradient(135deg,var(--warm),var(--ir))}
+.step .n::before{content:counter(step,decimal-leading-zero)}
+.step h4{font-size:1.05rem;margin-bottom:4px}
+.step p{color:var(--muted);font-size:.92rem;margin:0}
+
+.frost{margin-top:24px;background:var(--cloud);border:1px solid var(--line);border-radius:14px;padding:22px;overflow:hidden}
+.frost-bar{height:64px;border-radius:12px;position:relative;margin:18px 0 8px;
+  background:linear-gradient(90deg,#ffb066 0%,#f3ad5e 22%,#6f8fd6 42%,#3a5391 100%)}
+.frost-line{position:absolute;top:-8px;bottom:-8px;width:2px;background:var(--ice);left:38%;box-shadow:0 0 10px var(--ice)}
+.frost-line span{position:absolute;top:-26px;left:50%;transform:translateX(-50%);white-space:nowrap;
+  font-family:var(--mono);font-size:.72rem;color:var(--ice)}
+.frost-labels{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);font-family:var(--mono)}
+
+/* glossary */
+.gloss{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.gloss dt{font-family:var(--display);font-weight:600;color:var(--ice);margin-bottom:4px}
+.gloss dd{margin:0 0 16px;color:var(--muted);font-size:.9rem}
+
+footer{border-top:1px solid var(--line);padding:40px 0 60px;color:var(--muted-2);font-size:.85rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center}
+
+.note{font-size:.82rem;color:var(--muted-2);font-style:italic;margin-top:10px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:760px){.split{grid-template-columns:1fr}}
+.kbd{font-family:var(--mono);background:var(--cloud-3);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:.82em}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="tip" role="tooltip"></div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="brand"><span class="dot"></span><a href="/">newspace.live</a> <span style="color:var(--muted-2);font-weight:500">/ Stellar&nbsp;Genesis</span></div>
+    <div class="nav-links" id="navlinks">
+      <a href="#formation">Formation</a>
+      <a href="#jeans">Jeans criterion</a>
+      <a href="#freefall">Free-fall</a>
+      <a href="#disks">Disks</a>
+      <a href="#ir">IR detection</a>
+      <a href="#stars">Real stars</a>
+      <a href="#nebular">Nebular theory</a>
+      <a href="#reference">Reference</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero" id="top">
+  <canvas id="cloud-canvas"></canvas>
+  <div class="hero-inner">
+    <p class="kick">Molecular cloud → core → protostar → star</p>
+    <h1>How a <span class="grad">cold cloud</span> becomes a <span class="grad">star</span>.</h1>
+    <p class="sub">An interactive, physics-first walkthrough of star birth — collapse criteria, timescales, the disks that surround newborn stars, how we detect those disks in the infrared, and how our own Solar System assembled. Hover anything <span class="help-chip" data-tip="<b>Like this.</b> Dotted terms and these circles reveal a plain-language explanation. Tap on mobile, hover on desktop.">?</span> for help.</p>
+    <div class="hero-cta">
+      <a class="btn primary" href="#jeans">Test if a cloud collapses →</a>
+      <a class="btn" href="#formation">Start from the beginning</a>
+    </div>
+    <div class="scroll-hint"><span class="a">↓</span> scroll to explore</div>
+  </div>
+</header>
+
+<!-- FORMATION OVERVIEW -->
+<section id="formation">
+  <div class="wrap">
+    <p class="eyebrow reveal">The big picture</p>
+    <h2 class="sec-title reveal">Stars condense out of the coldest gas in the galaxy</h2>
+    <p class="lede reveal">A star is the end of a long collapse. Diffuse interstellar gas gathers into a
+      <span class="term" data-tip="<b>Giant Molecular Cloud (GMC).</b> A cold (~10–20 K), dense region of mostly molecular hydrogen (H₂) and dust. Masses of 10³–10⁶ M☉ and sizes of tens of parsecs. These are the only places stars form.">giant molecular cloud</span>,
+      fragments into dense cores, and — when gravity overwhelms pressure — falls inward to ignite hydrogen fusion. The whole story is a contest between two forces.</p>
+
+    <div class="split" style="margin-top:30px">
+      <div class="panel reveal">
+        <h3 style="color:var(--cold)">Gravity pulls in</h3>
+        <p style="color:var(--muted)">Self-gravity wants to compress the cloud. The more mass packed into a smaller volume, the stronger it gets — and the faster collapse accelerates once it begins.</p>
+      </div>
+      <div class="panel reveal">
+        <h3 style="color:var(--warm)">Pressure pushes out</h3>
+        <p style="color:var(--muted)">Thermal pressure (set by temperature) and turbulence resist compression. Warm, low-density gas resists easily; cold, dense gas cannot. That is why stars form in the coldest clouds.</p>
+      </div>
+    </div>
+
+    <p class="lede reveal" style="margin-top:34px">Astronomers classify a forming star by its <span class="term" data-tip="<b>Spectral Energy Distribution (SED).</b> How much energy an object emits at each wavelength. As a protostar evolves, its SED shifts — from cold far-infrared (buried in gas) toward optical (an exposed star). The SED slope between 2 and 25 µm defines the Class 0–III sequence.">infrared signature</span>, which tracks how deeply it is still buried in gas and dust. Each stage has a characteristic duration — explore them below.</p>
+
+    <!-- LIFECYCLE TIMELINE -->
+    <div class="timeline reveal">
+      <div class="tl-track"></div><div class="tl-fill" style="width:100%"></div>
+      <div class="tl-row" id="timeline"></div>
+      <div class="tl-detail" id="tl-detail"></div>
+    </div>
+    <p class="note reveal">Durations are order-of-magnitude and vary with stellar mass: a massive O star runs through every phase faster, a low-mass M dwarf far more slowly.</p>
+  </div>
+</section>
+
+<!-- JEANS CRITERION -->
+<section id="jeans">
+  <div class="wrap">
+    <p class="eyebrow reveal">The collapse criterion</p>
+    <h2 class="sec-title reveal">The Jeans mass — when does a cloud give in to gravity?</h2>
+    <p class="lede reveal">In 1902 James Jeans asked a simple question: how big does a gas clump have to be before its own gravity beats its internal pressure? The answer is a critical mass and a critical length. Exceed them, and collapse is unstoppable.</p>
+
+    <div class="lab" style="margin-top:34px">
+      <div class="panel reveal">
+        <div class="formula"><div data-formula="M_J = \left(\dfrac{5\,k_B\,T}{G\,\mu\,m_H}\right)^{3/2}\left(\dfrac{3}{4\pi\rho}\right)^{1/2}"></div>
+          <div class="terms">
+            <div class="term-row"><span class="sym">M_J</span><span>Jeans mass — the critical mass for collapse</span></div>
+            <div class="term-row"><span class="sym">k_B</span><span>Boltzmann constant, links temperature to energy</span></div>
+            <div class="term-row"><span class="sym">T</span><span>gas temperature (K)</span></div>
+            <div class="term-row"><span class="sym">G</span><span>gravitational constant</span></div>
+            <div class="term-row"><span class="sym">μ</span><span>mean molecular weight (~2.3 for molecular gas)</span></div>
+            <div class="term-row"><span class="sym">m_H</span><span>mass of a hydrogen atom</span></div>
+            <div class="term-row"><span class="sym">ρ</span><span>mass density of the gas</span></div>
+          </div>
+        </div>
+        <p style="color:var(--muted);font-size:.92rem;margin:0">Read it as a tug-of-war: warmer gas (larger <span class="mono">T</span>) raises the bar for collapse, while denser gas (larger <span class="mono">ρ</span>) lowers it. The companion <span class="term" data-tip="<b>Jeans length.</b> The critical size: perturbations larger than λ_J collapse, smaller ones bounce back as sound waves. Formed from the sound speed and the free-fall rate.">Jeans length</span> sets the critical <em>size</em>.</p>
+        <div class="formula" style="border-left-color:var(--cold)"><div data-formula="\lambda_J = \sqrt{\dfrac{15\,k_B\,T}{4\pi\,G\,\mu\,m_H\,\rho}}\qquad c_s=\sqrt{\dfrac{k_B T}{\mu m_H}}"></div></div>
+      </div>
+
+      <div class="panel reveal">
+        <h3 style="margin-bottom:6px;font-size:1.15rem">Will it collapse? <span class="help-chip" data-tip="<b>Try it.</b> Set a cloud's temperature, density and total mass. If the mass exceeds the Jeans mass for those conditions, gravity wins.">?</span></h3>
+        <p style="color:var(--muted);font-size:.9rem;margin-bottom:18px">Drag the sliders to build a gas clump and watch the verdict.</p>
+
+        <div class="ctrl">
+          <div class="ctrl-head"><label>Temperature <span class="help-chip" data-tip="<b>Temperature.</b> Star-forming cores are extremely cold (~10 K). Colder gas has weaker pressure and collapses more readily.">?</span></label><span class="val" id="jT-v">10 K</span></div>
+          <input type="range" id="jT" min="5" max="100" value="10" step="1">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-head"><label>Number density <span class="help-chip" data-tip="<b>Number density n.</b> Particles per cm³. Diffuse clouds ~100, dense cores ~10⁴–10⁶. Mass density ρ = n·μ·m_H.">?</span></label><span class="val" id="jn-v">10⁴ cm⁻³</span></div>
+          <input type="range" id="jn" min="2" max="8" value="4" step="0.1">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-head"><label>Cloud mass <span class="help-chip" data-tip="<b>Total mass</b> of the clump in solar masses (M☉ = mass of the Sun). Compared against the Jeans mass to decide the outcome.">?</span></label><span class="val" id="jM-v">10 M☉</span></div>
+          <input type="range" id="jM" min="-1" max="4" value="1" step="0.05">
+        </div>
+
+        <div class="readout">
+          <div class="stat"><div class="k">Jeans mass</div><div class="v" id="out-MJ">—</div><div class="u">M☉</div></div>
+          <div class="stat"><div class="k">Jeans length</div><div class="v" id="out-LJ">—</div><div class="u">parsec</div></div>
+          <div class="stat"><div class="k">Sound speed</div><div class="v" id="out-cs">—</div><div class="u">m/s</div></div>
+        </div>
+        <div class="verdict stable" id="verdict"><span class="icon">◐</span><span id="verdict-txt">—</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FREE FALL -->
+<section id="freefall">
+  <div class="wrap">
+    <p class="eyebrow reveal">The collapse clock</p>
+    <h2 class="sec-title reveal">Free-fall time — how long does collapse take?</h2>
+    <p class="lede reveal">Once a core is unstable, how fast does it fall in? If pressure is negligible, the answer depends on density alone. Denser gas collapses faster — which is why collapse <em>accelerates</em> as it proceeds (runaway collapse).</p>
+
+    <div class="lab" style="margin-top:34px">
+      <div class="panel reveal">
+        <div class="formula"><div data-formula="t_{ff}=\sqrt{\dfrac{3\pi}{32\,G\,\rho}}"></div>
+          <div class="terms">
+            <div class="term-row"><span class="sym">t_ff</span><span>free-fall collapse time</span></div>
+            <div class="term-row"><span class="sym">G</span><span>gravitational constant</span></div>
+            <div class="term-row"><span class="sym">ρ</span><span>initial mass density of the sphere</span></div>
+          </div>
+        </div>
+        <p style="color:var(--muted);font-size:.92rem">Strikingly, mass and radius cancel out — only density matters. A key consequence:
+          <span class="term" data-tip="<b>Runaway collapse.</b> As the core contracts, ρ rises, so the local free-fall time drops. The centre falls in faster than the envelope, building a dense protostellar seed first ('inside-out collapse').">because density rises during collapse, the centre runs away first</span>, seeding a protostar while the outer envelope is still falling.</p>
+        <p style="color:var(--muted);font-size:.92rem;margin:0">Pressure slows real collapse somewhat, so t_ff is a lower bound — but it is the right order of magnitude for the prestellar and Class 0 phases.</p>
+      </div>
+
+      <div class="panel reveal">
+        <h3 style="font-size:1.15rem;margin-bottom:6px">Collapse clock <span class="help-chip" data-tip="<b>Set the density</b> and read off how long a pressure-free cloud takes to collapse. Watch the visual sphere fall in.">?</span></h3>
+        <div class="ctrl" style="margin-top:14px">
+          <div class="ctrl-head"><label>Number density</label><span class="val" id="ffn-v">10⁴ cm⁻³</span></div>
+          <input type="range" id="ffn" min="2" max="9" value="4" step="0.1">
+        </div>
+        <div class="readout" style="margin-bottom:16px">
+          <div class="stat"><div class="k">Free-fall time</div><div class="v" id="out-tff">—</div><div class="u" id="out-tff-u">years</div></div>
+          <div class="stat"><div class="k">Mass density</div><div class="v" id="out-rho">—</div><div class="u">kg/m³</div></div>
+        </div>
+        <canvas class="plot" id="ff-canvas" height="180"></canvas>
+        <p class="note">Diffuse cloud → core → protostar: each rise in density shortens the clock by orders of magnitude.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DISKS -->
+<section id="disks">
+  <div class="wrap">
+    <p class="eyebrow reveal">What surrounds a newborn star</p>
+    <h2 class="sec-title reveal">Protoplanetary disks — angular momentum's leftover</h2>
+    <p class="lede reveal">A collapsing cloud always has a little spin. As it shrinks, <span class="term" data-tip="<b>Conservation of angular momentum.</b> L = m·v·r is conserved. As r shrinks, rotation speeds up (like a spinning skater pulling in their arms). Gas can't all fall straight to the centre — it settles into a rotating disk instead.">conservation of angular momentum</span> forces it to spin faster, and gas settles into a flattened, rotating <strong>protoplanetary disk</strong> around the protostar. These disks are the birthplaces of planets.</p>
+
+    <div class="grid reveal" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-top:30px">
+      <div class="card"><h3 style="color:var(--ice)">Gas</h3><p>~99% of the mass — mostly H₂ and He. Drives accretion onto the star and forms the envelopes of giant planets before it disperses.</p></div>
+      <div class="card"><h3 style="color:var(--warm)">Dust</h3><p>~1% by mass: silicate and carbon grains. Sticks, grows, and settles to the midplane — the seed material for rocky planets and planet cores.</p></div>
+      <div class="card"><h3 style="color:var(--cold)">Ices</h3><p>Beyond the <span class="term" data-tip="<b>Snow line / frost line.</b> The distance where it's cold enough (~150–170 K) for water to freeze onto grains. Outside it, far more solid material is available — favouring large planet cores.">snow line</span>, volatiles (H₂O, CO, CO₂) freeze onto grains, boosting solid mass and feeding giant-planet cores.</p></div>
+      <div class="card"><h3 style="color:var(--ir)">Temperature gradient</h3><p>Hot (>1000 K) near the star, dropping to tens of K at the edge. This gradient is exactly what makes disks glow in the infrared — see the next section.</p></div>
+    </div>
+
+    <div class="panel reveal" style="margin-top:28px">
+      <h3 style="font-size:1.15rem;margin-bottom:6px">Disk temperature profile</h3>
+      <p style="color:var(--muted);font-size:.92rem">A passively heated disk follows a power law in radius. Inner regions are hot enough to sublimate dust; outer regions are frozen.</p>
+      <div class="formula"><div data-formula="T(r) = T_0\left(\dfrac{r}{r_0}\right)^{-3/4}"></div>
+        <div class="terms">
+          <div class="term-row"><span class="sym">T(r)</span><span>temperature at disk radius r</span></div>
+          <div class="term-row"><span class="sym">r⁻³ᐟ⁴</span><span>radial fall-off for a flat, passively irradiated disk</span></div>
+          <div class="term-row"><span class="sym">T₀,r₀</span><span>reference temperature at a reference radius</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- IR DETECTION -->
+<section id="ir">
+  <div class="wrap">
+    <p class="eyebrow reveal">How we find the disks</p>
+    <h2 class="sec-title reveal">Detecting disks by infrared excess</h2>
+    <p class="lede reveal">A bare star emits like a single <span class="term" data-tip="<b>Blackbody.</b> An idealised thermal emitter. Its spectrum (the Planck function) depends only on temperature: hotter = bluer and brighter, peaking at shorter wavelengths (Wien's law).">blackbody</span> — its spectrum peaks at one wavelength set by its surface temperature. But warm dust in a surrounding disk re-radiates absorbed starlight at longer, cooler wavelengths. The result is <strong>more infrared light than the star alone can explain</strong>: an <em>infrared excess</em>. That bump is the disk's fingerprint.</p>
+
+    <div class="lab" style="margin-top:34px">
+      <div class="panel reveal">
+        <h3 style="font-size:1.15rem;margin-bottom:6px">Build a spectrum <span class="help-chip" data-tip="<b>Live SED.</b> The blue curve is the star's photosphere. Switch on the disk and a second hump appears in the infrared — that excess over the star is exactly what telescopes measure.">?</span></h3>
+        <p style="color:var(--muted);font-size:.9rem;margin-bottom:14px">Toggle the disk and reshape it. The axes are log–log: wavelength across, energy emitted up.</p>
+
+        <label class="toggle" style="margin-bottom:18px"><input type="checkbox" id="diskOn" checked><span class="tk"></span>Disk present</label>
+
+        <div class="ctrl">
+          <div class="ctrl-head"><label>Star temperature</label><span class="val" id="sT-v">4500 K</span></div>
+          <input type="range" id="sT" min="3000" max="10000" value="4500" step="100">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-head"><label>Disk inner temp <span class="help-chip" data-tip="<b>Inner edge.</b> Where dust survives — usually the sublimation temperature ~1500 K. Hotter inner disks add near-IR excess.">?</span></label><span class="val" id="dIn-v">1500 K</span></div>
+          <input type="range" id="dIn" min="400" max="1800" value="1500" step="20">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-head"><label>Disk outer temp <span class="help-chip" data-tip="<b>Outer edge.</b> The cold rim, tens of K. Colder outer disks push the excess into the far-IR (a sign of a large, extended disk).">?</span></label><span class="val" id="dOut-v">40 K</span></div>
+          <input type="range" id="dOut" min="15" max="200" value="40" step="5">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-head"><label>Disk strength <span class="help-chip" data-tip="<b>How much dust.</b> A thick, gas-rich primordial disk has a huge excess; a thin debris disk only a faint one.">?</span></label><span class="val" id="dAmp-v">1.0×</span></div>
+          <input type="range" id="dAmp" min="0.05" max="2" value="1" step="0.05">
+        </div>
+      </div>
+
+      <div class="panel reveal">
+        <canvas class="plot" id="sed-canvas" height="320"></canvas>
+        <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;font-size:.84rem;color:var(--muted)">
+          <span style="display:flex;align-items:center;gap:7px"><span style="width:18px;height:3px;background:var(--ice);border-radius:2px"></span>Star (photosphere)</span>
+          <span style="display:flex;align-items:center;gap:7px"><span style="width:18px;height:3px;background:var(--ir);border-radius:2px"></span>Disk emission</span>
+          <span style="display:flex;align-items:center;gap:7px"><span style="width:18px;height:10px;background:rgba(224,101,63,.22);border:1px solid var(--ir);border-radius:3px"></span>Infrared excess</span>
+        </div>
+        <p class="note">This is the principle behind IRAS, Spitzer, WISE and JWST disk surveys: photometry at several IR bands reveals the excess over the stellar photosphere.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REAL STARS -->
+<section id="stars">
+  <div class="wrap">
+    <p class="eyebrow reveal">Worked examples</p>
+    <h2 class="sec-title reveal">Real stars and disks — drill down</h2>
+    <p class="lede reveal">From buried protostars to the Sun itself. Click any object to open its full profile: physical parameters, disk state, infrared signature, and an estimate of how long it lives.</p>
+    <div class="star-grid reveal" id="starGrid" style="margin-top:30px"></div>
+    <p class="note reveal">Lifetime estimates use the main-sequence scaling <span class="mono">t ≈ 10¹⁰ yr × (M/M☉)⁻²·⁵</span>, derived from L ∝ M³·⁵ and a fixed fuel fraction. Hover any number in a profile for its meaning.</p>
+  </div>
+</section>
+
+<!-- NEBULAR THEORY -->
+<section id="nebular">
+  <div class="wrap">
+    <p class="eyebrow reveal">Our own origin</p>
+    <h2 class="sec-title reveal">The nebular theory of the Solar System</h2>
+    <p class="lede reveal">Everything above culminates here. About 4.57 billion years ago, a fragment of a molecular cloud collapsed, spun up into a disk, and built the Sun and planets. The same physics — collapse, disks, a snow line, temperature-sorted material — explains the layout we see today.</p>
+
+    <div class="steps reveal" style="margin-top:30px">
+      <div class="step"><div class="n"></div><div><h4>A cloud fragment collapses</h4><p>A dense core in a molecular cloud — perhaps triggered by a nearby supernova shock — exceeds its Jeans mass and begins to fall in under its own gravity.</p></div></div>
+      <div class="step"><div class="n"></div><div><h4>Spin-up and flattening</h4><p>Tiny initial rotation is amplified as the cloud shrinks. Gas cannot fall straight to the centre, so it flattens into the rotating <em>solar nebula</em> — a disk feeding a growing protosun.</p></div></div>
+      <div class="step"><div class="n"></div><div><h4>The protosun ignites</h4><p>The dense centre heats until hydrogen fusion begins. A fierce <span class="term" data-tip="<b>T Tauri wind.</b> Strong stellar winds and radiation from the young Sun that blew away leftover nebular gas, ending the planet-building phase within a few million years.">T Tauri wind</span> later blows away the remaining gas.</p></div></div>
+      <div class="step"><div class="n"></div><div><h4>The condensation sequence</h4><p>Material condenses by temperature. Close in, only metals and silicates survive; past the snow line, ices condense too — far more solid mass is available out there.</p></div></div>
+      <div class="step"><div class="n"></div><div><h4>Grains → planetesimals → planets</h4><p>Dust sticks into pebbles, pebbles into kilometre-sized <span class="term" data-tip="<b>Planetesimals.</b> Asteroid-to-moon-sized solid bodies whose gravity lets them sweep up more material, growing into planetary embryos and finally planets.">planetesimals</span>, which accrete into protoplanets through gravity.</p></div></div>
+      <div class="step"><div class="n"></div><div><h4>The architecture we see</h4><p>Rocky terrestrial planets inside the snow line; ice-and-gas giants beyond it, where large cores could capture nebular gas before it dispersed. Leftovers became asteroids and comets.</p></div></div>
+    </div>
+
+    <div class="frost reveal">
+      <h3 style="font-size:1.12rem;margin-bottom:2px">Why the planets are sorted by temperature</h3>
+      <p style="color:var(--muted);font-size:.92rem">The snow line (~2.7 AU in the early Solar System, where T ≈ 150–170 K) split the disk into a rock-only inner zone and an ice-rich outer zone.</p>
+      <div class="frost-bar"><div class="frost-line"><span>snow line</span></div></div>
+      <div class="frost-labels"><span>hot · rock &amp; metal · terrestrials</span><span>cold · + ices · giants</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- REFERENCE -->
+<section id="reference">
+  <div class="wrap">
+    <p class="eyebrow reveal">Quick reference</p>
+    <h2 class="sec-title reveal">Formulas &amp; glossary</h2>
+
+    <div class="split reveal" style="margin-top:24px">
+      <div class="panel">
+        <h3 style="font-size:1.1rem;margin-bottom:12px">Key formulas</h3>
+        <div class="formula" style="margin-top:0"><div data-formula="M_J = \left(\dfrac{5 k_B T}{G \mu m_H}\right)^{3/2}\!\left(\dfrac{3}{4\pi\rho}\right)^{1/2}"></div></div>
+        <div class="formula"><div data-formula="\lambda_J = \sqrt{\dfrac{15 k_B T}{4\pi G \mu m_H \rho}}"></div></div>
+        <div class="formula"><div data-formula="t_{ff}=\sqrt{\dfrac{3\pi}{32 G \rho}}"></div></div>
+        <div class="formula"><div data-formula="B_\lambda(T)=\dfrac{2hc^2}{\lambda^5}\dfrac{1}{e^{hc/\lambda k_B T}-1}"></div></div>
+        <div class="formula"><div data-formula="t_{MS}\approx 10^{10}\,\text{yr}\left(\dfrac{M}{M_\odot}\right)^{-2.5}"></div></div>
+      </div>
+      <div class="panel">
+        <h3 style="font-size:1.1rem;margin-bottom:12px">Glossary</h3>
+        <dl class="gloss">
+          <div><dt>Jeans mass</dt><dd>Critical mass above which a gas clump collapses under gravity at fixed T and ρ.</dd></div>
+          <div><dt>Free-fall time</dt><dd>Collapse timescale of a pressure-free sphere; depends only on density.</dd></div>
+          <div><dt>Protostar</dt><dd>The hot, growing core before steady hydrogen fusion begins.</dd></div>
+          <div><dt>T Tauri star</dt><dd>A young, low-mass, optically visible star (Class II) with an accreting disk.</dd></div>
+          <div><dt>Herbig Ae/Be</dt><dd>The intermediate-mass analogue of T Tauri stars.</dd></div>
+          <div><dt>IR excess</dt><dd>Infrared light beyond the stellar photosphere — the signature of warm circumstellar dust.</dd></div>
+          <div><dt>Snow line</dt><dd>Radius beyond which water ice condenses (~150–170 K), boosting solid mass.</dd></div>
+          <div><dt>Debris disk</dt><dd>An older, gas-poor disk of collisional dust (e.g. Vega, Fomalhaut).</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div><strong style="color:var(--text);font-family:var(--display)">Stellar Genesis</strong> · an interactive primer on star &amp; disk formation</div>
+    <div>Built for learning. Values are pedagogical order-of-magnitude estimates.</div>
+  </div>
+</footer>
+
+<!-- STAR MODAL -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-name">
+    <div class="modal-head">
+      <div class="orb" id="m-orb"></div>
+      <div><h3 id="m-name"></h3><div class="type" id="m-type"></div></div>
+      <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="m-body"></div>
+  </div>
+</div>
+
+<script>
+/* ============ constants (SI) ============ */
+const G=6.674e-11, kB=1.380649e-23, mH=1.6726e-27, MU=2.3;
+const MSUN=1.989e30, YR=3.156e7, PC=3.086e16, AU=1.496e11;
+const H=6.626e-34, C=2.998e8;
+const $=s=>document.querySelector(s);
+
+/* ============ tooltips (help everywhere) ============ */
+const tip=$('#tip');
+let tipTimer=null;
+function showTip(el){
+  const txt=el.getAttribute('data-tip'); if(!txt)return;
+  tip.innerHTML=txt; tip.classList.add('show');
+  const r=el.getBoundingClientRect();
+  const tw=Math.min(300,window.innerWidth-24);
+  tip.style.maxWidth=tw+'px';
+  let x=r.left+r.width/2-tw/2;
+  x=Math.max(12,Math.min(x,window.innerWidth-tw-12));
+  let y=r.bottom+10;
+  if(y+tip.offsetHeight>window.innerHeight-12) y=r.top-tip.offsetHeight-10;
+  tip.style.left=x+'px'; tip.style.top=Math.max(12,y)+'px';
+}
+function hideTip(){tip.classList.remove('show');}
+function bindTips(){
+  document.querySelectorAll('[data-tip]').forEach(el=>{
+    if(el.dataset.tb)return; el.dataset.tb=1;
+    if(!el.hasAttribute('tabindex')&&el.classList.contains('term'))el.setAttribute('tabindex','0');
+    el.addEventListener('mouseenter',()=>showTip(el));
+    el.addEventListener('mouseleave',hideTip);
+    el.addEventListener('focus',()=>showTip(el));
+    el.addEventListener('blur',hideTip);
+    el.addEventListener('click',e=>{e.stopPropagation();showTip(el);clearTimeout(tipTimer);tipTimer=setTimeout(hideTip,4200);});
+  });
+}
+document.addEventListener('click',hideTip);
+window.addEventListener('scroll',hideTip,{passive:true});
+
+/* ============ KaTeX render ============ */
+function renderFormulas(){
+  if(!window.katex)return;
+  document.querySelectorAll('[data-formula]').forEach(el=>{
+    if(el.dataset.done)return; el.dataset.done=1;
+    try{katex.render(el.getAttribute('data-formula'),el,{throwOnError:false,displayMode:true});}catch(e){}
+  });
+}
+window.addEventListener('load',()=>{renderFormulas();setTimeout(renderFormulas,300);});
+
+/* ============ number formatting ============ */
+function fmt(x){
+  if(!isFinite(x))return '—';
+  const a=Math.abs(x);
+  if(a===0)return '0';
+  if(a<1e-3||a>=1e5){
+    const e=Math.floor(Math.log10(a));
+    const m=x/Math.pow(10,e);
+    return m.toFixed(2)+'×10'+sup(e);
+  }
+  if(a<1)return x.toFixed(3);
+  if(a<100)return x.toFixed(1);
+  return Math.round(x).toLocaleString();
+}
+function sup(n){const m={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};return String(n).split('').map(c=>m[c]||c).join('');}
+
+/* ============ JEANS calculator ============ */
+const jT=$('#jT'), jn=$('#jn'), jM=$('#jM');
+function jeans(){
+  const T=+jT.value;
+  const n=Math.pow(10,+jn.value);        // cm^-3
+  const Mcloud=Math.pow(10,+jM.value);   // Msun
+  const rho=n*1e6*MU*mH;                  // kg/m^3
+  const cs=Math.sqrt(kB*T/(MU*mH));
+  const MJ=Math.pow(5*kB*T/(G*MU*mH),1.5)*Math.pow(3/(4*Math.PI*rho),0.5)/MSUN;
+  const LJ=Math.sqrt(15*kB*T/(4*Math.PI*G*MU*mH*rho))/PC;
+
+  $('#jT-v').textContent=T+' K';
+  $('#jn-v').textContent=fmtPow(+jn.value)+' cm⁻³';
+  $('#jM-v').textContent=fmtPow(+jM.value)+' M☉';
+  $('#out-MJ').textContent=fmt(MJ);
+  $('#out-LJ').textContent=fmt(LJ);
+  $('#out-cs').textContent=fmt(cs);
+
+  const v=$('#verdict'), vt=$('#verdict-txt');
+  if(Mcloud>MJ){
+    v.className='verdict collapse'; v.querySelector('.icon').textContent='✦';
+    vt.innerHTML='<b>Collapse.</b> Mass ('+fmt(Mcloud)+' M☉) exceeds the Jeans mass ('+fmt(MJ)+' M☉) — gravity wins. A star will form.';
+  }else{
+    v.className='verdict stable'; v.querySelector('.icon').textContent='◐';
+    vt.innerHTML='<b>Stable.</b> Mass ('+fmt(Mcloud)+' M☉) is below the Jeans mass ('+fmt(MJ)+' M☉) — pressure holds it up.';
+  }
+}
+function fmtPow(log){
+  const r=Math.round(log*10)/10;
+  if(Number.isInteger(r))return '10'+sup(r);
+  const e=Math.floor(r), m=Math.pow(10,r-e);
+  return m.toFixed(1)+'×10'+sup(e);
+}
+[jT,jn,jM].forEach(el=>el.addEventListener('input',jeans));
+
+/* ============ FREE FALL ============ */
+const ffn=$('#ffn'); const ffc=$('#ff-canvas'); const ffx=ffc.getContext('2d');
+let ffPhase=0;
+function freefallCalc(){
+  const n=Math.pow(10,+ffn.value);
+  const rho=n*1e6*MU*mH;
+  const tff=Math.sqrt(3*Math.PI/(32*G*rho));
+  const tyr=tff/YR;
+  $('#ffn-v').textContent=fmtPow(+ffn.value)+' cm⁻³';
+  $('#out-rho').textContent=fmt(rho);
+  let val,unit;
+  if(tyr>1e6){val=tyr/1e6;unit='Myr';}
+  else if(tyr>1e3){val=tyr/1e3;unit='kyr';}
+  else {val=tyr;unit='years';}
+  $('#out-tff').textContent=fmt(val);
+  $('#out-tff-u').textContent=unit;
+  return tff;
+}
+function drawFF(){
+  const w=ffc.clientWidth, h=ffc.height; ffc.width=w;
+  ffx.clearRect(0,0,w,h);
+  const cx=w/2, cy=h/2;
+  // collapse animation cycle (visual only)
+  const t=(ffPhase%1);
+  const Rmax=Math.min(w,h)*0.4;
+  const R=Rmax*(1-0.78*easeIn(t));
+  // outer faint ring (initial cloud)
+  ffx.strokeStyle='rgba(111,143,214,.35)';ffx.lineWidth=1.5;
+  ffx.beginPath();ffx.arc(cx,cy,Rmax,0,7);ffx.stroke();
+  // infalling particles
+  for(let i=0;i<60;i++){
+    const ang=(i/60)*Math.PI*2 + i*1.7;
+    const rr=R + (Rmax-R)*(((i*53)%100)/100);
+    const px=cx+Math.cos(ang)*rr, py=cy+Math.sin(ang)*rr*0.96;
+    const heat=1-(rr/Rmax);
+    ffx.fillStyle=`rgba(${160+heat*80},${140-heat*40},${214-heat*150},${.5+heat*.5})`;
+    ffx.beginPath();ffx.arc(px,py,1.4+heat*1.5,0,7);ffx.fill();
+  }
+  // hot core
+  const cr=Rmax*0.12+ (Rmax-R)*0.18;
+  const g=ffx.createRadialGradient(cx,cy,0,cx,cy,cr*1.8);
+  g.addColorStop(0,'rgba(255,230,200,'+(0.4+0.6*easeIn(t))+')');
+  g.addColorStop(0.5,'rgba(243,173,94,'+(0.3+0.4*easeIn(t))+')');
+  g.addColorStop(1,'rgba(224,101,63,0)');
+  ffx.fillStyle=g;ffx.beginPath();ffx.arc(cx,cy,cr*1.8,0,7);ffx.fill();
+}
+function easeIn(t){return t*t*(3-2*t);}
+ffn.addEventListener('input',freefallCalc);
+
+/* ============ SED / IR excess ============ */
+const sed=$('#sed-canvas'); const sx=sed.getContext('2d');
+const sT=$('#sT'),dIn=$('#dIn'),dOut=$('#dOut'),dAmp=$('#dAmp'),diskOn=$('#diskOn');
+function planck(lam,T){ // lam in metres, returns relative B_lambda
+  const x=H*C/(lam*kB*T);
+  if(x>700)return 0;
+  return (2*H*C*C/Math.pow(lam,5))/(Math.exp(x)-1);
+}
+function diskFlux(lam){ // sum of annuli Tin..Tout, weighted by area (~r dr, T ~ r^-3/4 => area weight ~ T^-8/3 dT)
+  const Tin=+dIn.value, Tout=+dOut.value;
+  let s=0; const N=42;
+  for(let i=0;i<N;i++){
+    const f=i/(N-1);
+    const T=Tin*Math.pow(Tout/Tin,f);     // log spaced in T
+    const wr=Math.pow(T,-8/3);             // area weighting for T(r)~r^-3/4
+    s+=planck(lam,T)*wr*lam;               // lam*F_lam style
+  }
+  return s;
+}
+function drawSED(){
+  const w=sed.clientWidth, h=sed.height; sed.width=w;
+  sx.clearRect(0,0,w,h);
+  const padL=44,padR=14,padT=16,padB=34;
+  const x0=padL,x1=w-padR,y0=h-padB,y1=padT;
+  // wavelength range 0.1 - 1000 um (log)
+  const lmin=Math.log10(0.1e-6), lmax=Math.log10(1000e-6);
+  const Tstar=+sT.value, amp=+dAmp.value, on=diskOn.checked;
+  const Npts=160;
+  const star=[],disk=[],tot=[];
+  // stellar scale: photosphere ~ T^4 * small solid angle; normalize later
+  const starScale=1.0;
+  let maxv=0;
+  for(let i=0;i<Npts;i++){
+    const lx=lmin+(lmax-lmin)*i/(Npts-1);
+    const lam=Math.pow(10,lx);
+    const fs=planck(lam,Tstar)*lam*starScale;
+    const fd=on? diskFlux(lam)*amp*0.018 : 0;
+    star.push(fs); disk.push(fd); tot.push(fs+fd);
+    maxv=Math.max(maxv,fs,fs+fd);
+  }
+  // normalize to peak; log y over ~5 decades
+  const peak=maxv||1;
+  const ymin=peak*1e-5;
+  const Y=v=>{ const vv=Math.max(v,ymin); const t=(Math.log10(vv)-Math.log10(ymin))/(Math.log10(peak)-Math.log10(ymin)); return y0-(y0-y1)*t; };
+  const X=lx=>x0+(x1-x0)*(lx-lmin)/(lmax-lmin);
+
+  // grid + axis labels
+  sx.font='10px "JetBrains Mono",monospace';
+  sx.strokeStyle='rgba(36,51,83,.7)';sx.lineWidth=1;
+  const ticks=[0.1,1,10,100,1000];
+  ticks.forEach(t=>{
+    const lx=Math.log10(t*1e-6); const px=X(lx);
+    sx.beginPath();sx.moveTo(px,y1);sx.lineTo(px,y0);sx.stroke();
+    sx.fillStyle='#6b769a';sx.textAlign='center';
+    sx.fillText(t<1?t:(t+''),px,y0+15);
+  });
+  sx.fillStyle='#93a0c2';sx.textAlign='center';
+  sx.fillText('wavelength (µm)  →  cooler',(x0+x1)/2,h-4);
+  sx.save();sx.translate(13,(y0+y1)/2);sx.rotate(-Math.PI/2);
+  sx.fillText('energy emitted  λF\u03bb (log)',0,0);sx.restore();
+
+  // shaded IR excess (where disk>star)
+  if(on){
+    sx.beginPath();let started=false;
+    for(let i=0;i<Npts;i++){
+      const lx=lmin+(lmax-lmin)*i/(Npts-1);const px=X(lx);
+      if(tot[i]>star[i]*1.05){
+        if(!started){sx.moveTo(px,Y(star[i]));started=true;}
+        sx.lineTo(px,Y(tot[i]));
+      }
+    }
+    for(let i=Npts-1;i>=0;i--){
+      const lx=lmin+(lmax-lmin)*i/(Npts-1);const px=X(lx);
+      if(tot[i]>star[i]*1.05)sx.lineTo(px,Y(star[i]));
+    }
+    sx.closePath();sx.fillStyle='rgba(224,101,63,.18)';sx.fill();
+  }
+  // curves
+  function curve(arr,color,wd,dash){
+    sx.beginPath();sx.lineWidth=wd;sx.strokeStyle=color;sx.setLineDash(dash||[]);
+    for(let i=0;i<Npts;i++){
+      const lx=lmin+(lmax-lmin)*i/(Npts-1);const px=X(lx);const py=Y(arr[i]);
+      i?sx.lineTo(px,py):sx.moveTo(px,py);
+    }
+    sx.stroke();sx.setLineDash([]);
+  }
+  if(on)curve(disk,'rgba(224,101,63,.85)',1.6,[5,4]);
+  curve(star,'rgba(169,220,255,.95)',1.8);
+  curve(tot,'#fff',2.4);
+  // readouts
+  $('#sT-v').textContent=Tstar+' K';
+  $('#dIn-v').textContent=(+dIn.value)+' K';
+  $('#dOut-v').textContent=(+dOut.value)+' K';
+  $('#dAmp-v').textContent=(+dAmp.value).toFixed(2)+'×';
+}
+[sT,dIn,dOut,dAmp,diskOn].forEach(el=>el.addEventListener('input',drawSED));
+
+/* ============ lifecycle timeline ============ */
+const STAGES=[
+  {label:'Molecular cloud',time:'10–30 Myr',d:'A cold giant molecular cloud of H₂ and dust drifts, threaded by turbulence and magnetic fields. Most of the gas never forms stars — only the densest pockets will.'},
+  {label:'Prestellar core',time:'~0.1–1 Myr',d:'A core exceeds its Jeans mass and starts to contract. Still cold and starless, but gravitationally bound and on the brink of collapse.'},
+  {label:'Class 0 protostar',time:'~10–50 kyr',d:'A hot protostar grows at the centre, deeply buried in an infalling envelope. Visible only in the far-infrared and sub-mm. Powerful bipolar jets appear.'},
+  {label:'Class I protostar',time:'~0.1–0.5 Myr',d:'The envelope thins and a rotating disk dominates. Strong near-infrared excess. The star is assembling most of its final mass now.'},
+  {label:'Class II — T Tauri',time:'~1–5 Myr',d:'An optically visible pre-main-sequence star with a thick accreting protoplanetary disk. Planets begin to form. Classic strong IR excess.'},
+  {label:'Class III → main sequence',time:'>10 Myr',d:'The disk dissipates (only debris may remain). The star contracts onto the main sequence and ignites stable hydrogen fusion — a true star at last.'}
+];
+function buildTimeline(){
+  const tl=$('#timeline');
+  STAGES.forEach((s,i)=>{
+    const el=document.createElement('div');
+    el.className='tl-step'+(i===0?' sel':'');
+    el.innerHTML=`<div class="tl-node"></div><div class="label">${s.label}</div><div class="time">${s.time}</div>`;
+    el.addEventListener('click',()=>{
+      document.querySelectorAll('.tl-step').forEach(x=>x.classList.remove('sel'));
+      el.classList.add('sel'); showStage(i);
+    });
+    tl.appendChild(el);
+  });
+  showStage(0);
+}
+function showStage(i){
+  const s=STAGES[i];
+  $('#tl-detail').innerHTML=`<h4>${s.label}</h4><div class="meta">Typical duration · ${s.time}</div><p>${s.d}</p>`;
+}
+
+/* ============ real stars ============ */
+const STARS=[
+  {name:'The Sun',type:'G2V · main sequence',tag:'Mature',color:'#ffd27a',
+   spec:{Mass:'1.0 M☉',Radius:'1.0 R☉','Temp':'5772 K',Age:'4.57 Gyr',Distance:'8.3 light-min',Disk:'None (cleared)'},
+   life:'~10 Gyr',lifeFrac:0.46,
+   ir:'No infrared excess — a bare photosphere. Its protoplanetary disk dispersed ~4.5 Gyr ago, leaving the planets.',
+   note:'Our reference star. Born from the solar nebula via exactly the nebular-theory sequence; about halfway through its main-sequence life.'},
+  {name:'T Tauri',type:'Pre-main-sequence · Class II',tag:'Young',color:'#ffb070',
+   spec:{Mass:'~2 M☉',Radius:'~3 R☉','Temp':'~4000 K',Age:'~1–2 Myr',Distance:'~470 ly',Disk:'Active accreting'},
+   life:'~1 Gyr (future MS)',lifeFrac:0.002,
+   ir:'Strong near-to-mid IR excess from a warm accreting disk. The prototype of its entire class of young variable stars.',
+   note:'The namesake of T Tauri stars: young, low-mass, optically visible, still wrapped in a planet-forming disk.'},
+  {name:'HL Tauri',type:'Protostar · Class I–II',tag:'Disk',color:'#f3934e',
+   spec:{Mass:'~1.7 M☉',Radius:'—','Temp':'~4000 K',Age:'<1 Myr',Distance:'~450 ly',Disk:'Ringed, forming planets'},
+   life:'pre-MS',lifeFrac:0.0005,
+   ir:'Huge IR/sub-mm excess. ALMA imaged its disk directly: concentric bright rings and dark gaps where young planets are likely sweeping their orbits clean.',
+   note:'The iconic 2014 ALMA image that showed planet formation in action — a textbook protoplanetary disk.'},
+  {name:'TW Hydrae',type:'T Tauri · Class II',tag:'Disk',color:'#ffae6b',
+   spec:{Mass:'~0.8 M☉',Radius:'~1.1 R☉','Temp':'~4000 K',Age:'~8–10 Myr',Distance:'~196 ly',Disk:'Face-on, gapped'},
+   life:'~20 Gyr (future MS)',lifeFrac:0.0005,
+   ir:'Clear IR excess from a nearly face-on disk — the closest protoplanetary disk to Earth, a key laboratory for disk chemistry and gaps.',
+   note:'An old-ish T Tauri star whose face-on orientation gives us our cleanest view into a planet-forming disk.'},
+  {name:'Beta Pictoris',type:'A6V · main sequence',tag:'Debris',color:'#cfe4ff',
+   spec:{Mass:'~1.8 M☉',Radius:'~1.8 R☉','Temp':'8000 K',Age:'~23 Myr',Distance:'~63 ly',Disk:'Edge-on debris + planet'},
+   life:'~1.3 Gyr',lifeFrac:0.018,
+   ir:'A classic IR-excess discovery (IRAS, 1984). The excess comes from a collisionally replenished debris disk, seen edge-on, harbouring the planet β Pic b.',
+   note:'The transition from primordial to debris disk: gas mostly gone, dust regenerated by colliding planetesimals.'},
+  {name:'Fomalhaut',type:'A3V · main sequence',tag:'Debris',color:'#dbeaff',
+   spec:{Mass:'~1.9 M☉',Radius:'~1.8 R☉','Temp':'8590 K',Age:'~440 Myr',Distance:'~25 ly',Disk:'Sharp dust ring'},
+   life:'~1 Gyr',lifeFrac:0.44,
+   ir:'Strong far-IR excess from a sharply defined eccentric dust ring — a "debris belt" sculpted by gravity, imaged in scattered light and the infrared.',
+   note:'A nearby debris-disk archetype; its crisp ring edges point to shepherding by unseen bodies.'},
+  {name:'AB Aurigae',type:'Herbig Ae · pre-MS',tag:'Disk',color:'#ffd9a0',
+   spec:{Mass:'~2.4 M☉',Radius:'~2.5 R☉','Temp':'~9800 K',Age:'~4 Myr',Distance:'~530 ly',Disk:'Spiral, forming planet'},
+   life:'~0.7 Gyr (future MS)',lifeFrac:0.001,
+   ir:'Large IR excess from a massive disk showing spiral arms and a candidate forming protoplanet — the intermediate-mass cousin of T Tauri stars.',
+   note:'A Herbig Ae/Be star: same disk physics as T Tauri, but more massive and hotter.'},
+  {name:'Proxima Centauri',type:'M5.5Ve · main sequence',tag:'Red dwarf',color:'#ff8a5c',
+   spec:{Mass:'0.12 M☉',Radius:'0.15 R☉','Temp':'~3000 K',Age:'~4.85 Gyr',Distance:'4.25 ly',Disk:'None'},
+   life:'~4 trillion yr',lifeFrac:0.0001,
+   ir:'Negligible disk excess today. Included for contrast: a low-mass star burns its fuel so slowly it will outlive the Sun a thousand times over.',
+   note:'Lifetime is set by mass: tiny stars are frugal and effectively immortal on cosmic timescales.'}
+];
+function buildStars(){
+  const g=$('#starGrid');
+  STARS.forEach((s,i)=>{
+    const el=document.createElement('button');
+    el.className='star'; el.style.color=s.color;
+    el.innerHTML=`<div class="orb" style="background:radial-gradient(circle at 34% 32%, #fff, ${s.color} 42%, ${shade(s.color)} 95%)"></div>
+      <span class="tag">${s.tag}</span>
+      <h3 style="color:var(--text)">${s.name}</h3>
+      <div class="type">${s.type}</div>
+      <div class="blurb">${s.note}</div>`;
+    el.addEventListener('click',()=>openStar(i));
+    g.appendChild(el);
+  });
+}
+function shade(hex){ // darken
+  const n=parseInt(hex.slice(1),16);let r=(n>>16)&255,gg=(n>>8)&255,b=n&255;
+  r=Math.round(r*.45);gg=Math.round(gg*.4);b=Math.round(b*.5);
+  return `rgb(${r},${gg},${b})`;
+}
+function openStar(i){
+  const s=STARS[i];
+  $('#m-name').textContent=s.name;
+  $('#m-type').textContent=s.type;
+  const orb=$('#m-orb');orb.style.color=s.color;
+  orb.style.background=`radial-gradient(circle at 34% 32%, #fff, ${s.color} 42%, ${shade(s.color)} 95%)`;
+  let specs='';
+  for(const k in s.spec) specs+=`<div class="spec"><div class="k">${k.replace(':','')}</div><div class="v">${s.spec[k]}</div></div>`;
+  const pct=Math.min(100,Math.max(2,s.lifeFrac*100));
+  $('#m-body').innerHTML=`
+    <div class="spec-grid">${specs}</div>
+    <h4>Infrared signature</h4><p>${s.ir}</p>
+    <h4>Estimated lifetime</h4>
+    <p style="margin-bottom:6px">Main-sequence lifespan ≈ <span class="mono" style="color:var(--ice)">${s.life}</span>${s.lifeFrac>0.01?` · roughly <b style="color:var(--warm)">${Math.round(s.lifeFrac*100)}%</b> elapsed`:''}.</p>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+    <h4>Why it matters</h4><p>${s.note}</p>`;
+  $('#modalBg').classList.add('open');
+  bindTips();
+}
+$('#modalClose').addEventListener('click',()=>$('#modalBg').classList.remove('open'));
+$('#modalBg').addEventListener('click',e=>{if(e.target===$('#modalBg'))$('#modalBg').classList.remove('open');});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#modalBg').classList.remove('open');});
+
+/* ============ hero cloud canvas ============ */
+const hc=$('#cloud-canvas');const hx=hc.getContext('2d');
+let stars=[],pts=[],reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+function initHero(){
+  hc.width=hc.clientWidth;hc.height=hc.clientHeight;
+  stars=[];for(let i=0;i<120;i++)stars.push({x:Math.random()*hc.width,y:Math.random()*hc.height,r:Math.random()*1.2+0.2,a:Math.random()*0.6+0.2,tw:Math.random()*0.02});
+  pts=[];const cx=hc.width*0.62,cy=hc.height*0.5;
+  for(let i=0;i<180;i++){
+    const ang=Math.random()*Math.PI*2,rad=Math.pow(Math.random(),0.5)*Math.min(hc.width,hc.height)*0.36;
+    pts.push({ang,rad,baseRad:rad,x:cx+Math.cos(ang)*rad,y:cy+Math.sin(ang)*rad,sp:0.0006+Math.random()*0.0012,
+      hue:Math.random(),sz:Math.random()*2+0.6});
+  }
+}
+let hframe=0;
+function drawHero(){
+  hx.clearRect(0,0,hc.width,hc.height);
+  const cx=hc.width*0.62,cy=hc.height*0.5;
+  // background stars
+  stars.forEach(s=>{
+    s.a+=Math.sin(hframe*s.tw)*0.004;
+    hx.globalAlpha=Math.max(0.1,Math.min(0.9,s.a));
+    hx.fillStyle='#cfe0ff';hx.beginPath();hx.arc(s.x,s.y,s.r,0,7);hx.fill();
+  });
+  hx.globalAlpha=1;
+  // nebula glow
+  const g=hx.createRadialGradient(cx,cy,0,cx,cy,Math.min(hc.width,hc.height)*0.45);
+  g.addColorStop(0,'rgba(111,143,214,.10)');g.addColorStop(0.5,'rgba(224,101,63,.05)');g.addColorStop(1,'rgba(0,0,0,0)');
+  hx.fillStyle=g;hx.fillRect(0,0,hc.width,hc.height);
+  // collapsing particles (slow swirl inward + back)
+  pts.forEach(p=>{
+    p.ang+=p.sp;
+    const breathe=0.78+0.22*Math.sin(hframe*0.004+p.baseRad*0.01);
+    p.rad=p.baseRad*breathe;
+    p.x=cx+Math.cos(p.ang)*p.rad;p.y=cy+Math.sin(p.ang)*p.rad*0.92;
+    const heat=1-p.rad/(Math.min(hc.width,hc.height)*0.36);
+    const r=Math.round(120+heat*135),gg=Math.round(140+heat*80),b=Math.round(214-heat*150);
+    hx.fillStyle=`rgba(${r},${gg},${b},${0.35+heat*0.5})`;
+    hx.beginPath();hx.arc(p.x,p.y,p.sz*(0.8+heat*0.8),0,7);hx.fill();
+  });
+  // bright protostar core
+  const cg=hx.createRadialGradient(cx,cy,0,cx,cy,60);
+  cg.addColorStop(0,'rgba(255,240,220,.55)');cg.addColorStop(0.4,'rgba(243,173,94,.25)');cg.addColorStop(1,'rgba(224,101,63,0)');
+  hx.fillStyle=cg;hx.beginPath();hx.arc(cx,cy,60,0,7);hx.fill();
+}
+
+/* ============ animation loop ============ */
+function loop(){
+  hframe++;
+  if(!reduce){drawHero();ffPhase+=0.006;drawFF();}
+  requestAnimationFrame(loop);
+}
+
+/* ============ scroll reveal + nav + progress ============ */
+function initReveal(){
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');});},{threshold:0.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+}
+function initNav(){
+  const links=[...document.querySelectorAll('.nav-links a')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  window.addEventListener('scroll',()=>{
+    const sc=window.scrollY,dh=document.documentElement.scrollHeight-window.innerHeight;
+    $('#progress').style.width=(sc/dh*100)+'%';
+    let cur=0;secs.forEach((s,i)=>{if(s&&s.offsetTop-120<=sc)cur=i;});
+    links.forEach((l,i)=>l.classList.toggle('active',i===cur));
+  },{passive:true});
+}
+
+/* ============ init ============ */
+window.addEventListener('resize',()=>{initHero();if(reduce)drawHero();drawSED();drawFF();});
+buildTimeline();buildStars();jeans();
+const tff0=freefallCalc();
+initHero();drawHero();drawFF();
+window.addEventListener('load',()=>{drawSED();});
+setTimeout(drawSED,200);
+bindTips();initReveal();initNav();
+loop();
+</script>
+</body>
+</html>

@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>newspace.live — Tools, simulations and open knowledge for the new space age</title>
+<meta name="description" content="A hub for open space projects: Space Situational Awareness, Stellar Genesis, and Space Simulations." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --void:#05060d;--cloud:#0b1020;--cloud-2:#111a30;--cloud-3:#16223e;--line:#243353;
+  --cold:#6f8fd6;--ice:#a9dcff;--warm:#f3ad5e;--ir:#e0653f;--sim:#5fd0a0;--law:#9b8cff;--mech:#3cc9e6;--exo:#ff86c8;--cy:#9be35a;--hist:#e3b23c;
+  --text:#eaeefb;--muted:#93a0c2;--muted-2:#6b769a;
+  --shadow:0 18px 50px -20px rgba(0,0,0,.8);--r:16px;--maxw:1120px;
+  --display:"Space Grotesk",system-ui,sans-serif;--body:"Inter",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--void);color:var(--text);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(1100px 700px at 80% -8%, rgba(224,101,63,.10), transparent 60%),
+    radial-gradient(1000px 800px at 8% 2%, rgba(111,143,214,.12), transparent 60%),
+    radial-gradient(900px 900px at 50% 120%, rgba(95,208,160,.05), transparent 60%);}
+a{color:var(--ice);text-decoration:none}
+h1,h2,h3,h4{font-family:var(--display);font-weight:600;line-height:1.12;letter-spacing:-.01em;margin:0}
+p{margin:0 0 1em}
+.mono{font-family:var(--mono)}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+section{padding:90px 0;position:relative}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--warm);margin:0 0 14px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:26px;height:1px;background:linear-gradient(90deg,var(--warm),transparent)}
+.sec-title{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:14px}
+.lede{color:var(--muted);font-size:1.06rem;max-width:64ch}
+
+#progress{position:fixed;top:0;left:0;height:2px;width:0;z-index:70;background:linear-gradient(90deg,var(--cold),var(--ice),var(--warm),var(--ir))}
+
+/* nav */
+.nav{position:sticky;top:0;z-index:60;backdrop-filter:blur(14px);background:rgba(5,6,13,.72);border-bottom:1px solid var(--line)}
+.nav-inner{max-width:var(--maxw);margin:0 auto;padding:12px 24px;padding-right:66px;display:flex;align-items:center;gap:18px;position:relative}
+.langflag{position:fixed;top:12px;right:16px;z-index:90;display:inline-flex;align-items:center;justify-content:center;background:rgba(11,16,32,.92);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:9px;padding:6px;cursor:pointer;transition:border-color .2s,transform .15s}
+.langflag:hover{border-color:var(--cold);transform:translateY(-1px)}
+.langflag svg{width:26px;height:17px;border-radius:2px;display:block;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+.brand{display:flex;align-items:center;gap:11px;font-family:var(--display);font-weight:700;letter-spacing:-.02em;font-size:1.08rem;white-space:nowrap}
+.brand .dot{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 32% 32%,var(--ice),var(--cold) 45%,var(--ir) 95%);box-shadow:0 0 16px var(--cold);flex:none}
+.brand .tld{color:var(--muted-2);font-weight:500}
+.menu-btn{margin-left:auto;display:inline-flex;flex-direction:column;justify-content:center;gap:4px;width:42px;height:36px;padding:0 9px;border:1px solid var(--line);border-radius:9px;background:var(--cloud-2);cursor:pointer;transition:border-color .2s}
+.menu-btn:hover{border-color:var(--cold)}
+.menu-btn span{display:block;height:2px;width:100%;background:var(--text);border-radius:2px;transition:transform .25s,opacity .2s}
+.menu-btn.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.menu-btn.open span:nth-child(2){opacity:0}
+.menu-btn.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+.nav-links{position:absolute;top:calc(100% + 10px);right:0;display:none;flex-direction:column;gap:2px;min-width:250px;max-width:min(86vw,310px);background:rgba(8,11,22,.98);backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:14px;padding:10px;box-shadow:var(--shadow);max-height:72vh;overflow-y:auto}
+.nav-links.open{display:flex;animation:menuIn .18s ease}
+@keyframes menuIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.nav-links a{color:var(--muted);font-size:.92rem;padding:11px 14px;border-radius:10px;white-space:nowrap;transition:color .18s,background .18s;font-weight:500}
+.nav-links a:hover{color:var(--text);background:var(--cloud-2)}
+.nav-links a.active{color:var(--ice);background:rgba(169,220,255,.10)}
+.nav-links .sep{height:1px;background:var(--line);margin:6px 6px}
+
+/* hero */
+.hero{min-height:88vh;display:flex;align-items:center;padding-top:36px;position:relative;overflow:hidden}
+#orbit-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:-1;opacity:.95}
+.hero-inner{max-width:var(--maxw);margin:0 auto;padding:0 24px;width:100%}
+.hero .kick{font-family:var(--mono);font-size:.78rem;letter-spacing:.24em;text-transform:uppercase;color:var(--cold);margin-bottom:22px}
+.hero h1{font-size:clamp(2.7rem,7.5vw,5.6rem);font-weight:700;max-width:15ch;letter-spacing:-.025em}
+.hero h1 .grad{background:linear-gradient(100deg,var(--ice),var(--cold) 36%,var(--sim) 60%,var(--warm) 82%,var(--ir));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .sub{color:var(--muted);font-size:1.18rem;max-width:56ch;margin-top:24px}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:34px}
+.btn{font-family:var(--body);font-weight:600;font-size:.95rem;border-radius:12px;padding:13px 22px;border:1px solid var(--line);background:var(--cloud-2);color:var(--text);cursor:pointer;transition:transform .15s,border-color .2s;text-decoration:none;display:inline-flex;align-items:center;gap:9px}
+.btn:hover{transform:translateY(-2px);border-color:var(--cold)}
+.btn.primary{background:linear-gradient(100deg,rgba(111,143,214,.22),rgba(224,101,63,.22));border-color:rgba(169,220,255,.4)}
+.btn.primary:hover{border-color:var(--ice)}
+.scroll-hint{margin-top:44px;color:var(--muted-2);font-size:.8rem;font-family:var(--mono);letter-spacing:.1em;display:flex;align-items:center;gap:8px}
+.scroll-hint .a{animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+@media (prefers-reduced-motion:reduce){.scroll-hint .a{animation:none}}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1!important;transform:none!important}}
+
+/* project cards */
+.projects{display:grid;gap:22px}
+.proj{
+  display:grid;grid-template-columns:200px 1fr auto;gap:26px;align-items:center;
+  background:linear-gradient(180deg,var(--cloud-2),var(--cloud));border:1px solid var(--line);
+  border-radius:var(--r);padding:24px 26px;box-shadow:var(--shadow);
+  transition:transform .2s,border-color .25s,box-shadow .25s;position:relative;overflow:hidden;
+  --accent:var(--cold);
+}
+.proj::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:.8}
+.proj:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 26px 60px -24px rgba(0,0,0,.9)}
+.proj .thumb{width:200px;height:140px;border-radius:12px;background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.04),transparent 70%),var(--void);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none}
+.proj .thumb svg{width:100%;height:100%;display:block}
+.proj .body{min-width:0}
+.proj .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.proj h3{font-size:1.5rem}
+.proj .tag{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;padding:4px 9px;border-radius:99px;border:1px solid var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.proj p{color:var(--muted);font-size:.98rem;margin:0 0 12px;max-width:60ch}
+.proj .meta{display:flex;gap:8px;flex-wrap:wrap}
+.proj .chip{font-family:var(--mono);font-size:.74rem;color:var(--muted);background:var(--cloud-3);border:1px solid var(--line);border-radius:8px;padding:4px 9px}
+.proj .launch{
+  display:inline-flex;align-items:center;gap:9px;font-weight:600;font-size:.95rem;white-space:nowrap;
+  border:1px solid var(--accent);color:var(--text);background:color-mix(in srgb,var(--accent) 16%,transparent);
+  padding:13px 20px;border-radius:12px;transition:gap .2s,background .2s;flex:none;
+}
+.proj .launch:hover{gap:14px;background:color-mix(in srgb,var(--accent) 28%,transparent)}
+.proj .launch .arrow{transition:transform .2s}
+.proj:hover .launch .arrow{transform:translateX(3px)}
+
+@media (max-width:840px){
+  .proj{grid-template-columns:1fr;gap:18px}
+  .proj .thumb{width:100%;height:150px}
+  .proj .launch{width:100%;justify-content:center}
+}
+
+/* mini-viz animations (disabled under reduced motion) */
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:.5;r:3}50%{opacity:1;r:4.5}}
+.spin1{transform-origin:center;animation:spin 14s linear infinite}
+.spin2{transform-origin:center;animation:spin 9s linear infinite reverse}
+.spin3{transform-origin:center;animation:spin 20s linear infinite}
+.pulse{animation:pulse 3s ease-in-out infinite}
+.flow{offset-path:path('M20,118 C60,118 70,40 110,40 C150,40 160,118 184,90');offset-rotate:0deg;animation:flowmove 5s linear infinite}
+@keyframes flowmove{from{offset-distance:0%}to{offset-distance:100%}}
+@media (prefers-reduced-motion:reduce){.spin1,.spin2,.spin3,.pulse,.flow{animation:none}}
+
+/* mission strip */
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-top:8px}
+.card{background:var(--cloud-2);border:1px solid var(--line);border-radius:14px;padding:22px;transition:transform .18s,border-color .2s}
+.card:hover{transform:translateY(-3px);border-color:var(--cold)}
+.card h3{font-size:1.1rem;margin-bottom:8px}
+.card p{color:var(--muted);font-size:.94rem;margin:0}
+
+footer{border-top:1px solid var(--line);padding:40px 0 60px;color:var(--muted-2);font-size:.85rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center}
+.note{font-size:.82rem;color:var(--muted-2);font-style:italic}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<button id="langBtn" class="langflag" aria-label="Switch language / Cambiar idioma"></button>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="brand"><span class="dot"></span>newspace<span class="tld">.live</span></div>
+    <button id="menuBtn" class="menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="navlinks"><span></span><span></span><span></span></button>
+    <div class="nav-links" id="navlinks">
+      <a href="/ssa_visor.html" data-i18n="nav.ssa">Space Situational Awareness</a>
+      <a href="/neo_watch.html" data-i18n="nav.neo">NEO Watch</a>
+      <a href="/stellar-genesis.html" data-i18n="nav.stellar">Stellar Genesis</a>
+      <a href="/exoplanets.html" data-i18n="nav.exo">Exoplanets</a>
+      <a href="/space-simulations.html" data-i18n="nav.sims">Space Simulations</a>
+      <a href="/mechanics.html" data-i18n="nav.mech">Orbital Mechanics</a>
+      <a href="/legal.html" data-i18n="nav.legal">Space Law</a>
+      <a href="/cybersecurity.html" data-i18n="nav.cyber">Space Cyber</a>
+      <a href="/space-history.html" data-i18n="nav.hist">Space History</a>
+      <div class="sep"></div>
+      <a href="#about" data-i18n="nav.about">About</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <canvas id="orbit-canvas"></canvas>
+  <div class="hero-inner">
+    <p class="kick" data-i18n="hero.kick">Open tools · simulations · knowledge</p>
+    <h1 data-i18n-html="hero.h1">The sky, <span class="grad">made legible.</span></h1>
+    <p class="sub" data-i18n="hero.sub">A home for space projects built in the open — from tracking the objects above us, to the physics of how stars are born, to simulations you can run in your browser.</p>
+    <div class="hero-cta">
+      <a class="btn primary" href="#projects" data-i18n="hero.cta1">Explore the projects →</a>
+      <a class="btn" href="#about" data-i18n="hero.cta2">What is this?</a>
+    </div>
+    <div class="scroll-hint"><span class="a">↓</span> <span data-i18n="hero.scroll">nine projects below</span></div>
+  </div>
+</header>
+
+<section id="projects">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="pj.eyebrow">The projects</p>
+    <h2 class="sec-title reveal" data-i18n="pj.title">Nine ways into space</h2>
+    <p class="lede reveal" style="margin-bottom:36px" data-i18n="pj.lede">Each is a standalone tool. Pick one to launch it.</p>
+
+    <div class="projects">
+
+      <!-- SSA -->
+      <a class="proj reveal" id="ssa" href="/ssa_visor.html" style="--accent:var(--cold)">
+        <div class="thumb">
+          <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
+            <defs><radialGradient id="g-ssa" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#a9dcff"/><stop offset="60%" stop-color="#6f8fd6"/><stop offset="100%" stop-color="#1b2b4d"/>
+            </radialGradient></defs>
+            <ellipse cx="100" cy="70" rx="78" ry="28" fill="none" stroke="#6f8fd6" stroke-opacity=".35"/>
+            <ellipse cx="100" cy="70" rx="58" ry="46" fill="none" stroke="#6f8fd6" stroke-opacity=".3"/>
+            <ellipse cx="100" cy="70" rx="40" ry="62" fill="none" stroke="#6f8fd6" stroke-opacity=".25"/>
+            <circle cx="100" cy="70" r="11" fill="url(#g-ssa)"/>
+            <g class="spin1"><g transform="translate(100,70)"><circle cx="78" cy="0" r="3.2" fill="#a9dcff"/></g></g>
+            <g class="spin2"><g transform="translate(100,70)"><circle cx="0" cy="-46" r="3" fill="#cfe0ff"/></g></g>
+            <g class="spin3"><g transform="translate(100,70)"><circle cx="-40" cy="0" r="2.6" fill="#a9dcff"/></g></g>
+            <circle class="pulse" cx="100" cy="70" r="3" fill="#ffffff"/>
+          </svg>
+        </div>
+        <div class="body">
+          <div class="row"><h3 data-i18n="ssa.t">Space Situational Awareness</h3><span class="tag" data-i18n="tag.live">Live</span></div>
+          <p data-i18n="ssa.d">Track what's overhead. Orbital propagation, pass prediction, and catalog visualization built on public two-line element data — a sovereign view of the objects sharing our skies.</p>
+          <div class="meta"><span class="chip">SGP4</span><span class="chip" data-i18n="ssa.c2">TLE catalog</span><span class="chip" data-i18n="ssa.c3">conjunctions</span><span class="chip" data-i18n="ssa.c4">ground tracks</span></div>
+        </div>
+        <span class="launch" data-i18n="btn.launch">Launch <span class="arrow">→</span></span>
+      </a>
+
+      <!-- NEO WATCH -->
+      <a class="proj reveal" id="neo" href="/neo_watch.html" style="--accent:var(--ir)">
+        <div class="thumb">
+          <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
+            <defs><radialGradient id="g-neo-earth" cx="40%" cy="40%" r="65%">
+              <stop offset="0%" stop-color="#cfe9ff"/><stop offset="60%" stop-color="#5b86c9"/><stop offset="100%" stop-color="#1b3158"/></radialGradient></defs>
+            <path d="M16,28 Q82,42 138,86" fill="none" stroke="#e0653f" stroke-opacity=".55" stroke-width="1.4" stroke-dasharray="4 4"/>
+            <circle cx="150" cy="98" r="22" fill="url(#g-neo-earth)"/>
+            <circle cx="150" cy="98" r="31" fill="none" stroke="#e0653f" stroke-opacity=".35" stroke-width="1"/>
+            <g transform="translate(72,40)"><polygon points="-5,-2 -1,-5 4,-3 5,2 1,5 -4,3" fill="#b9a18c" stroke="#e0653f" stroke-width="1"/></g>
+            <circle class="pulse" cx="72" cy="40" r="3" fill="#e0653f"/>
+          </svg>
+        </div>
+        <div class="body">
+          <div class="row"><h3 data-i18n="neo.t">NEO Watch</h3><span class="tag" data-i18n="tag.live">Live</span></div>
+          <p data-i18n="neo.d">Planetary defense. Track near-Earth asteroids and their close approaches with live NASA data — impact-hazard scales (Torino, Palermo), time acceleration, and local observability by city, all in an OODA situational frame.</p>
+          <div class="meta"><span class="chip">NeoWs (NASA)</span><span class="chip" data-i18n="neo.c2">close approaches</span><span class="chip">Torino / Palermo</span><span class="chip" data-i18n="neo.c4">impact risk</span><span class="chip" data-i18n="neo.c5">observability</span></div>
+        </div>
+        <span class="launch" data-i18n="btn.launch">Launch <span class="arrow">→</span></span>
+      </a>
+
+      <!-- STELLAR GENESIS -->
+      <a class="proj reveal" id="stellar" href="/stellar-genesis.html" style="--accent:var(--warm)">
+        <div class="thumb">
+          <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
+            <defs><radialGradient id="g-star" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#fff"/><stop offset="40%" stop-color="#ffd27a"/><stop offset="100%" stop-color="#e0653f"/>
+            </radialGradient>
+            <linearGradient id="g-disk" x1="0" x2="1"><stop offset="0" stop-color="#e0653f" stop-opacity="0"/><stop offset=".5" stop-color="#f3ad5e" stop-opacity=".55"/><stop offset="1" stop-color="#e0653f" stop-opacity="0"/></linearGradient></defs>
+            <ellipse cx="100" cy="70" rx="82" ry="22" fill="none" stroke="url(#g-disk)" stroke-width="9"/>
+            <ellipse cx="100" cy="70" rx="58" ry="15" fill="none" stroke="#f3ad5e" stroke-opacity=".35" stroke-width="4"/>
+            <circle cx="100" cy="70" r="13" fill="url(#g-star)"/>
+            <g class="spin1"><g transform="translate(100,70)"><circle cx="82" cy="0" r="3" fill="#ffd27a"/></g></g>
+            <g class="spin3"><g transform="translate(100,70)"><circle cx="-58" cy="0" r="2.4" fill="#f3ad5e"/></g></g>
+          </svg>
+        </div>
+        <div class="body">
+          <div class="row"><h3 data-i18n="stellar.t">Stellar Genesis</h3><span class="tag" data-i18n="tag.live">Live</span></div>
+          <p data-i18n="stellar.d">How stars and their disks are born. An interactive, physics-first walkthrough — the Jeans criterion, free-fall collapse, infrared disk detection, and the nebular theory of the Solar System.</p>
+          <div class="meta"><span class="chip" data-i18n="stellar.c1">Jeans mass</span><span class="chip" data-i18n="stellar.c2">free-fall</span><span class="chip">IR excess SED</span><span class="chip" data-i18n="stellar.c4">nebular theory</span></div>
+        </div>
+        <span class="launch" data-i18n="btn.launch">Launch <span class="arrow">→</span></span>
+      </a>
+
+      <!-- EXOPLANETS -->
+      <a class="proj reveal" id="exo" href="/exoplanets.html" style="--accent:var(--exo)">
+        <div class="thumb">
+          <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
+            <defs><radialGradient id="g-exo-star" cx="42%" cy="40%" r="62%"><stop offset="0%" stop-color="#fff"/><stop offset="55%" stop-color="#ffd27a"/><stop offset="100%" stop-color="#e0653f"/></radialGradient></defs>
+            <ellipse cx="100" cy="70" rx="78" ry="20" fill="none" stroke="#ff86c8" stroke-opacity=".35" stroke-width="6"/>
+            <ellipse cx="100" cy="70" rx="52" ry="13" fill="none" stroke="#ff86c8" stroke-opacity=".25"/>
+            <circle cx="100" cy="70" r="14" fill="url(#g-exo-star)"/>
+            <g class="spin1"><g transform="translate(100,70)"><circle cx="78" cy="0" r="5" fill="#ff86c8"/></g></g>
+            <g class="spin3"><g transform="translate(100,70)"><circle cx="-52" cy="0" r="3" fill="#a9dcff"/></g></g>
+          </svg>
+        </div>
+        <div class="body">
+          <div class="row"><h3 data-i18n="exo.t">Exoplanets</h3><span class="tag" data-i18n="tag.bi">Bilingual</span></div>
+          <p data-i18n="exo.d">How other worlds are made. An interactive, bilingual walkthrough of exoplanet formation — the frost line, core accretion and migration, the transit method and the habitable zone — with simulators, games, challenges and real examples.</p>
+          <div class="meta"><span class="chip" data-i18n="exo.c1">core accretion</span><span class="chip" data-i18n="exo.c2">frost line</span><span class="chip" data-i18n="exo.c3">transit method</span><span class="chip" data-i18n="exo.c4">habitable zone</span><span class="chip" data-i18n="exo.c5">games</span></div>
+        </div>
+        <span class="launch" data-i18n="btn.launch">Launch <span class="arrow">→</span></span>
+      </a>
+
+      <!-- SPACE SIMULATIONS -->
+      <a class="proj reveal" id="sims" href="/space-simulations.html" style="--accent:var(--sim)">
+        <div class="thumb">
+          <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20,118 C60,118 70,40 110,40 C150,40 160,118 184,90" fill="none" stroke="#5fd0a0" stroke-opacity=".5" stroke-width="1.6" stroke-dasharray="3 4"/>
+            <circle cx="110" cy="40" r="9" fill="#5fd0a0" fill-opacity=".25" stroke="#5fd0a0"/>
+            <circle cx="40" cy="100" r="6" fill="#a9dcff" fill-opacity=".25" stroke="#a9dcff"/>
+            <circle class="flow" cx="0" cy="0" r="3.6" fill="#fff"/>
+            <circle class="pulse" cx="110" cy="40" r="3" fill="#5fd0a0"/>
+          </svg>
+        </div>
+        <div class="body">
+          <div class="row"><h3 data-i18n="sims.t">Space Simulations</h3><span class="tag" data-i18n="tag.beta">Beta</span></div>
+          <p data-i18n="sims.d">Play with the physics. Orbital mechanics, transfer manoeuvres, and n-body trajectories you can run, pause, and tweak directly in the browser — no install, no math anxiety.</p>
+          <div class="meta"><span class="chip" data-i18n="sims.c1">orbital mechanics</span><span class="chip" data-i18n="sims.c2">transfers</span><span class="chip" data-i18n="sims.c3">n-body</span><span class="chip" data-i18n="sims.c4">interactive</span></div>
+        </div>
+        <span class="launch" data-i18n="btn.launch">Launch <span class="arrow">→</span></span>
+      </a>
+
+      <!-- ORBITAL MECHANICS -->
+      <a class="proj reveal" id="mech" href="/mechanics.html" style="--accent:var(--mech)">
+        <div class="thumb">
+          <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="112" cy="70" rx="74" ry="44" fill="none" stroke="#3cc9e6" stroke-opacity=".55"/>
+            <ellipse cx="100" cy="70" rx="50" ry="30" fill="none" stroke="#3cc9e6" stroke-opacity=".3"/>
+            <circle cx="100" cy="70" r="10" fill="url(#g-mech-sun)"/>
+            <defs><radialGradient id="g-mech-sun" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff7df"/><stop offset="55%" stop-color="#ffce6b"/><stop offset="100%" stop-color="#e0653f"/></radialGradient></defs>
+            <g class="spin1"><g transform="translate(112,70)"><circle cx="74" cy="0" r="3.4" fill="#3cc9e6"/></g></g>
+            <g class="spin3"><g transform="translate(100,70)"><circle cx="50" cy="0" r="2.6" fill="#a9dcff"/></g></g>
+            <circle class="pulse" cx="186" cy="70" r="3" fill="#3cc9e6"/>
+          </svg>
+        </div>
+        <div class="body">
+          <div class="row"><h3 data-i18n="mech.t">Orbital Mechanics</h3><span class="tag" data-i18n="tag.ref">Reference</span></div>
+          <p data-i18n="mech.d">The mechanics of getting there. Rocket propulsion and orbital dynamics from first principles — the rocket equation, staging, vis-viva, Kepler's laws — with live calculators and the real orbits of every planet, moon and satellite regime.</p>
+          <div class="meta"><span class="chip" data-i18n="mech.c1">rocket equation</span><span class="chip">vis-viva</span><span class="chip">Kepler</span><span class="chip" data-i18n="mech.c4">orbital elements</span><span class="chip" data-i18n="mech.c5">solar system</span></div>
+        </div>
+        <span class="launch" data-i18n="btn.launch">Launch <span class="arrow">→</span></span>
+      </a>
+
+      <!-- SPACE LAW -->
+      <a class="proj reveal" id="legal" href="/legal.html" style="--accent:var(--law)">
+        <div class="thumb">
+          <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="100" cy="70" r="42" fill="none" stroke="#9b8cff" stroke-opacity=".5"/>
+            <ellipse cx="100" cy="70" rx="42" ry="14" fill="none" stroke="#9b8cff" stroke-opacity=".3"/>
+            <ellipse cx="100" cy="70" rx="30" ry="42" fill="none" stroke="#9b8cff" stroke-opacity=".22"/>
+            <ellipse cx="100" cy="70" rx="15" ry="42" fill="none" stroke="#9b8cff" stroke-opacity=".18"/>
+            <path d="M62,50 Q100,18 138,50" fill="none" stroke="#a9dcff" stroke-opacity=".6" stroke-width="1.4" stroke-dasharray="3 4"/>
+            <path d="M60,86 Q100,118 140,86" fill="none" stroke="#a9dcff" stroke-opacity=".4" stroke-width="1.2" stroke-dasharray="3 4"/>
+            <circle class="pulse" cx="62" cy="50" r="3" fill="#9b8cff"/>
+            <circle class="pulse" cx="138" cy="50" r="3" fill="#9b8cff"/>
+            <circle cx="100" cy="70" r="3" fill="#ffffff"/>
+          </svg>
+        </div>
+        <div class="body">
+          <div class="row"><h3 data-i18n="legal.t">Space Law</h3><span class="tag" data-i18n="tag.ref">Reference</span></div>
+          <p data-i18n="legal.d">The rules above us. An interactive reference to the law of outer space — the five UN treaties and the Artemis Accords — for agencies, policymakers and operators who need the framework clear and concrete.</p>
+          <div class="meta"><span class="chip" data-i18n="legal.c1">Outer Space Treaty</span><span class="chip" data-i18n="legal.c2">Liability</span><span class="chip" data-i18n="legal.c3">Registration</span><span class="chip" data-i18n="legal.c4">Moon Agreement</span><span class="chip" data-i18n="legal.c5">Artemis Accords</span></div>
+        </div>
+        <span class="launch" data-i18n="btn.launch">Launch <span class="arrow">→</span></span>
+      </a>
+
+      <!-- SPACE CYBERSECURITY -->
+      <a class="proj reveal" id="cyber" href="/cybersecurity.html" style="--accent:var(--cy)">
+        <div class="thumb">
+          <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
+            <path d="M100,28 L140,44 L140,78 Q140,106 100,120 Q60,106 60,78 L60,44 Z" fill="rgba(155,227,90,.06)" stroke="#9be35a" stroke-opacity=".6" stroke-width="1.6"/>
+            <circle cx="100" cy="68" r="9" fill="none" stroke="#9be35a" stroke-opacity=".85" stroke-width="2"/>
+            <path d="M100,68 L96,92 L104,92 Z" fill="#9be35a" fill-opacity=".85"/>
+            <path d="M74,40 Q100,20 126,40" fill="none" stroke="#a9dcff" stroke-opacity=".5" stroke-width="1.3" stroke-dasharray="3 4"/>
+            <circle class="pulse" cx="100" cy="22" r="3" fill="#9be35a"/>
+          </svg>
+        </div>
+        <div class="body">
+          <div class="row"><h3 data-i18n="cyber.t">Space Cybersecurity</h3><span class="tag" data-i18n="tag.bi">Bilingual</span></div>
+          <p data-i18n="cyber.d">Securing the space mission. An interactive, bilingual reference to space cyber risk — the attack surface by segment, jamming and spoofing, the CIA+A model, and the controls and frameworks that protect a mission — with games, challenges and drill-down detail.</p>
+          <div class="meta"><span class="chip" data-i18n="cyber.c1">jamming &amp; spoofing</span><span class="chip">CIA+A</span><span class="chip" data-i18n="cyber.c3">attack surface</span><span class="chip">SDLS / OSNMA</span><span class="chip" data-i18n="cyber.c5">games</span></div>
+        </div>
+        <span class="launch" data-i18n="btn.launch">Launch <span class="arrow">→</span></span>
+      </a>
+
+      <!-- SPACE HISTORY -->
+      <a class="proj reveal" id="hist" href="/space-history.html" style="--accent:var(--hist)">
+        <div class="thumb">
+          <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
+            <line x1="30" y1="102" x2="170" y2="102" stroke="#e3b23c" stroke-opacity=".45" stroke-width="1.6"/>
+            <circle cx="46" cy="102" r="4" fill="#e3b23c" fill-opacity=".9"/>
+            <circle cx="84" cy="102" r="4" fill="#e3b23c" fill-opacity=".7"/>
+            <circle cx="122" cy="102" r="4" fill="#e3b23c" fill-opacity=".55"/>
+            <circle cx="160" cy="102" r="4" fill="#a9dcff" fill-opacity=".85"/>
+            <path d="M96,32 q8,-18 16,0 l0,34 -16,0 z" fill="rgba(227,178,60,.10)" stroke="#e3b23c" stroke-opacity=".85" stroke-width="1.6"/>
+            <circle cx="104" cy="46" r="3.6" fill="none" stroke="#e3b23c" stroke-opacity=".9" stroke-width="1.4"/>
+            <path d="M96,66 l-6,11 6,-4 z M112,66 l6,11 -6,-4 z" fill="#e3b23c" fill-opacity=".75"/>
+            <path d="M104,70 l0,16" stroke="#e0653f" stroke-opacity=".7" stroke-width="2" stroke-dasharray="2 3"/>
+            <circle class="pulse" cx="160" cy="86" r="3" fill="#e3b23c"/>
+          </svg>
+        </div>
+        <div class="body">
+          <div class="row"><h3 data-i18n="hist.t">Space History</h3><span class="tag" data-i18n="tag.bi">Bilingual</span></div>
+          <p data-i18n="hist.d">From Sputnik to New Space. An interactive, bilingual history of leaving Earth — the milestone timeline, rockets drawn to scale, the people who made it happen, and the New Space era explained in detail — with anecdotes, games and challenges.</p>
+          <div class="meta"><span class="chip" data-i18n="hist.c1">timeline</span><span class="chip" data-i18n="hist.c2">rockets</span><span class="chip" data-i18n="hist.c3">people</span><span class="chip" data-i18n="hist.c4">New Space</span><span class="chip" data-i18n="hist.c5">games</span></div>
+        </div>
+        <span class="launch" data-i18n="btn.launch">Launch <span class="arrow">→</span></span>
+      </a>
+
+    </div>
+    <p class="note reveal" style="margin-top:22px" data-i18n-html="pj.note">Launch links point to <span class="mono">/ssa_visor.html</span>, <span class="mono">/neo_watch.html</span>, <span class="mono">/stellar-genesis.html</span>, <span class="mono">/space-simulations.html</span>, <span class="mono">/mechanics.html</span>, <span class="mono">/legal.html</span>, <span class="mono">/exoplanets.html</span>, <span class="mono">/cybersecurity.html</span> and <span class="mono">/space-history.html</span>.</p>
+  </div>
+</section>
+
+<section id="about">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-i18n="ab.eyebrow">About</p>
+    <h2 class="sec-title reveal" data-i18n="ab.title">Space capability, built in the open</h2>
+    <p class="lede reveal" style="margin-bottom:30px" data-i18n="ab.lede">newspace.live gathers practical tools and clear explanations in one place — for analysts, students, and the simply curious. The aim is the same across every project: take something that usually lives behind specialist software and make it legible, hands-on, and yours.</p>
+    <div class="strip reveal">
+      <div class="card"><h3 style="color:var(--cold)" data-i18n="ab.t1">Track</h3><p data-i18n="ab.p1">Know what's above you. Public orbital data, propagated and visualized so anyone can build situational awareness.</p></div>
+      <div class="card"><h3 style="color:var(--warm)" data-i18n="ab.t2">Understand</h3><p data-i18n="ab.p2">The physics behind the headlines — collapse, fusion, disks, planets — explained interactively from first principles.</p></div>
+      <div class="card"><h3 style="color:var(--sim)" data-i18n="ab.t3">Experiment</h3><p data-i18n="ab.p3">Run the equations yourself. Simulations that turn orbital mechanics into something you can feel, not just read.</p></div>
+      <div class="card"><h3 style="color:var(--law)" data-i18n="ab.t4">Govern</h3><p data-i18n="ab.p4">Know the rules above us. The treaties and accords that shape what every actor in space may and may not do.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div data-i18n-html="ft.1"><strong style="color:var(--text);font-family:var(--display)">newspace<span style="color:var(--muted-2)">.live</span></strong> · open tools for the new space age</div>
+    <div data-i18n="ft.2">Built for learning and exploration.</div>
+  </div>
+</footer>
+
+<script>
+const $=s=>document.querySelector(s);
+
+/* ---------- i18n (English default, flag-only toggle) ---------- */
+let LANG='en';
+const I18N={
+ 'nav.ssa':{en:`Space Situational Awareness`,es:`Conciencia Situacional Espacial`},
+ 'nav.neo':{en:`NEO Watch`,es:`NEO Watch`},
+ 'nav.stellar':{en:`Stellar Genesis`,es:`Stellar Genesis`},
+ 'nav.exo':{en:`Exoplanets`,es:`Exoplanetas`},
+ 'nav.sims':{en:`Space Simulations`,es:`Simulaciones Espaciales`},
+ 'nav.mech':{en:`Orbital Mechanics`,es:`Mecánica Orbital`},
+ 'nav.legal':{en:`Space Law`,es:`Derecho Espacial`},
+ 'nav.cyber':{en:`Space Cyber`,es:`Ciber Espacial`},
+ 'nav.hist':{en:`Space History`,es:`Historia Espacial`},
+ 'nav.about':{en:`About`,es:`Acerca de`},
+ 'hero.kick':{en:`Open tools · simulations · knowledge`,es:`Herramientas abiertas · simulaciones · conocimiento`},
+ 'hero.h1':{en:`The sky, <span class="grad">made legible.</span>`,es:`El cielo, <span class="grad">hecho legible.</span>`},
+ 'hero.sub':{en:`A home for space projects built in the open — from tracking the objects above us, to the physics of how stars are born, to simulations you can run in your browser.`,es:`Un hogar para proyectos espaciales construidos en abierto — desde rastrear los objetos sobre nosotros, hasta la física de cómo nacen las estrellas, y simulaciones que podés correr en tu navegador.`},
+ 'hero.cta1':{en:`Explore the projects →`,es:`Explorá los proyectos →`},
+ 'hero.cta2':{en:`What is this?`,es:`¿Qué es esto?`},
+ 'hero.scroll':{en:`nine projects below`,es:`nueve proyectos abajo`},
+ 'pj.eyebrow':{en:`The projects`,es:`Los proyectos`},
+ 'pj.title':{en:`Nine ways into space`,es:`Nueve formas de entrar al espacio`},
+ 'pj.lede':{en:`Each is a standalone tool. Pick one to launch it.`,es:`Cada uno es una herramienta independiente. Elegí una para abrirla.`},
+ 'pj.note':{en:`Launch links point to <span class="mono">/ssa_visor.html</span>, <span class="mono">/neo_watch.html</span>, <span class="mono">/stellar-genesis.html</span>, <span class="mono">/space-simulations.html</span>, <span class="mono">/mechanics.html</span>, <span class="mono">/legal.html</span>, <span class="mono">/exoplanets.html</span>, <span class="mono">/cybersecurity.html</span> and <span class="mono">/space-history.html</span>.`,es:`Los enlaces apuntan a <span class="mono">/ssa_visor.html</span>, <span class="mono">/neo_watch.html</span>, <span class="mono">/stellar-genesis.html</span>, <span class="mono">/space-simulations.html</span>, <span class="mono">/mechanics.html</span>, <span class="mono">/legal.html</span>, <span class="mono">/exoplanets.html</span>, <span class="mono">/cybersecurity.html</span> y <span class="mono">/space-history.html</span>.`},
+ 'tag.live':{en:`Live`,es:`En vivo`},
+ 'tag.beta':{en:`Beta`,es:`Beta`},
+ 'tag.ref':{en:`Reference`,es:`Referencia`},
+ 'tag.bi':{en:`Bilingual`,es:`Bilingüe`},
+ 'btn.launch':{en:`Launch`,es:`Abrir`},
+ 'ssa.t':{en:`Space Situational Awareness`,es:`Conciencia Situacional Espacial`},
+ 'ssa.d':{en:`Track what's overhead. Orbital propagation, pass prediction, and catalog visualization built on public two-line element data — a sovereign view of the objects sharing our skies.`,es:`Rastreá lo que tenés encima. Propagación orbital, predicción de pasos y visualización de catálogo sobre datos públicos de elementos de dos líneas (TLE) — una vista soberana de los objetos que comparten nuestro cielo.`},
+ 'ssa.c2':{en:`TLE catalog`,es:`catálogo TLE`},
+ 'ssa.c3':{en:`conjunctions`,es:`conjunciones`},
+ 'ssa.c4':{en:`ground tracks`,es:`trazas terrestres`},
+ 'neo.t':{en:`NEO Watch`,es:`NEO Watch`},
+ 'neo.d':{en:`Planetary defense. Track near-Earth asteroids and their close approaches with live NASA data — impact-hazard scales (Torino, Palermo), time acceleration, and local observability by city, all in an OODA situational frame.`,es:`Defensa planetaria. Rastreá asteroides cercanos a la Tierra y sus aproximaciones con datos en vivo de NASA — escalas de peligro de impacto (Torino, Palermo), aceleración de tiempo y observabilidad local por ciudad, todo en un marco situacional OODA.`},
+ 'neo.c2':{en:`close approaches`,es:`aproximaciones cercanas`},
+ 'neo.c4':{en:`impact risk`,es:`riesgo de impacto`},
+ 'neo.c5':{en:`observability`,es:`observabilidad`},
+ 'stellar.t':{en:`Stellar Genesis`,es:`Stellar Genesis`},
+ 'stellar.d':{en:`How stars and their disks are born. An interactive, physics-first walkthrough — the Jeans criterion, free-fall collapse, infrared disk detection, and the nebular theory of the Solar System.`,es:`Cómo nacen las estrellas y sus discos. Un recorrido interactivo y centrado en la física — el criterio de Jeans, el colapso en caída libre, la detección de discos en infrarrojo y la teoría nebular del Sistema Solar.`},
+ 'stellar.c1':{en:`Jeans mass`,es:`masa de Jeans`},
+ 'stellar.c2':{en:`free-fall`,es:`caída libre`},
+ 'stellar.c4':{en:`nebular theory`,es:`teoría nebular`},
+ 'exo.t':{en:`Exoplanets`,es:`Exoplanetas`},
+ 'exo.d':{en:`How other worlds are made. An interactive, bilingual walkthrough of exoplanet formation — the frost line, core accretion and migration, the transit method and the habitable zone — with simulators, games, challenges and real examples.`,es:`Cómo se hacen otros mundos. Un recorrido interactivo y bilingüe sobre la formación de exoplanetas — la línea de hielo, la acreción del núcleo y la migración, el método del tránsito y la zona habitable — con simuladores, juegos, desafíos y ejemplos reales.`},
+ 'exo.c1':{en:`core accretion`,es:`acreción del núcleo`},
+ 'exo.c2':{en:`frost line`,es:`línea de hielo`},
+ 'exo.c3':{en:`transit method`,es:`método del tránsito`},
+ 'exo.c4':{en:`habitable zone`,es:`zona habitable`},
+ 'exo.c5':{en:`games`,es:`juegos`},
+ 'sims.t':{en:`Space Simulations`,es:`Simulaciones Espaciales`},
+ 'sims.d':{en:`Play with the physics. Orbital mechanics, transfer manoeuvres, and n-body trajectories you can run, pause, and tweak directly in the browser — no install, no math anxiety.`,es:`Jugá con la física. Mecánica orbital, maniobras de transferencia y trayectorias de n cuerpos que podés correr, pausar y ajustar directamente en el navegador — sin instalar nada, sin ansiedad matemática.`},
+ 'sims.c1':{en:`orbital mechanics`,es:`mecánica orbital`},
+ 'sims.c2':{en:`transfers`,es:`transferencias`},
+ 'sims.c3':{en:`n-body`,es:`n cuerpos`},
+ 'sims.c4':{en:`interactive`,es:`interactivo`},
+ 'mech.t':{en:`Orbital Mechanics`,es:`Mecánica Orbital`},
+ 'mech.d':{en:`The mechanics of getting there. Rocket propulsion and orbital dynamics from first principles — the rocket equation, staging, vis-viva, Kepler's laws — with live calculators and the real orbits of every planet, moon and satellite regime.`,es:`La mecánica de llegar. Propulsión de cohetes y dinámica orbital desde primeros principios — la ecuación del cohete, el escalonamiento, vis-viva, las leyes de Kepler — con calculadoras en vivo y las órbitas reales de cada planeta, luna y régimen de satélites.`},
+ 'mech.c1':{en:`rocket equation`,es:`ecuación del cohete`},
+ 'mech.c4':{en:`orbital elements`,es:`elementos orbitales`},
+ 'mech.c5':{en:`solar system`,es:`sistema solar`},
+ 'legal.t':{en:`Space Law`,es:`Derecho Espacial`},
+ 'legal.d':{en:`The rules above us. An interactive reference to the law of outer space — the five UN treaties and the Artemis Accords — for agencies, policymakers and operators who need the framework clear and concrete.`,es:`Las reglas sobre nosotros. Una referencia interactiva al derecho del espacio ultraterrestre — los cinco tratados de la ONU y los Acuerdos Artemis — para agencias, responsables de política y operadores que necesitan el marco claro y concreto.`},
+ 'legal.c1':{en:`Outer Space Treaty`,es:`Tratado del Espacio Ultraterrestre`},
+ 'legal.c2':{en:`Liability`,es:`Responsabilidad`},
+ 'legal.c3':{en:`Registration`,es:`Registro`},
+ 'legal.c4':{en:`Moon Agreement`,es:`Acuerdo de la Luna`},
+ 'legal.c5':{en:`Artemis Accords`,es:`Acuerdos Artemis`},
+ 'cyber.t':{en:`Space Cybersecurity`,es:`Ciberseguridad Espacial`},
+ 'cyber.d':{en:`Securing the space mission. An interactive, bilingual reference to space cyber risk — the attack surface by segment, jamming and spoofing, the CIA+A model, and the controls and frameworks that protect a mission — with games, challenges and drill-down detail.`,es:`Asegurar la misión espacial. Una referencia interactiva y bilingüe al riesgo ciber en el espacio — la superficie de ataque por segmento, jamming y spoofing, el modelo CIA+A, y los controles y marcos que protegen una misión — con juegos, desafíos y detalle con drill-down.`},
+ 'cyber.c1':{en:`jamming &amp; spoofing`,es:`jamming y spoofing`},
+ 'cyber.c3':{en:`attack surface`,es:`superficie de ataque`},
+ 'cyber.c5':{en:`games`,es:`juegos`},
+ 'hist.t':{en:`Space History`,es:`Historia Espacial`},
+ 'hist.d':{en:`From Sputnik to New Space. An interactive, bilingual history of leaving Earth — the milestone timeline, rockets drawn to scale, the people who made it happen, and the New Space era explained in detail — with anecdotes, games and challenges.`,es:`Del Sputnik al New Space. Una historia interactiva y bilingüe de cómo salimos de la Tierra — la línea de tiempo de hitos, los cohetes dibujados a escala, las personas que lo hicieron posible y la era New Space explicada en detalle — con anécdotas, juegos y desafíos.`},
+ 'hist.c1':{en:`timeline`,es:`línea de tiempo`},
+ 'hist.c2':{en:`rockets`,es:`cohetes`},
+ 'hist.c3':{en:`people`,es:`personas`},
+ 'hist.c4':{en:`New Space`,es:`New Space`},
+ 'hist.c5':{en:`games`,es:`juegos`},
+ 'ab.eyebrow':{en:`About`,es:`Acerca de`},
+ 'ab.title':{en:`Space capability, built in the open`,es:`Capacidad espacial, construida en abierto`},
+ 'ab.lede':{en:`newspace.live gathers practical tools and clear explanations in one place — for analysts, students, and the simply curious. The aim is the same across every project: take something that usually lives behind specialist software and make it legible, hands-on, and yours.`,es:`newspace.live reúne herramientas prácticas y explicaciones claras en un solo lugar — para analistas, estudiantes y curiosos. El objetivo es el mismo en cada proyecto: tomar algo que suele vivir detrás de software especializado y hacerlo legible, práctico y tuyo.`},
+ 'ab.t1':{en:`Track`,es:`Rastrear`},
+ 'ab.p1':{en:`Know what's above you. Public orbital data, propagated and visualized so anyone can build situational awareness.`,es:`Sabé qué tenés encima. Datos orbitales públicos, propagados y visualizados para que cualquiera construya conciencia situacional.`},
+ 'ab.t2':{en:`Understand`,es:`Entender`},
+ 'ab.p2':{en:`The physics behind the headlines — collapse, fusion, disks, planets — explained interactively from first principles.`,es:`La física detrás de los titulares — colapso, fusión, discos, planetas — explicada interactivamente desde primeros principios.`},
+ 'ab.t3':{en:`Experiment`,es:`Experimentar`},
+ 'ab.p3':{en:`Run the equations yourself. Simulations that turn orbital mechanics into something you can feel, not just read.`,es:`Corré las ecuaciones vos mismo. Simulaciones que convierten la mecánica orbital en algo que podés sentir, no solo leer.`},
+ 'ab.t4':{en:`Govern`,es:`Gobernar`},
+ 'ab.p4':{en:`Know the rules above us. The treaties and accords that shape what every actor in space may and may not do.`,es:`Conocé las reglas sobre nosotros. Los tratados y acuerdos que definen qué puede y qué no puede hacer cada actor en el espacio.`},
+ 'ft.1':{en:`<strong style="color:var(--text);font-family:var(--display)">newspace<span style="color:var(--muted-2)">.live</span></strong> · open tools for the new space age`,es:`<strong style="color:var(--text);font-family:var(--display)">newspace<span style="color:var(--muted-2)">.live</span></strong> · herramientas abiertas para la nueva era espacial`},
+ 'ft.2':{en:`Built for learning and exploration.`,es:`Hecho para aprender y explorar.`}
+};
+function t(k){const e=I18N[k];return e?(e[LANG]||e.en):k;}
+function flagSVG(lang){
+  if(lang==='es') return '<svg viewBox="0 0 24 16"><rect width="24" height="16" fill="#c60b1e"/><rect y="4" width="24" height="8" fill="#ffc400"/></svg>';
+  return '<svg viewBox="0 0 24 16"><rect width="24" height="16" fill="#012169"/><path d="M0,0 L24,16 M24,0 L0,16" stroke="#fff" stroke-width="3"/><path d="M0,0 L24,16 M24,0 L0,16" stroke="#C8102E" stroke-width="1.6"/><rect x="9.5" width="5" height="16" fill="#fff"/><rect y="5.5" width="24" height="5" fill="#fff"/><rect x="10.5" width="3" height="16" fill="#C8102E"/><rect y="6.5" width="24" height="3" fill="#C8102E"/></svg>';
+}
+function applyLang(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(!I18N[k])return;const val=t(k);
+    if(/[<>]/.test(val)){el.innerHTML=val;return;}
+    const kids=[...el.childNodes].filter(n=>n.nodeType===1);
+    if(kids.length){el.textContent=val+' ';kids.forEach(n=>el.appendChild(n));}
+    else el.textContent=val;});
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{const k=el.getAttribute('data-i18n-html');if(I18N[k])el.innerHTML=t(k);});
+  $('#langBtn').innerHTML=flagSVG(LANG==='en'?'es':'en');
+}
+function toggleLang(){LANG=LANG==='en'?'es':'en';try{localStorage.setItem('nslang',LANG);}catch(e){}applyLang();}
+$('#langBtn').addEventListener('click',toggleLang);
+try{LANG=localStorage.getItem('nslang')||'en';}catch(e){}
+applyLang();
+
+/* hamburger menu */
+const menuBtn=$('#menuBtn'),navLinks=$('#navlinks');
+function setMenu(open){menuBtn.classList.toggle('open',open);navLinks.classList.toggle('open',open);menuBtn.setAttribute('aria-expanded',open?'true':'false');}
+menuBtn.addEventListener('click',e=>{e.stopPropagation();setMenu(!navLinks.classList.contains('open'));});
+navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>setMenu(false)));
+document.addEventListener('click',e=>{if(!navLinks.contains(e.target)&&e.target!==menuBtn&&!menuBtn.contains(e.target))setMenu(false);});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')setMenu(false);});
+
+
+/* progress + nav active — only internal (#) links drive the scroll-spy */
+const links=[...document.querySelectorAll('.nav-links a')];
+const secs=links.map(a=>{
+  const h=a.getAttribute('href');
+  return h && h.startsWith('#') ? document.querySelector(h) : null;
+});
+window.addEventListener('scroll',()=>{
+  const sc=window.scrollY,dh=document.documentElement.scrollHeight-window.innerHeight;
+  $('#progress').style.width=(dh>0?sc/dh*100:0)+'%';
+  let cur=-1;secs.forEach((s,i)=>{if(s&&s.offsetTop-130<=sc)cur=i;});
+  links.forEach((l,i)=>l.classList.toggle('active',i===cur));
+},{passive:true});
+
+/* reveal */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* hero orbital canvas */
+const oc=$('#orbit-canvas'),ox=oc.getContext('2d');
+const reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+let bg=[],orbits=[],frame=0;
+function init(){
+  oc.width=oc.clientWidth;oc.height=oc.clientHeight;
+  bg=[];for(let i=0;i<140;i++)bg.push({x:Math.random()*oc.width,y:Math.random()*oc.height,r:Math.random()*1.2+.2,a:Math.random()*.6+.2,tw:Math.random()*.02});
+  const cx=oc.width*0.66,cy=oc.height*0.5;
+  const base=Math.min(oc.width,oc.height);
+  const cols=['#a9dcff','#6f8fd6','#5fd0a0','#f3ad5e'];
+  orbits=[];
+  for(let i=0;i<4;i++){
+    orbits.push({
+      a:base*(0.16+i*0.085), b:base*(0.16+i*0.085)*(0.34+Math.random()*0.22),
+      tilt:(Math.random()-0.5)*1.4, speed:(0.004+Math.random()*0.006)*(i%2?-1:1),
+      ph:Math.random()*7, col:cols[i%cols.length], cx, cy
+    });
+  }
+}
+function drawHero(){
+  ox.clearRect(0,0,oc.width,oc.height);
+  bg.forEach(s=>{s.a+=Math.sin(frame*s.tw)*0.004;ox.globalAlpha=Math.max(.1,Math.min(.9,s.a));ox.fillStyle='#cfe0ff';ox.beginPath();ox.arc(s.x,s.y,s.r,0,7);ox.fill();});
+  ox.globalAlpha=1;
+  const cx=orbits.length?orbits[0].cx:oc.width*0.66, cy=orbits.length?orbits[0].cy:oc.height*0.5;
+  const g=ox.createRadialGradient(cx,cy,0,cx,cy,Math.min(oc.width,oc.height)*0.4);
+  g.addColorStop(0,'rgba(111,143,214,.10)');g.addColorStop(.5,'rgba(95,208,160,.04)');g.addColorStop(1,'rgba(0,0,0,0)');
+  ox.fillStyle=g;ox.fillRect(0,0,oc.width,oc.height);
+  orbits.forEach(o=>{
+    o.ph+=o.speed;
+    ox.strokeStyle=o.col;ox.globalAlpha=.16;ox.lineWidth=1;
+    ox.beginPath();
+    for(let t=0;t<=Math.PI*2+0.05;t+=0.1){
+      const ex=o.a*Math.cos(t),ey=o.b*Math.sin(t);
+      const x=cx+ex*Math.cos(o.tilt)-ey*Math.sin(o.tilt);
+      const y=cy+ex*Math.sin(o.tilt)+ey*Math.cos(o.tilt);
+      t?ox.lineTo(x,y):ox.moveTo(x,y);
+    }
+    ox.stroke();ox.globalAlpha=1;
+    const ex=o.a*Math.cos(o.ph),ey=o.b*Math.sin(o.ph);
+    const x=cx+ex*Math.cos(o.tilt)-ey*Math.sin(o.tilt);
+    const y=cy+ex*Math.sin(o.tilt)+ey*Math.cos(o.tilt);
+    ox.fillStyle=o.col;ox.shadowColor=o.col;ox.shadowBlur=12;
+    ox.beginPath();ox.arc(x,y,2.8,0,7);ox.fill();ox.shadowBlur=0;
+  });
+  const cg=ox.createRadialGradient(cx,cy,0,cx,cy,18);
+  cg.addColorStop(0,'rgba(255,255,255,.7)');cg.addColorStop(.4,'rgba(169,220,255,.4)');cg.addColorStop(1,'rgba(111,143,214,0)');
+  ox.fillStyle=cg;ox.beginPath();ox.arc(cx,cy,18,0,7);ox.fill();
+}
+function loop(){frame++;if(!reduce)drawHero();requestAnimationFrame(loop);}
+window.addEventListener('resize',()=>{init();drawHero();});
+init();drawHero();
+if(reduce){/* static frame only */}else loop();
+</script>
+</body>
+</html>

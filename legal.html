@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Space Law — International Agreements Governing Outer Space</title>
+<meta name="description" content="An interactive reference to the legal framework of outer space: the Outer Space Treaty, Rescue Agreement, Liability and Registration Conventions, the Moon Agreement, and the Artemis Accords." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --void:#05060d;--cloud:#0b1020;--cloud-2:#111a30;--cloud-3:#16223e;--line:#243353;
+  --cold:#6f8fd6;--ice:#a9dcff;--warm:#f3ad5e;--ir:#e0653f;--sim:#5fd0a0;--law:#9b8cff;
+  --text:#eaeefb;--muted:#93a0c2;--muted-2:#6b769a;
+  --shadow:0 18px 50px -20px rgba(0,0,0,.8);--r:16px;--maxw:1120px;
+  --display:"Space Grotesk",system-ui,sans-serif;--body:"Inter",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--void);color:var(--text);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(1100px 700px at 82% -8%, rgba(155,140,255,.12), transparent 60%),
+    radial-gradient(1000px 800px at 6% 2%, rgba(111,143,214,.10), transparent 60%),
+    radial-gradient(900px 900px at 50% 120%, rgba(95,208,160,.04), transparent 60%);}
+a{color:var(--ice);text-decoration:none}
+h1,h2,h3,h4{font-family:var(--display);font-weight:600;line-height:1.12;letter-spacing:-.01em;margin:0}
+p{margin:0 0 1em}.mono{font-family:var(--mono)}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+section{padding:88px 0;position:relative}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--law);margin:0 0 14px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:26px;height:1px;background:linear-gradient(90deg,var(--law),transparent)}
+.sec-title{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:14px}
+.lede{color:var(--muted);font-size:1.06rem;max-width:66ch}
+#progress{position:fixed;top:0;left:0;height:2px;width:0;z-index:70;background:linear-gradient(90deg,var(--cold),var(--law),var(--ice))}
+
+.nav{position:sticky;top:0;z-index:60;backdrop-filter:blur(14px);background:rgba(5,6,13,.72);border-bottom:1px solid var(--line)}
+.nav-inner{max-width:var(--maxw);margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:18px}
+.brand{display:flex;align-items:center;gap:11px;font-family:var(--display);font-weight:700;letter-spacing:-.02em;font-size:1.05rem;white-space:nowrap}
+.brand a{color:inherit}
+.brand .dot{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 32% 32%,var(--ice),var(--law) 55%,var(--cold) 95%);box-shadow:0 0 16px var(--law);flex:none}
+.nav-links{display:flex;gap:4px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-links a{color:var(--muted);font-size:.84rem;padding:7px 11px;border-radius:9px;white-space:nowrap;transition:.18s;font-weight:500}
+.nav-links a:hover{color:var(--text);background:var(--cloud-2)}
+.nav-links a.active{color:var(--ice);background:rgba(155,140,255,.14)}
+
+.hero{min-height:80vh;display:flex;align-items:center;padding-top:36px;position:relative;overflow:hidden}
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:-1;opacity:.95}
+.hero-inner{max-width:var(--maxw);margin:0 auto;padding:0 24px;width:100%}
+.hero .kick{font-family:var(--mono);font-size:.78rem;letter-spacing:.24em;text-transform:uppercase;color:var(--law);margin-bottom:22px}
+.hero h1{font-size:clamp(2.6rem,7vw,5rem);font-weight:700;max-width:16ch;letter-spacing:-.025em}
+.hero h1 .grad{background:linear-gradient(100deg,var(--ice),var(--law) 50%,var(--cold));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .sub{color:var(--muted);font-size:1.18rem;max-width:58ch;margin-top:22px}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:34px}
+.btn{font-family:var(--body);font-weight:600;font-size:.95rem;border-radius:12px;padding:13px 22px;border:1px solid var(--line);background:var(--cloud-2);color:var(--text);cursor:pointer;transition:transform .15s,border-color .2s;text-decoration:none;display:inline-flex;align-items:center;gap:9px}
+.btn:hover{transform:translateY(-2px);border-color:var(--law)}
+.btn.primary{background:linear-gradient(100deg,rgba(155,140,255,.2),rgba(111,143,214,.18));border-color:rgba(155,140,255,.45)}
+
+.disclaimer{background:rgba(155,140,255,.08);border:1px solid rgba(155,140,255,.3);border-radius:12px;padding:14px 18px;color:var(--muted);font-size:.88rem;margin-top:30px;display:flex;gap:12px;align-items:flex-start}
+.disclaimer b{color:var(--law)}
+.disclaimer .i{font-size:1.1rem;flex:none}
+
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1!important;transform:none!important}}
+
+.panel{background:linear-gradient(180deg,var(--cloud-2),var(--cloud));border:1px solid var(--line);border-radius:var(--r);padding:26px;box-shadow:var(--shadow)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:820px){.split{grid-template-columns:1fr}}
+
+/* tooltips */
+.term{border-bottom:1px dashed var(--law);cursor:help;color:var(--ice);text-underline-offset:3px}
+.term:focus{outline:2px solid var(--law);outline-offset:2px;border-radius:3px}
+#tip{position:fixed;z-index:200;max-width:320px;background:#0c0f24;border:1px solid var(--law);border-radius:11px;padding:12px 14px;font-size:.86rem;color:var(--text);line-height:1.5;box-shadow:0 18px 40px -12px rgba(0,0,0,.85);opacity:0;pointer-events:none;transition:opacity .14s}
+#tip.show{opacity:1}#tip b{color:var(--warm)}
+.help-chip{width:20px;height:20px;border-radius:50%;border:1px solid var(--law);color:var(--law);font-size:.72rem;font-family:var(--mono);display:inline-flex;align-items:center;justify-content:center;cursor:help;background:rgba(155,140,255,.1);font-weight:600;vertical-align:middle}
+.help-chip:hover{background:rgba(155,140,255,.25)}
+
+/* timeline */
+.timeline{position:relative;margin-top:30px}
+.tl-track{position:absolute;left:0;right:0;top:26px;height:2px;background:var(--line)}
+.tl-fill{position:absolute;left:0;top:26px;height:2px;background:linear-gradient(90deg,var(--cold),var(--law));border-radius:2px}
+.tl-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;position:relative}
+@media (max-width:760px){.tl-row{grid-template-columns:1fr;gap:12px}.tl-track,.tl-fill{display:none}}
+.tl-step{cursor:pointer}
+.tl-node{width:14px;height:14px;border-radius:50%;background:var(--cloud-3);border:2px solid var(--cold);margin:20px auto 12px;transition:.2s;position:relative;z-index:2}
+@media (max-width:760px){.tl-node{margin:4px 0 8px}}
+.tl-step:hover .tl-node,.tl-step.sel .tl-node{background:var(--law);border-color:var(--law);box-shadow:0 0 16px var(--law);transform:scale(1.25)}
+.tl-step .label{font-family:var(--display);font-weight:600;font-size:.88rem;text-align:center}
+.tl-step .yr{font-family:var(--mono);font-size:.74rem;color:var(--warm);text-align:center;margin-top:3px}
+@media (max-width:760px){.tl-step .label,.tl-step .yr{text-align:left}}
+.tl-detail{margin-top:26px;background:var(--cloud);border:1px solid var(--line);border-left:3px solid var(--law);border-radius:12px;padding:20px 22px}
+.tl-detail h4{font-size:1.18rem;margin-bottom:2px}
+.tl-detail .meta{font-family:var(--mono);font-size:.78rem;color:var(--law);margin-bottom:10px}
+.tl-detail p{color:var(--muted);margin:0}
+
+/* treaty cards */
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.tcard{background:var(--cloud-2);border:1px solid var(--line);border-radius:14px;padding:20px;cursor:pointer;transition:.18s;text-align:left;color:inherit;font:inherit;width:100%;position:relative;border-top:3px solid var(--law)}
+.tcard:hover{transform:translateY(-3px);border-color:var(--law)}
+.tcard .yr{font-family:var(--mono);font-size:.76rem;color:var(--warm)}
+.tcard h3{font-size:1.12rem;margin:3px 0 6px}
+.tcard p{color:var(--muted);font-size:.88rem;margin:0 0 12px}
+.tcard .tag{font-family:var(--mono);font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--law);border:1px solid rgba(155,140,255,.4);border-radius:99px;padding:3px 9px}
+.tcard .more{position:absolute;bottom:18px;right:18px;color:var(--law);font-size:.8rem;font-family:var(--mono)}
+
+/* ratification bars */
+.bars{margin-top:24px}
+.bar-row{display:grid;grid-template-columns:210px 1fr;gap:14px;align-items:center;margin-bottom:13px}
+@media (max-width:640px){.bar-row{grid-template-columns:1fr;gap:4px}}
+.bar-row .name{font-size:.9rem;font-weight:500}
+.bar-row .name .y{font-family:var(--mono);color:var(--muted-2);font-size:.78rem}
+.bar-track{background:var(--cloud);border:1px solid var(--line);border-radius:99px;height:30px;position:relative;overflow:hidden}
+.bar-fill{height:100%;border-radius:99px;width:0;transition:width 1.1s cubic-bezier(.2,.7,.2,1);background:linear-gradient(90deg,var(--cold),var(--law));display:flex;align-items:center;justify-content:flex-end;padding-right:11px}
+.bar-fill.accords{background:linear-gradient(90deg,var(--law),var(--warm))}
+.bar-fill .num{font-family:var(--mono);font-size:.82rem;font-weight:600;color:#fff;white-space:nowrap}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px;font-size:.82rem;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:7px}
+.sw{width:18px;height:10px;border-radius:3px}
+
+/* matrix (CSS grid — no table, fully predictable layout) */
+.matrix-scroll{overflow-x:auto;margin-top:20px;border:1px solid var(--line);border-radius:12px;-webkit-overflow-scrolling:touch}
+.matrix{display:grid;grid-template-columns:150px repeat(6,minmax(74px,1fr));min-width:640px;font-size:.86rem}
+.matrix>div{padding:12px 8px;display:flex;align-items:center;justify-content:center;text-align:center;border-bottom:1px solid var(--line);border-right:1px solid rgba(36,53,83,.55);min-height:52px}
+.matrix>div:nth-child(7n){border-right:none}
+.matrix>div:nth-last-child(-n+7){border-bottom:none}
+.matrix .mh{flex-direction:column;gap:3px;font-family:var(--mono);font-size:.7rem;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);font-weight:500;line-height:1.2;white-space:nowrap;background:var(--cloud-2);border-bottom:2px solid var(--law);cursor:help}
+.matrix .mh .yr{color:var(--muted-2);font-size:.64rem;letter-spacing:.04em}
+.matrix .mh.corner{justify-content:flex-start;padding-left:16px;color:var(--text);font-family:var(--body);text-transform:none;letter-spacing:0;font-size:.82rem;font-weight:600;cursor:default}
+.matrix .mname{justify-content:flex-start;padding-left:16px;color:var(--text);font-weight:600;background:var(--cloud);text-align:left}
+.matrix .mc{background:transparent}
+.cell{display:inline-flex;width:30px;height:30px;border-radius:8px;align-items:center;justify-content:center;font-size:1rem;font-weight:700;line-height:1;cursor:help;transition:.15s}
+.cell.p{background:rgba(95,208,160,.18);color:var(--sim);border:1px solid rgba(95,208,160,.45)}
+.cell.s{background:rgba(243,173,94,.16);color:var(--warm);border:1px solid rgba(243,173,94,.45)}
+.cell.n{background:var(--cloud);color:var(--muted-2);border:1px solid var(--line)}
+.cell:hover{transform:scale(1.12)}
+
+/* liability tool */
+.liab{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+@media (max-width:620px){.liab{grid-template-columns:1fr}}
+.liab-opt{background:var(--cloud-2);border:1px solid var(--line);border-radius:13px;padding:18px;cursor:pointer;transition:.18s;text-align:left;color:inherit;font:inherit}
+.liab-opt:hover{border-color:var(--law);transform:translateY(-2px)}
+.liab-opt.on{border-color:var(--law);background:rgba(155,140,255,.1)}
+.liab-opt .ic{font-size:1.5rem}
+.liab-opt h4{font-size:1rem;margin:6px 0 4px}
+.liab-opt p{color:var(--muted);font-size:.85rem;margin:0}
+.liab-res{margin-top:18px;background:var(--cloud);border:1px solid var(--line);border-left:3px solid var(--law);border-radius:13px;padding:20px;min-height:60px}
+.liab-res .std{font-family:var(--mono);font-size:.8rem;color:var(--law);margin-bottom:6px}
+.liab-res h4{font-size:1.15rem;margin-bottom:8px}
+.liab-res p{color:var(--muted);font-size:.92rem;margin:0 0 10px}
+.liab-res .ex{font-size:.86rem;color:var(--muted);background:var(--cloud-2);border:1px solid var(--line);border-radius:9px;padding:11px 13px}
+.liab-res .ex b{color:var(--warm)}
+
+/* article chips */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.achip{font-family:var(--mono);font-size:.82rem;color:var(--muted);background:var(--cloud);border:1px solid var(--line);border-radius:9px;padding:8px 13px;cursor:pointer;transition:.16s}
+.achip:hover{border-color:var(--law);color:var(--text)}
+.achip.on{background:rgba(155,140,255,.16);border-color:var(--law);color:var(--ice)}
+.art-detail{margin-top:16px;background:var(--cloud);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+.art-detail .meta{font-family:var(--mono);font-size:.78rem;color:var(--law);margin-bottom:6px}
+.art-detail h4{font-size:1.1rem;margin-bottom:8px}.art-detail p{color:var(--muted);margin:0}
+
+/* accordion principles */
+.acc{margin-top:20px;display:grid;gap:10px}
+.acc-item{background:var(--cloud-2);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.acc-head{padding:15px 18px;cursor:pointer;display:flex;align-items:center;gap:12px;font-weight:600;font-size:.98rem}
+.acc-head .n{font-family:var(--mono);color:var(--law);font-size:.82rem;min-width:24px}
+.acc-head .x{margin-left:auto;color:var(--law);transition:transform .2s}
+.acc-item.open .acc-head .x{transform:rotate(45deg)}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .3s ease;color:var(--muted);font-size:.92rem}
+.acc-item.open .acc-body{max-height:300px}
+.acc-body div{padding:0 18px 16px}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:24px}
+.card{background:var(--cloud-2);border:1px solid var(--line);border-radius:14px;padding:20px;transition:.18s}
+.card:hover{transform:translateY(-3px);border-color:var(--law)}
+.card h3{font-size:1.05rem;margin-bottom:8px;color:var(--ice)}
+.card p{color:var(--muted);font-size:.9rem;margin:0}
+
+.balance{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px}
+@media (max-width:760px){.balance{grid-template-columns:1fr}}
+.bcol{background:var(--cloud);border:1px solid var(--line);border-radius:13px;padding:20px}
+.bcol h4{font-size:1rem;margin-bottom:8px}
+.bcol p{color:var(--muted);font-size:.9rem;margin:0}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;z-index:120;background:rgba(3,4,10,.78);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:22px}
+.modal-bg.open{display:flex}
+.modal{background:linear-gradient(180deg,var(--cloud-2),var(--cloud));border:1px solid var(--law);border-radius:18px;max-width:680px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow)}
+.modal-head{padding:22px 26px 16px;border-bottom:1px solid var(--line);display:flex;gap:14px;align-items:flex-start}
+.modal-head h3{font-size:1.4rem;line-height:1.2}.modal-head .yr{font-family:var(--mono);font-size:.82rem;color:var(--warm);margin-top:4px}
+.modal-close{margin-left:auto;background:var(--cloud-3);border:1px solid var(--line);color:var(--text);width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:1.1rem;flex:none}
+.modal-close:hover{border-color:var(--ir)}
+.modal-body{padding:22px 26px 26px}
+.modal-body .full{font-style:italic;color:var(--muted);font-size:.86rem;margin-bottom:16px;border-left:2px solid var(--law);padding-left:12px}
+.spec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:6px 0 16px}
+.spec{background:var(--cloud);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+.spec .k{font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2);font-family:var(--mono);margin-bottom:4px}
+.spec .v{font-family:var(--mono);font-weight:600;color:var(--ice);font-size:.9rem}
+.modal-body h4{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--warm);font-family:var(--mono);margin:18px 0 8px}
+.modal-body p{color:var(--muted);font-size:.93rem}
+.modal-body ul{margin:0;padding-left:18px;color:var(--muted);font-size:.92rem}
+.modal-body li{margin-bottom:6px}
+
+.note{font-size:.82rem;color:var(--muted-2);font-style:italic;margin-top:12px}
+.gloss{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.gloss dt{font-family:var(--display);font-weight:600;color:var(--ice);margin-bottom:4px}
+.gloss dd{margin:0 0 16px;color:var(--muted);font-size:.9rem}
+footer{border-top:1px solid var(--line);padding:40px 0 60px;color:var(--muted-2);font-size:.85rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="tip" role="tooltip"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="brand"><span class="dot"></span><a href="/">newspace.live</a> <span style="color:var(--muted-2);font-weight:500">/ Space Law</span></div>
+    <div class="nav-links" id="navlinks">
+      <a href="#timeline">Timeline</a>
+      <a href="#treaties">Treaties</a>
+      <a href="#ratification">Ratification</a>
+      <a href="#matrix">Who signed what</a>
+      <a href="#liability">Liability</a>
+      <a href="#ost">OST articles</a>
+      <a href="#artemis">Artemis Accords</a>
+      <a href="#beyond">Beyond treaties</a>
+      <a href="#reference">Reference</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-inner">
+    <p class="kick">International agreements · governance · policy</p>
+    <h1>The rules <span class="grad">above us.</span></h1>
+    <p class="sub">A working reference to the law of outer space — the five United Nations treaties and the Artemis Accords — built for agencies, policymakers and operators who need the framework clear, navigable and concrete.</p>
+    <div class="hero-cta">
+      <a class="btn primary" href="#treaties">Explore the instruments →</a>
+      <a class="btn" href="#timeline">See the timeline</a>
+    </div>
+    <div class="disclaimer">
+      <span class="i">⚖</span>
+      <div><b>Educational reference — not legal advice.</b> Ratification figures and signatory statuses are approximate as of early 2026 and evolve; verify current data with <span class="term" data-tip="<b>UNOOSA</b> — the United Nations Office for Outer Space Affairs, which maintains the treaty status tables and the Register of space objects, and serves the COPUOS committee.">UNOOSA</span> and official national sources before relying on it.</div>
+    </div>
+  </div>
+</header>
+
+<!-- TIMELINE -->
+<section id="timeline">
+  <div class="wrap">
+    <p class="eyebrow reveal">How the framework was built</p>
+    <h2 class="sec-title reveal">Six instruments, half a century apart</h2>
+    <p class="lede reveal">Space law grew in two waves: five binding UN treaties negotiated in the Cold War (1967–1979), then — after four decades of silence — a non-binding framework of political commitments for the new era of lunar activity. Click any milestone.</p>
+    <div class="timeline reveal">
+      <div class="tl-track"></div><div class="tl-fill" style="width:100%"></div>
+      <div class="tl-row" id="tlRow"></div>
+      <div class="tl-detail" id="tlDetail"></div>
+    </div>
+  </div>
+</section>
+
+<!-- TREATIES -->
+<section id="treaties">
+  <div class="wrap">
+    <p class="eyebrow reveal">The core instruments</p>
+    <h2 class="sec-title reveal">The five UN treaties + the Artemis Accords</h2>
+    <p class="lede reveal">Each card opens a full profile: what it establishes, its key provisions, its status, and a concrete, current example of it at work.</p>
+    <div class="tgrid reveal" id="treatyGrid" style="margin-top:30px"></div>
+  </div>
+</section>
+
+<!-- RATIFICATION -->
+<section id="ratification">
+  <div class="wrap">
+    <p class="eyebrow reveal">By the numbers</p>
+    <h2 class="sec-title reveal">Who is actually bound?</h2>
+    <p class="lede reveal">Ratification tells you how much consensus an instrument really commands. The Outer Space Treaty is near-universal; the Moon Agreement was effectively rejected by every major spacefaring nation. The Artemis Accords (a non-binding framework, shown in a different colour) are catching up fast.</p>
+    <div class="panel reveal" style="margin-top:28px">
+      <div class="bars" id="bars"></div>
+      <div class="legend">
+        <span><span class="sw" style="background:linear-gradient(90deg,var(--cold),var(--law))"></span>Binding UN treaty — states parties</span>
+        <span><span class="sw" style="background:linear-gradient(90deg,var(--law),var(--warm))"></span>Artemis Accords — signatories (political, non-binding)</span>
+      </div>
+      <p class="note">Approximate counts as of early 2026. The Artemis Accords measure signatories, not treaty ratifications — the categories are not strictly comparable, but the contrast in adoption is the point.</p>
+    </div>
+  </div>
+</section>
+
+<!-- MATRIX -->
+<section id="matrix">
+  <div class="wrap">
+    <p class="eyebrow reveal">The participation map</p>
+    <h2 class="sec-title reveal">Who has signed what</h2>
+    <p class="lede reveal">A snapshot of where major space actors stand across the instruments. Hover any cell for the detail. Note the pattern: universal agreement on the foundations, divergence on the Moon Agreement and the Accords.</p>
+    <div class="panel reveal" style="margin-top:24px">
+      <div class="matrix-scroll"><div class="matrix" id="matrixGrid"></div></div>
+      <div class="legend" style="margin-top:16px">
+        <span><span class="cell p" style="width:22px;height:22px">●</span> State party (bound)</span>
+        <span><span class="cell s" style="width:22px;height:22px">◐</span> Signatory only / not ratified</span>
+        <span><span class="cell n" style="width:22px;height:22px">○</span> Not a party</span>
+      </div>
+      <p class="note">Indicative status as of early 2026. The Artemis Accords list keeps growing; China and Russia instead lead the separate International Lunar Research Station (ILRS) initiative. On a narrow screen, scroll the table sideways to see every column.</p>
+    </div>
+  </div>
+</section>
+
+<!-- LIABILITY -->
+<section id="liability">
+  <div class="wrap">
+    <p class="eyebrow reveal">A tool you can use</p>
+    <h2 class="sec-title reveal">Which liability standard applies?</h2>
+    <p class="lede reveal">The 1972 Liability Convention sets two different standards depending on <em>where</em> the damage happened. Pick the scenario to see which one governs — and how it played out in the only claim ever formally pursued under the Convention.</p>
+    <div class="panel reveal" style="margin-top:26px">
+      <p style="font-weight:600;margin-bottom:12px">Where did a space object cause the damage?</p>
+      <div class="liab">
+        <button class="liab-opt" id="liab-a"><div class="ic">🌍</div><h4>On Earth's surface, or to an aircraft in flight</h4><p>e.g. a re-entering satellite hits the ground, or debris strikes a plane.</p></button>
+        <button class="liab-opt" id="liab-b"><div class="ic">🛰️</div><h4>In outer space, to another space object</h4><p>e.g. one satellite collides with another satellite in orbit.</p></button>
+      </div>
+      <div class="liab-res" id="liabRes"><p style="color:var(--muted-2);margin:0">Choose a scenario above to see the applicable standard.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- OST ARTICLES -->
+<section id="ost">
+  <div class="wrap">
+    <p class="eyebrow reveal">The constitution of space</p>
+    <h2 class="sec-title reveal">Inside the Outer Space Treaty</h2>
+    <p class="lede reveal">Nearly every later rule traces back to one of these articles. Tap an article to read it in plain language.</p>
+    <div class="panel reveal" style="margin-top:24px">
+      <div class="chips" id="ostChips"></div>
+      <div class="art-detail" id="ostDetail"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ARTEMIS ACCORDS -->
+<section id="artemis">
+  <div class="wrap">
+    <p class="eyebrow reveal">The modern layer</p>
+    <h2 class="sec-title reveal">The Artemis Accords — principles &amp; debate</h2>
+    <p class="lede reveal">Opened in 2020, the Accords are not a treaty but a set of shared political commitments that translate the Outer Space Treaty into operational rules for lunar and deep-space activity. Expand each principle below.</p>
+    <div class="acc reveal" id="accords"></div>
+
+    <h3 style="font-size:1.25rem;margin-top:40px" class="reveal">The central controversy: space resources</h3>
+    <p class="lede reveal" style="margin-top:8px">Can you mine the Moon? The instruments give two answers, and this is the live fault line in space policy. Both positions are presented below.</p>
+    <div class="balance reveal">
+      <div class="bcol" style="border-left:3px solid var(--law)">
+        <h4 style="color:var(--law)">The Accords / "use, not appropriation" view</h4>
+        <p>The OST bars claiming <em>territory</em> (Article II), but says nothing explicit about extracted <em>resources</em>. On this reading, taking and using resources is lawful — like fishing in international waters — and national laws (US 2015, Luxembourg 2017, UAE, Japan 2021) plus the Accords simply provide certainty. Supporters argue this unlocks investment and is consistent with the OST.</p>
+      </div>
+      <div class="bcol" style="border-left:3px solid var(--warm)">
+        <h4 style="color:var(--warm)">The "common heritage" view</h4>
+        <p>The 1979 Moon Agreement calls lunar resources the <span class="term" data-tip="<b>Common heritage of mankind.</b> A principle (also in the Law of the Sea) that certain resources belong to all humanity and should be managed by an international regime sharing benefits, rather than claimed first-come-first-served.">common heritage of mankind</span>, to be governed by an international regime sharing benefits. Critics argue that a US-led framework and unilateral national laws pre-empt the multilateral consensus the OST envisaged, and that "safety zones" risk becoming de-facto territorial claims.</p>
+      </div>
+    </div>
+    <p class="note reveal">A separate track exists: China and Russia lead the <span class="term" data-tip="<b>ILRS</b> — the International Lunar Research Station, a China–Russia-led programme for a permanent robotic-then-crewed lunar base, with its own set of partner states. It is the principal alternative to the Artemis coalition.">International Lunar Research Station</span>, drawing its own coalition. The Moon's legal order is being shaped by practice, not a new treaty.</p>
+  </div>
+</section>
+
+<!-- BEYOND -->
+<section id="beyond">
+  <div class="wrap">
+    <p class="eyebrow reveal">The wider regime</p>
+    <h2 class="sec-title reveal">Beyond the treaties</h2>
+    <p class="lede reveal">Hard-law treaties are only the skeleton. Day-to-day space governance also runs on UN soft law, national legislation, spectrum coordination, and sustainability guidelines.</p>
+    <div class="cards reveal">
+      <div class="card"><h3>UN principles &amp; declarations</h3><p>Five non-binding sets adopted by the General Assembly — on legal principles, broadcasting, remote sensing, nuclear power sources, and benefits to developing states — fill gaps the treaties leave open.</p></div>
+      <div class="card"><h3>National space laws</h3><p>Treaties bind states; states bind operators. Domestic licensing regimes (e.g. US, France, Luxembourg, UAE, Japan) implement OST Article VI's duty to authorise and supervise — and increasingly grant space-resource rights.</p></div>
+      <div class="card"><h3>ITU — spectrum &amp; slots</h3><p>The <span class="term" data-tip="<b>International Telecommunication Union.</b> The UN agency that coordinates radio frequencies and geostationary orbital slots, allocated on a first-come, first-served basis — a major bottleneck for megaconstellations.">ITU</span> coordinates the radio frequencies and orbital slots every satellite needs. No spectrum, no mission.</p></div>
+      <div class="card"><h3>Debris &amp; sustainability</h3><p>Non-binding but widely followed: the IADC mitigation guidelines, the UN 2007 Debris Mitigation Guidelines, and the 2019 COPUOS Long-Term Sustainability Guidelines.</p></div>
+      <div class="card"><h3>ASAT tests &amp; "due regard"</h3><p>Destructive anti-satellite tests (China 2007, India 2019, Russia 2021) scatter long-lived debris, straining OST Article IX's "due regard". A growing group of states now back a moratorium on destructive direct-ascent ASAT tests.</p></div>
+      <div class="card"><h3>COPUOS — the forum</h3><p>The UN Committee on the Peaceful Uses of Outer Space, served by UNOOSA, is where consensus space rules are negotiated. It works by consensus, which makes new binding treaties slow — and soft law attractive.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- REFERENCE -->
+<section id="reference">
+  <div class="wrap">
+    <p class="eyebrow reveal">Quick reference</p>
+    <h2 class="sec-title reveal">Glossary</h2>
+    <div class="panel reveal" style="margin-top:24px">
+      <dl class="gloss">
+        <div><dt>OST</dt><dd>Outer Space Treaty (1967) — the foundational, near-universal treaty of space law.</dd></div>
+        <div><dt>State party vs signatory</dt><dd>A signatory has signed; a state party has ratified and is legally bound. Many states sign but never ratify.</dd></div>
+        <div><dt>Launching State</dt><dd>The state that launches, procures the launch, or from whose territory/facility an object is launched — the one that bears liability.</dd></div>
+        <div><dt>Absolute liability</dt><dd>Liability regardless of fault, for damage on Earth's surface or to aircraft (Liability Convention Art II).</dd></div>
+        <div><dt>Fault liability</dt><dd>Liability only if fault is shown, for damage in space (Liability Convention Art III).</dd></div>
+        <div><dt>Non-appropriation</dt><dd>OST Article II: no state may claim sovereignty over outer space or any celestial body.</dd></div>
+        <div><dt>Common heritage of mankind</dt><dd>Moon Agreement principle: resources belong to all, to be shared via an international regime.</dd></div>
+        <div><dt>Soft law</dt><dd>Non-binding guidelines and declarations (e.g. debris guidelines, Artemis Accords) that nonetheless shape behaviour.</dd></div>
+        <div><dt>Safety zone</dt><dd>An Artemis Accords concept: a notified area around an operation to avoid harmful interference — debated as a possible quasi-territorial claim.</dd></div>
+      </dl>
+    </div>
+    <div class="disclaimer reveal" style="margin-top:24px">
+      <span class="i">⚖</span>
+      <div><b>Reminder.</b> This page is a structured educational overview, not legal advice and not an authoritative statement of any state's obligations. Treaty status, signatory lists and resource-law positions change; consult UNOOSA, primary treaty texts, and qualified counsel for operational decisions.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div><strong style="color:var(--text);font-family:var(--display)">newspace.live</strong> · Space Law &amp; Policy reference</div>
+    <div>Educational reference · figures approximate, early 2026.</div>
+  </div>
+</footer>
+
+<!-- TREATY MODAL -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-name">
+    <div class="modal-head">
+      <div><h3 id="m-name"></h3><div class="yr" id="m-yr"></div></div>
+      <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="m-body"></div>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+
+/* tooltips */
+const tip=$('#tip');let tipTimer=null;
+function showTip(el){const t=el.getAttribute('data-tip');if(!t)return;tip.innerHTML=t;tip.classList.add('show');
+  const r=el.getBoundingClientRect();const tw=Math.min(320,window.innerWidth-24);tip.style.maxWidth=tw+'px';
+  let x=r.left+r.width/2-tw/2;x=Math.max(12,Math.min(x,window.innerWidth-tw-12));
+  let y=r.bottom+10;if(y+tip.offsetHeight>window.innerHeight-12)y=r.top-tip.offsetHeight-10;
+  tip.style.left=x+'px';tip.style.top=Math.max(12,y)+'px';}
+function hideTip(){tip.classList.remove('show');}
+function bindTips(){document.querySelectorAll('[data-tip]').forEach(el=>{if(el.dataset.tb)return;el.dataset.tb=1;
+  if(!el.hasAttribute('tabindex')&&el.classList.contains('term'))el.setAttribute('tabindex','0');
+  el.addEventListener('mouseenter',()=>showTip(el));el.addEventListener('mouseleave',hideTip);
+  el.addEventListener('focus',()=>showTip(el));el.addEventListener('blur',hideTip);
+  el.addEventListener('click',e=>{e.stopPropagation();showTip(el);clearTimeout(tipTimer);tipTimer=setTimeout(hideTip,4500);});});}
+document.addEventListener('click',hideTip);window.addEventListener('scroll',hideTip,{passive:true});
+
+/* ---- timeline ---- */
+const TL=[
+  {label:'Outer Space Treaty',yr:'1967',d:'The foundational treaty. Sets the bedrock principles: space is free for all to explore and use, belongs to no one, must stay free of weapons of mass destruction, and states are responsible and liable for their activities.'},
+  {label:'Rescue Agreement',yr:'1968',d:'Elaborates the OST duty to aid astronauts. They are "envoys of mankind": states must rescue and return personnel in distress and return recovered space objects to the launching authority.'},
+  {label:'Liability Convention',yr:'1972',d:'Turns the OST\u2019s liability principle into a working claims system: absolute liability for damage on Earth or to aircraft, fault-based liability for damage in space.'},
+  {label:'Registration Convention',yr:'1976',d:'Requires states to keep registries of their space objects and report them to a central UN register, underpinning transparency and the jurisdiction rule of OST Article VIII.'},
+  {label:'Moon Agreement',yr:'1979',d:'Declares the Moon and its resources the common heritage of mankind and calls for an international regime to govern exploitation. No major spacefaring state ratified it, so its practical force is minimal.'},
+  {label:'Artemis Accords',yr:'2020',d:'After four decades, a non-binding, US-led framework of political commitments operationalizing the OST for lunar activity \u2014 transparency, interoperability, heritage protection, resource use and deconfliction. Now 50+ signatories.'}
+];
+function buildTL(){const row=$('#tlRow');TL.forEach((s,i)=>{const el=document.createElement('div');el.className='tl-step'+(i===0?' sel':'');
+  el.innerHTML='<div class="tl-node"></div><div class="label">'+s.label+'</div><div class="yr">'+s.yr+'</div>';
+  el.addEventListener('click',()=>{document.querySelectorAll('.tl-step').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');showTL(i);});
+  row.appendChild(el);});showTL(0);}
+function showTL(i){const s=TL[i];$('#tlDetail').innerHTML='<h4>'+s.label+'</h4><div class="meta">'+s.yr+'</div><p>'+s.d+'</p>';}
+
+/* ---- treaties (modal) ---- */
+const TREATIES=[
+  {name:'Outer Space Treaty',yr:'1967 · in force 10 Oct 1967',tag:'Foundational',
+   full:'Treaty on Principles Governing the Activities of States in the Exploration and Use of Outer Space, including the Moon and Other Celestial Bodies.',
+   spec:{Adopted:'1967','In force':'1967',Parties:'~115','Type':'Binding treaty'},
+   blurb:'The constitution of space law \u2014 every later instrument builds on it.',
+   what:'Establishes the bedrock principles governing all activity in outer space.',
+   key:['Exploration and use for the benefit of all countries; space is the "province of all mankind" (Art I).','No national appropriation by sovereignty, use or occupation (Art II).','No nuclear weapons or WMD in orbit; celestial bodies for peaceful purposes only (Art IV).','States are internationally responsible for national activities, including by private companies, which they must authorise and supervise (Art VI).','The launching state is liable for damage (Art VII); the state of registry keeps jurisdiction over its object (Art VIII).','Due regard for others; avoid harmful contamination (Art IX).'],
+   ex:'Article VI is why a private launch needs government authorisation: a company cannot operate in space on its own legal authority \u2014 its state must license and continuously supervise it. This is the basis of every national licensing regime.'},
+  {name:'Rescue Agreement',yr:'1968 · in force 3 Dec 1968',tag:'Astronaut safety',
+   full:'Agreement on the Rescue of Astronauts, the Return of Astronauts and the Return of Objects Launched into Outer Space.',
+   spec:{Adopted:'1968','In force':'1968',Parties:'~99','Type':'Binding treaty'},
+   blurb:'Astronauts as "envoys of mankind" \u2014 rescue, and return of crews and objects.',
+   what:'Expands the OST\u2019s duty to render assistance to spacecraft personnel in distress.',
+   key:['States must take all possible steps to rescue and assist astronauts in distress, whatever their nationality.','Personnel must be safely and promptly returned to the launching authority.','Recovered space objects found outside the launching state\u2019s territory must be returned on request.'],
+   ex:'The obligation is unconditional and nationality-blind: if a foreign crew made an emergency landing on your territory, you would be bound to assist and return them \u2014 a humanitarian rule modelled on rescue at sea.'},
+  {name:'Liability Convention',yr:'1972 · in force 1 Sep 1972',tag:'Damage & claims',
+   full:'Convention on International Liability for Damage Caused by Space Objects.',
+   spec:{Adopted:'1972','In force':'1972',Parties:'~98','Type':'Binding treaty'},
+   blurb:'Two liability standards, and a state-to-state claims process.',
+   what:'Converts the OST\u2019s liability principle into an actionable regime.',
+   key:['Absolute (no-fault) liability for damage caused on the Earth\u2019s surface or to aircraft in flight (Art II).','Fault-based liability for damage caused in outer space to another state\u2019s space object (Art III).','Claims are pursued state-to-state through diplomatic channels, with a Claims Commission if needed.'],
+   ex:'In 1978 the Soviet nuclear-powered satellite Cosmos 954 disintegrated over Canada, scattering radioactive debris. Canada invoked absolute liability and claimed about C$6 million in clean-up costs; the USSR ultimately paid C$3 million in settlement \u2014 the only formal claim ever made under the Convention.'},
+  {name:'Registration Convention',yr:'1976 · in force 15 Sep 1976',tag:'Transparency',
+   full:'Convention on Registration of Objects Launched into Outer Space.',
+   spec:{Adopted:'1975','In force':'1976',Parties:'~75','Type':'Binding treaty'},
+   blurb:'National registries plus a central UN register of space objects.',
+   what:'Creates traceability for everything launched into orbit and beyond.',
+   key:['Launching states maintain a national registry of their space objects.','They furnish key details (orbital parameters, general function) to a UN register kept by UNOOSA.','Registration is the formal link behind the OST Article VIII rule that the state of registry keeps jurisdiction and control.'],
+   ex:'On the International Space Station, each module is registered by the state that provided it, so jurisdiction follows registration \u2014 a US astronaut in a US module is under US law, mirrored across the partners by the ISS intergovernmental agreement.'},
+  {name:'Moon Agreement',yr:'1979 · in force 11 Jul 1984',tag:'Largely unratified',
+   full:'Agreement Governing the Activities of States on the Moon and Other Celestial Bodies.',
+   spec:{Adopted:'1979','In force':'1984',Parties:'~18','Type':'Binding (marginal)'},
+   blurb:'"Common heritage of mankind" \u2014 but no major spacefaring state joined.',
+   what:'Attempts to govern celestial-body resources through an international regime.',
+   key:['Declares the Moon and its natural resources the common heritage of mankind.','Calls for an international regime to govern resource exploitation once it becomes feasible.','Reinforces peaceful-use, environmental and notification duties.','No major launching state ratified it, so its real-world effect is very limited.'],
+   ex:'The Moon Agreement is best understood today as the conceptual opposite of the Artemis Accords: its common-heritage, shared-benefit model is precisely the approach the resource-use camp rejects. The clash between them is the defining debate of modern space law.'},
+  {name:'Artemis Accords',yr:'2020 · opened 13 Oct 2020',tag:'Framework, not treaty',
+   full:'The Artemis Accords: Principles for Cooperation in the Civil Exploration and Use of the Moon, Mars, Comets, and Asteroids for Peaceful Purposes.',
+   spec:{Opened:'2020','In force':'Non-binding',Signatories:'50+','Type':'Political commitments'},
+   blurb:'Non-binding commitments operationalizing the OST for the lunar era.',
+   what:'A set of shared principles for civil exploration, grounded in and citing the OST.',
+   key:['Peaceful purposes, transparency and interoperability of systems.','Emergency assistance and registration of space objects.','Public release of scientific data; protection of outer space heritage (e.g. Apollo sites).','Space resources may be extracted and used consistently with the OST.','"Safety zones" to deconflict and avoid harmful interference between operations.','Orbital debris mitigation and responsible disposal.'],
+   ex:'Because it is not a treaty, the Accords bind no one in the strict legal sense \u2014 but with 50+ signatories they are rapidly building state practice that may, over time, shape how the OST is interpreted for the Moon. Critics counter that practice is being set without the multilateral consensus the OST envisaged.'}
+];
+function buildTreaties(){const grid=$('#treatyGrid');TREATIES.forEach((t,i)=>{const b=document.createElement('button');b.className='tcard';
+  b.innerHTML='<div class="yr">'+t.yr+'</div><h3>'+t.name+'</h3><p>'+t.blurb+'</p><span class="tag">'+t.tag+'</span><span class="more">open →</span>';
+  b.addEventListener('click',()=>openTreaty(i));grid.appendChild(b);});}
+function openTreaty(i){const t=TREATIES[i];$('#m-name').textContent=t.name;$('#m-yr').textContent=t.yr;
+  let specs='';for(const k in t.spec)specs+='<div class="spec"><div class="k">'+k+'</div><div class="v">'+t.spec[k]+'</div></div>';
+  $('#m-body').innerHTML='<div class="full">'+t.full+'</div><div class="spec-grid">'+specs+'</div>'+
+    '<h4>What it establishes</h4><p>'+t.what+'</p>'+
+    '<h4>Key provisions</h4><ul>'+t.key.map(k=>'<li>'+k+'</li>').join('')+'</ul>'+
+    '<h4>In practice</h4><p>'+t.ex+'</p>';
+  $('#modalBg').classList.add('open');bindTips();}
+$('#modalClose').addEventListener('click',()=>$('#modalBg').classList.remove('open'));
+$('#modalBg').addEventListener('click',e=>{if(e.target===$('#modalBg'))$('#modalBg').classList.remove('open');});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#modalBg').classList.remove('open');});
+
+/* ---- ratification bars ---- */
+const BARS=[
+  {name:'Outer Space Treaty',yr:'1967',v:115,note:'~115 states parties \u2014 effectively the whole spacefaring world.'},
+  {name:'Rescue Agreement',yr:'1968',v:99,note:'~99 states parties.'},
+  {name:'Liability Convention',yr:'1972',v:98,note:'~98 states parties.'},
+  {name:'Registration Convention',yr:'1976',v:75,note:'~75 states parties \u2014 fewer states formally register, though most major ones do.'},
+  {name:'Moon Agreement',yr:'1979',v:18,note:'~18 states parties; no major spacefaring nation. Practically a dead letter.'},
+  {name:'Artemis Accords',yr:'2020',v:50,accords:true,note:'50+ signatories (a political framework, not a ratified treaty) and growing.'}
+];
+function buildBars(){const el=$('#bars');const max=120;
+  BARS.forEach(b=>{const row=document.createElement('div');row.className='bar-row';
+    row.innerHTML='<div class="name">'+b.name+' <span class="y">('+b.yr+')</span></div>'+
+      '<div class="bar-track"><div class="bar-fill'+(b.accords?' accords':'')+'" data-w="'+(b.v/max*100)+'" data-tip="<b>'+b.name+'.</b> '+b.note+'"><span class="num">'+(b.accords?'50+':'~'+b.v)+'</span></div></div>';
+    el.appendChild(row);});}
+let barsAnimated=false;
+function animateBars(){if(barsAnimated)return;barsAnimated=true;document.querySelectorAll('.bar-fill').forEach(f=>{f.style.width=f.getAttribute('data-w')+'%';});bindTips();}
+
+/* ---- matrix ---- */
+const ACTORS=['United States','Russia','China','France','Germany','Japan','India','Australia','Canada'];
+const COLS=[
+ {a:'OST',y:'1967',f:'Outer Space Treaty (1967)'},
+ {a:'Rescue',y:'1968',f:'Rescue Agreement (1968)'},
+ {a:'Liability',y:'1972',f:'Liability Convention (1972)'},
+ {a:'Registration',y:'1976',f:'Registration Convention (1976)'},
+ {a:'Moon',y:'1979',f:'Moon Agreement (1979)'},
+ {a:'Artemis',y:'2020',f:'Artemis Accords (2020)'}
+];
+// 2=party,1=signatory only,0=not party
+const DATA={
+ 'United States':[2,2,2,2,0,2],
+ 'Russia':[2,2,2,2,0,0],
+ 'China':[2,2,2,2,0,0],
+ 'France':[2,2,2,2,1,2],
+ 'Germany':[2,2,2,2,0,2],
+ 'Japan':[2,2,2,2,0,2],
+ 'India':[2,2,2,2,1,2],
+ 'Australia':[2,2,2,2,2,2],
+ 'Canada':[2,2,2,2,0,2]
+};
+const STATUS={2:{c:'p',s:'\u25cf',t:'State party \u2014 ratified and legally bound.'},1:{c:'s',s:'\u25d0',t:'Signatory only / not ratified \u2014 not formally bound.'},0:{c:'n',s:'\u25cb',t:'Not a party.'}};
+function buildMatrix(){const el=$('#matrixGrid');
+  let h='<div class="mh corner">Actor</div>';
+  COLS.forEach(c=>{h+='<div class="mh" data-tip="<b>'+c.f+'</b>">'+c.a+'<span class="yr">'+c.y+'</span></div>';});
+  let rows='';
+  ACTORS.forEach(a=>{
+    rows+='<div class="mname">'+a+'</div>';
+    DATA[a].forEach((v,j)=>{const st=STATUS[v];rows+='<div class="mc"><span class="cell '+st.c+'" data-tip="<b>'+a+' \u00b7 '+COLS[j].f+'.</b> '+st.t+'">'+st.s+'</span></div>';});
+  });
+  el.innerHTML=h+rows;}
+
+/* ---- liability tool ---- */
+const LIAB={
+  a:{std:'Liability Convention, Article II',h:'Absolute (no-fault) liability',
+     p:'The launching State is liable regardless of fault. The victim need not prove negligence \u2014 only that the damage was caused by the space object on the surface of the Earth or to an aircraft in flight.',
+     ex:'<b>Cosmos 954 (1978).</b> A Soviet nuclear-powered satellite re-entered over Canada, spreading radioactive debris. Canada claimed ~C$6M in clean-up costs under absolute liability; the USSR paid C$3M in settlement \u2014 the only claim ever formally pursued.'},
+  b:{std:'Liability Convention, Article III',h:'Fault-based liability',
+     p:'For damage occurring in outer space to another State\u2019s space object (or persons/property aboard), liability attaches only if the damage is due to the fault of the launching State or those it is responsible for. The claimant must show fault.',
+     ex:'<b>Why it matters.</b> The 2009 Iridium\u2013Cosmos collision destroyed two satellites in orbit. No formal claim followed \u2014 in part because proving fault for an in-space collision is hard, illustrating exactly why Article III is a higher bar than Article II.'}
+};
+function setLiab(k){$('#liab-a').classList.toggle('on',k==='a');$('#liab-b').classList.toggle('on',k==='b');
+  const d=LIAB[k];$('#liabRes').innerHTML='<div class="std">'+d.std+'</div><h4>'+d.h+'</h4><p>'+d.p+'</p><div class="ex">'+d.ex+'</div>';bindTips();}
+$('#liab-a').addEventListener('click',()=>setLiab('a'));
+$('#liab-b').addEventListener('click',()=>setLiab('b'));
+
+/* ---- OST articles ---- */
+const OST=[
+  {n:'I',t:'Freedom & benefit of all',d:'Exploration and use of outer space shall be carried out for the benefit of all countries and is the province of all mankind, with free access to all areas of celestial bodies.'},
+  {n:'II',t:'Non-appropriation',d:'Outer space and celestial bodies are not subject to national appropriation by claim of sovereignty, by use or occupation, or by any other means. No one can own the Moon.'},
+  {n:'IV',t:'Peaceful use & no WMD',d:'States shall not place nuclear weapons or other weapons of mass destruction in orbit or on celestial bodies. The Moon and other bodies are to be used exclusively for peaceful purposes \u2014 no military bases, fortifications, or weapons tests on them.'},
+  {n:'V',t:'Astronauts as envoys',d:'Astronauts are envoys of mankind; states shall render them all possible assistance in the event of accident, distress, or emergency landing.'},
+  {n:'VI',t:'State responsibility',d:'States bear international responsibility for national activities in space, whether by governmental or non-governmental entities. Private activities require authorisation and continuing supervision by the appropriate State.'},
+  {n:'VII',t:'Liability',d:'Each State that launches or procures a launch, or from whose territory or facility an object is launched, is internationally liable for damage caused by that object.'},
+  {n:'VIII',t:'Jurisdiction & control',d:'The State on whose registry an object is carried retains jurisdiction and control over that object and any personnel, while in space or on a celestial body. Ownership of objects is not affected by their presence in space.'},
+  {n:'IX',t:'Due regard',d:'States shall conduct activities with due regard to the corresponding interests of others, avoid harmful contamination of space and adverse changes to Earth\u2019s environment, and consult before potentially harmful activities.'},
+  {n:'XI',t:'Transparency',d:'States agree to inform the UN Secretary-General, the public and the international scientific community of the nature, conduct, locations and results of their space activities, to the greatest extent feasible.'}
+];
+function buildOST(){const c=$('#ostChips');OST.forEach((a,i)=>{const b=document.createElement('button');b.className='achip'+(i===0?' on':'');
+  b.textContent='Art. '+a.n;b.addEventListener('click',()=>{document.querySelectorAll('.achip').forEach(x=>x.classList.remove('on'));b.classList.add('on');showOST(i);});c.appendChild(b);});showOST(0);}
+function showOST(i){const a=OST[i];$('#ostDetail').innerHTML='<div class="meta">Article '+a.n+'</div><h4>'+a.t+'</h4><p>'+a.d+'</p>';}
+
+/* ---- accords accordion ---- */
+const PRIN=[
+  {t:'Peaceful purposes',d:'All activities are conducted for peaceful purposes, consistent with the Outer Space Treaty.'},
+  {t:'Transparency',d:'Signatories commit to conducting activities openly and sharing their policies and plans, to build trust.'},
+  {t:'Interoperability',d:'Systems and infrastructure should use common standards where reasonable, so partners can support one another.'},
+  {t:'Emergency assistance',d:'Reaffirms the duty to render assistance to personnel in distress \u2014 echoing the Rescue Agreement.'},
+  {t:'Registration of space objects',d:'Signatories will register relevant objects, reinforcing the Registration Convention.'},
+  {t:'Release of scientific data',d:'Public sharing of scientific results, in the spirit of OST Article XI \u2014 with carve-outs for private operations.'},
+  {t:'Protecting space heritage',d:'Commitment to preserve historically significant sites and artefacts, such as the Apollo landing sites.'},
+  {t:'Space resources',d:'Extraction and use of space resources can be conducted in compliance with the OST. This is the most debated principle \u2014 see below.'},
+  {t:'Deconfliction & safety zones',d:'Operators notify each other and may establish "safety zones" to avoid harmful interference. Praised as practical; criticised as a possible quasi-territorial claim.'},
+  {t:'Orbital debris',d:'Commitment to plan for safe disposal of spacecraft and to mitigate orbital debris.'}
+];
+function buildAccords(){const el=$('#accords');PRIN.forEach((p,i)=>{const d=document.createElement('div');d.className='acc-item';
+  d.innerHTML='<div class="acc-head"><span class="n">'+String(i+1).padStart(2,'0')+'</span>'+p.t+'<span class="x">+</span></div><div class="acc-body"><div>'+p.d+'</div></div>';
+  d.querySelector('.acc-head').addEventListener('click',()=>d.classList.toggle('open'));el.appendChild(d);});}
+
+/* ---- hero canvas: wireframe globe + treaty arcs ---- */
+const hc=$('#hero-canvas'),hx=hc.getContext('2d');
+const reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+let stars=[],arcs=[],hf=0;
+function initHero(){hc.width=hc.clientWidth;hc.height=hc.clientHeight;
+  stars=[];for(let i=0;i<120;i++)stars.push({x:Math.random()*hc.width,y:Math.random()*hc.height,r:Math.random()*1.2+.2,a:Math.random()*.6+.2,tw:Math.random()*.02});
+  arcs=[];for(let i=0;i<5;i++)arcs.push({a0:Math.random()*7,a1:Math.random()*7,ph:Math.random(),sp:0.003+Math.random()*0.004});
+}
+function drawHero(){
+  hx.clearRect(0,0,hc.width,hc.height);
+  stars.forEach(s=>{s.a+=Math.sin(hf*s.tw)*.004;hx.globalAlpha=Math.max(.1,Math.min(.9,s.a));hx.fillStyle='#cfe0ff';hx.beginPath();hx.arc(s.x,s.y,s.r,0,7);hx.fill();});
+  hx.globalAlpha=1;
+  const cx=hc.width*0.72,cy=hc.height*0.52,R=Math.min(hc.width,hc.height)*0.24;
+  // glow
+  const g=hx.createRadialGradient(cx,cy,0,cx,cy,R*1.8);g.addColorStop(0,'rgba(155,140,255,.10)');g.addColorStop(.5,'rgba(111,143,214,.04)');g.addColorStop(1,'rgba(0,0,0,0)');
+  hx.fillStyle=g;hx.fillRect(0,0,hc.width,hc.height);
+  // globe sphere
+  const pg=hx.createRadialGradient(cx-R*0.3,cy-R*0.3,2,cx,cy,R);pg.addColorStop(0,'rgba(60,80,140,.5)');pg.addColorStop(1,'rgba(13,20,40,.7)');
+  hx.fillStyle=pg;hx.beginPath();hx.arc(cx,cy,R,0,7);hx.fill();
+  hx.strokeStyle='rgba(155,140,255,.35)';hx.lineWidth=1;
+  // latitudes
+  for(let k=-2;k<=2;k++){const yy=cy+R*0.42*k;const rx=R*Math.sqrt(Math.max(0,1-(0.42*k)*(0.42*k)));hx.beginPath();hx.ellipse(cx,yy,rx,rx*0.18,0,0,7);hx.stroke();}
+  // meridians (rotating)
+  for(let k=0;k<6;k++){const ph=hf*0.01+k*Math.PI/6;const rx=Math.abs(R*Math.cos(ph));hx.globalAlpha=0.18+0.2*Math.abs(Math.sin(ph));hx.beginPath();hx.ellipse(cx,cy,rx,R,0,0,7);hx.stroke();}
+  hx.globalAlpha=1;
+  hx.strokeStyle='rgba(155,140,255,.5)';hx.beginPath();hx.arc(cx,cy,R,0,7);hx.stroke();
+  // treaty arcs (links between surface points)
+  arcs.forEach(ar=>{ar.ph+=ar.sp;if(ar.ph>1){ar.ph=0;ar.a0=Math.random()*7;ar.a1=Math.random()*7;}
+    const p0={x:cx+Math.cos(ar.a0)*R,y:cy+Math.sin(ar.a0)*R*0.9};
+    const p1={x:cx+Math.cos(ar.a1)*R,y:cy+Math.sin(ar.a1)*R*0.9};
+    const mx=(p0.x+p1.x)/2,my=(p0.y+p1.y)/2-R*0.7;
+    hx.strokeStyle='rgba(169,220,255,.5)';hx.lineWidth=1.2;hx.beginPath();hx.moveTo(p0.x,p0.y);hx.quadraticCurveTo(mx,my,p1.x,p1.y);hx.stroke();
+    // travelling node
+    const t=ar.ph,u=1-t;const nx=u*u*p0.x+2*u*t*mx+t*t*p1.x,ny=u*u*p0.y+2*u*t*my+t*t*p1.y;
+    hx.fillStyle='#9b8cff';hx.shadowColor='#9b8cff';hx.shadowBlur=10;hx.beginPath();hx.arc(nx,ny,2.6,0,7);hx.fill();hx.shadowBlur=0;
+  });
+}
+
+/* ---- loop, nav, reveal ---- */
+function loop(){hf++;if(!reduce)drawHero();requestAnimationFrame(loop);}
+const links=[...document.querySelectorAll('.nav-links a')];
+const secs=links.map(a=>{const h=a.getAttribute('href');return h&&h.startsWith('#')?document.querySelector(h):null;});
+window.addEventListener('scroll',()=>{const sc=window.scrollY,dh=document.documentElement.scrollHeight-window.innerHeight;
+  $('#progress').style.width=(dh>0?sc/dh*100:0)+'%';let c=-1;secs.forEach((s,i)=>{if(s&&s.offsetTop-130<=sc)c=i;});
+  links.forEach((l,i)=>l.classList.toggle('active',i===c));},{passive:true});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');if(e.target.id==='ratification')animateBars();}}),{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+const barObs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){animateBars();barObs.disconnect();}}),{threshold:0.3});
+
+window.addEventListener('resize',()=>{initHero();drawHero();});
+
+/* init */
+buildTL();buildTreaties();buildBars();buildMatrix();buildOST();buildAccords();
+initHero();drawHero();
+const ratSec=$('#ratification');if(ratSec)barObs.observe(ratSec);
+bindTips();
+if(!reduce)loop();
+</script>
+</body>
+</html>

@@ -1,0 +1,1534 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEO Watch &middot; Planetary Defense</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="incident_engine.js"></script>
+<script src="context3d.js"></script>
+<style>
+  :root{
+    /* alineado a newspace.live (hub) */
+    --bg:#05060d; --panel:#111a30; --panel-2:#16223e; --line:#243353;
+    --text:#eaeefb; --text-dim:#93a0c2; --text-faint:#6b769a;
+    --accent:#e0653f; --lit:#f3ad5e; --alert:#e0653f; --uy:#6f8fd6;
+    --conf-hi:#5fd0a0; --conf-md:#f3ad5e; --conf-lo:#e0653f; --moon:#a9dcff;
+    --display:'Space Grotesk',system-ui,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; --sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  }
+  h1,h2,h3{font-family:var(--display)}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;line-height:1.4;overflow:hidden}
+  .app{display:grid;grid-template-columns:1fr 384px;grid-template-rows:auto auto 1fr;height:100vh;gap:1px;background:var(--line)}
+  /* header (estilo SSA) */
+  header{grid-column:1/3;background:var(--panel);display:flex;align-items:center;gap:16px;padding:9px 18px;flex-wrap:wrap}
+  .brand{display:flex;align-items:baseline;gap:10px}
+  .brand .mk{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:3px;border:1px solid var(--accent);border-radius:3px;padding:2px 6px}
+  .brand h1{font-size:15px;font-weight:600;margin:0}
+  .brand .sub{font-size:11px;color:var(--text-dim)}
+  .clock{font-family:var(--mono);font-size:13px;color:var(--lit);margin-left:auto;white-space:nowrap}
+  .controls{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+  select,button{background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:4px;padding:5px 9px;font-size:12px;font-family:var(--sans);cursor:pointer}
+  button:hover,select:hover{border-color:var(--accent)}
+  button.primary{background:var(--accent);color:#04181a;border-color:var(--accent);font-weight:600}
+  button.on{border-color:var(--accent);color:var(--accent)}
+  .lang{font-size:16px;line-height:1;padding:5px 8px}
+  #helpBtn{font-family:var(--mono);font-weight:700}
+  .xlink{background:var(--panel-2,#12202c);color:var(--accent);border:1px solid var(--accent);border-radius:5px;padding:5px 9px;font-size:12px;text-decoration:none;font-weight:600;white-space:nowrap}
+  .xlink:hover{background:var(--accent);color:#04181a}
+  /* OODA rail */
+  .ooda{grid-column:1/3;background:var(--panel-2);display:grid;grid-template-columns:repeat(4,1fr);gap:1px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .stage{background:var(--panel);padding:8px 15px;cursor:pointer;border-top:2px solid transparent;display:flex;align-items:center;gap:11px;transition:background .15s}
+  .stage:hover{background:#0f2942}
+  .stage.on{background:#102a44;border-top-color:var(--accent)}
+  .stage .ltr{font-family:var(--mono);font-size:19px;font-weight:700;color:var(--text-faint);width:20px;text-align:center}
+  .stage.on .ltr{color:var(--accent)}
+  .stage .nm{font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase}
+  .stage .dsc{font-size:10px;color:var(--text-dim);font-family:var(--mono)}
+  .stage .cnt{margin-left:auto;font-family:var(--mono);font-size:18px;color:var(--text)}
+  .stage.on .cnt{color:var(--accent)}
+  /* left */
+  .map-wrap{background:var(--panel-2);position:relative;overflow:hidden;display:flex;flex-direction:column}
+  .scope-h{display:flex;align-items:baseline;gap:9px;padding:9px 16px 0}
+  .scope-h h2{margin:0;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);font-weight:600}
+  .scope-h .hint{font-family:var(--mono);font-size:10px;color:var(--text-faint)}
+  #scope{flex:1;width:100%;min-height:0}
+  .timeline{height:92px;border-top:1px solid var(--line);padding:6px 10px}
+  .tl-h{font-family:var(--mono);font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:1px}
+  #tl{width:100%;height:60px;display:block}
+  .legend{position:absolute;left:14px;bottom:104px;display:flex;gap:12px;flex-wrap:wrap;background:rgba(8,20,32,.8);border:1px solid var(--line);border-radius:5px;padding:5px 11px;font-family:var(--mono);font-size:10px;color:var(--text-dim);backdrop-filter:blur(3px)}
+  .legend .it{display:flex;align-items:center;gap:5px}
+  .dotc{width:9px;height:9px;border-radius:50%}
+  /* side panel (estilo SSA) */
+  .side{background:var(--panel);display:flex;flex-direction:column;overflow:hidden;position:relative}
+  .sysbar{display:flex;align-items:center;gap:14px;padding:6px 14px;background:var(--panel-2);border-bottom:1px solid var(--line);font-family:var(--mono);font-size:10px;color:var(--text-dim);flex-wrap:wrap}
+  .sysbar .v{color:var(--text)} .sysbar .sdot{width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--text-faint)}
+  .srcchips{display:inline-flex;gap:5px;flex-wrap:wrap}
+  .chip{font-family:var(--mono);font-size:10px;padding:1px 6px;border-radius:9px;border:1px solid var(--line);color:var(--text-dim)}
+  .chip.ok{border-color:var(--conf-hi);color:var(--conf-hi)} .chip.fail{border-color:var(--alert);color:var(--alert)}
+  .chip.off{opacity:.45} .chip.pending{border-color:var(--lit);color:var(--lit)}
+  .rep-meta{font-family:var(--mono);font-size:11px;color:var(--text-dim);line-height:1.7;margin-bottom:8px}
+  .rep-meta b{color:var(--text)}
+  .rep-sec{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);font-weight:700;margin:14px 0 6px;border-bottom:1px solid var(--line);padding-bottom:4px}
+  table.rep{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px}
+  table.rep th{text-align:left;color:var(--text-faint);font-weight:600;padding:4px 6px;border-bottom:1px solid var(--line)}
+  table.rep td{padding:4px 6px;border-bottom:1px solid rgba(23,51,71,.5);color:var(--text)}
+  .rep-note{font-family:var(--mono);font-size:10px;color:var(--text-faint);margin-top:10px;line-height:1.5}
+  .sysbar .sdot.live{background:var(--conf-hi);box-shadow:0 0 5px var(--conf-hi)} .sysbar .sdot.demo{background:var(--lit);box-shadow:0 0 5px var(--lit)}
+  .sec-h{padding:9px 14px 4px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);font-weight:600;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}
+  .sec-h .note{font-size:10px;letter-spacing:0;text-transform:none;color:var(--text-faint);font-family:var(--mono)}
+  .filt{display:flex;gap:6px;padding:8px 14px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+  .filt input,.filt select{background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:5px;padding:5px 8px;font-size:12px;font-family:var(--mono)}
+  .filt input{flex:1;min-width:90px}
+  .list{flex:1;overflow:auto}
+  .row{display:grid;grid-template-columns:auto 1fr auto;gap:9px;align-items:center;padding:8px 14px;border-bottom:1px solid rgba(23,51,71,.6);cursor:pointer}
+  .row:hover{background:#0f2942}
+  .row .badge{font-family:var(--mono);font-size:10px;font-weight:700;width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;color:#04181a}
+  .row .nm{font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .nm small{display:block;font-family:var(--mono);font-size:10px;color:var(--text-dim);font-weight:400}
+  .row .rt{font-family:var(--mono);font-size:11px;text-align:right;color:var(--text-dim);white-space:nowrap}
+  .row .rt b{color:var(--text);font-weight:600}
+  .empty{padding:24px 18px;text-align:center;color:var(--text-faint);font-size:12px}
+  #status{font-family:var(--mono);font-size:10px;color:var(--text-faint);padding:6px 14px;border-top:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* info chip */
+  .i{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;border:1px solid var(--text-faint);color:var(--text-dim);font-size:9px;font-family:var(--mono);cursor:pointer;vertical-align:middle;margin-left:4px;font-style:normal;line-height:1}
+  .i:hover{border-color:var(--accent);color:var(--accent)}
+  #pop{position:fixed;z-index:80;max-width:280px;background:#0b1d2e;border:1px solid var(--accent);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--text);box-shadow:0 14px 40px rgba(0,0,0,.6);display:none;line-height:1.5}
+  #pop .term{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.5px;display:block;margin-bottom:3px}
+  /* drawer */
+  .drawer{position:absolute;inset:0;background:var(--panel);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .22s ease;z-index:20}
+  .drawer.open{transform:translateX(0)}
+  .dh{display:flex;align-items:flex-start;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line)}
+  .dh .x{margin-left:auto;border:0;background:transparent;color:var(--text-dim);font-size:20px;cursor:pointer;padding:0 2px} .dh .x:hover{color:var(--alert)}
+  .dh .dn{font-size:15px;font-weight:700} .dh .dd{font-family:var(--mono);font-size:11px;color:var(--text-dim)}
+  .dbody{overflow:auto;flex:1;padding:2px 0 18px}
+  .dsec{padding:10px 16px 3px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-faint);font-weight:700}
+  .dgrid{display:grid;grid-template-columns:1fr auto;gap:3px 12px;padding:2px 16px 7px;font-family:var(--mono);font-size:12px}
+  .dgrid .lab{color:var(--text-dim)} .dgrid .val{color:var(--text);text-align:right;font-weight:600}
+  .scales{padding:3px 16px 7px}
+  .scale{margin:6px 0}
+  .scale .top{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-bottom:3px}
+  .scale .bar{height:7px;border-radius:4px;background:var(--panel-2);overflow:hidden;border:1px solid var(--line)}
+  .scale .bar i{display:block;height:100%}
+  .coa{margin:6px 16px 4px;padding:10px 12px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:6px;background:var(--panel-2);font-size:12px}
+  .coa .ct{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+  .obsflag{display:inline-block;font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:9px}
+  .obsflag.ok{background:rgba(70,211,154,.16);color:var(--conf-hi);border:1px solid var(--conf-hi)}
+  .obsflag.no{background:rgba(69,100,120,.16);color:var(--text-faint);border:1px solid var(--text-faint)}
+  /* modal */
+  .modal{position:fixed;inset:0;z-index:60;background:rgba(4,10,16,.74);display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+  .modal.open{display:flex}
+  #alertBtn{position:relative}
+  #alertBtn.crit{border-color:var(--alert);color:var(--alert);animation:apulse 1.3s infinite}
+  @keyframes apulse{0%,100%{box-shadow:0 0 0 0 rgba(255,107,74,.5)}50%{box-shadow:0 0 0 4px rgba(255,107,74,0)}}
+  .abadge{display:inline-block;min-width:15px;padding:0 4px;margin-left:4px;border-radius:8px;background:var(--alert);color:#1a0a06;font-size:10px;font-weight:700;text-align:center}
+  .arow{display:flex;gap:9px;align-items:flex-start;padding:9px 14px;border-bottom:1px solid var(--line)}
+  .arow .sv{flex:0 0 4px;align-self:stretch;border-radius:2px}
+  .arow.s-critical .sv{background:var(--alert)} .arow.s-warning .sv{background:var(--lit)} .arow.s-info .sv{background:var(--accent)}
+  .arow .ab{flex:1;min-width:0}
+  .arow .ab .an{font-weight:600;font-size:12.5px}
+  .arow .ab .am{font-size:11px;color:var(--text-dim);margin-top:2px}
+  .arow .ab .ae{font-size:10px;font-family:var(--mono);margin-top:3px}
+  .esc0{color:var(--accent)} .esc1{color:var(--lit)} .esc2{color:var(--alert)}
+  .arow.acked{opacity:.5}
+  .sbadge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;font-family:var(--mono);white-space:nowrap}
+  .sbadge.new{background:#e0653f;color:#1a0a06} .sbadge.acknowledged{background:#f3ad5e;color:#1a1405} .sbadge.in_analysis{background:#f3ad5e;color:#1a1405} .sbadge.escalated{background:#6f8fd6;color:#04121a} .sbadge.tasked{background:#9b8cff;color:#0a0618} .sbadge.resolved{background:#5fd0a0;color:#04181a} .sbadge.closed{background:var(--line);color:var(--text-dim)}
+  .trow:hover,.brow:hover{background:var(--panel-2)}
+  .actbar{margin:0 0 6px;padding:9px 14px;background:var(--panel-2)}
+  .actbar-h{display:flex;align-items:center;gap:8px} .actbar-p{margin-top:5px;font-size:11.5px;color:var(--text-dim);line-height:1.4}
+  .actpill{display:inline-block;padding:1px 7px;border-radius:4px;font-size:9px;font-weight:700;font-family:var(--mono);color:#06121a;vertical-align:middle}
+  .cal-day{border-bottom:1px solid var(--line)} .cal-dh{display:flex;justify-content:space-between;align-items:center;padding:7px 14px;background:var(--panel-2);font-weight:600;font-size:12px;font-family:var(--mono)} .cal-dark{font-size:10px;color:var(--text-faint);font-weight:400}
+  .cal-it{display:grid;grid-template-columns:9px minmax(0,1.4fr) 1fr auto;gap:8px;align-items:center;padding:7px 14px;cursor:pointer;font-size:11px;border-top:1px solid var(--line)}
+  .cal-it:hover{background:var(--panel-2)} .cal-it .cdot{width:8px;height:8px;border-radius:50%} .cal-tm{font-family:var(--mono);color:var(--text-dim)} .cal-rt{text-align:right;font-family:var(--mono);color:var(--text-faint)}
+  .ackbtn{flex:0 0 auto;font-size:10.5px;padding:4px 9px;align-self:center}
+  .taskbar{display:flex;gap:6px;padding:6px 0;flex-wrap:wrap}
+  .pri{display:inline-block;min-width:18px;text-align:center;border-radius:4px;font-size:10px;font-weight:700;padding:1px 5px;color:#04181a}
+  .mcard{width:min(560px,94vw);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--accent);border-radius:11px}
+  .mh{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);font-weight:600;letter-spacing:.5px;font-size:13px;color:var(--accent)}
+  .mh .x{margin-left:auto;border:0;background:transparent;color:var(--text-dim);font-size:20px;cursor:pointer} .mh .x:hover{color:var(--alert)}
+  .mbody{padding:6px 16px 14px}
+  .field{margin:10px 0}
+  .field label{display:block;font-size:11px;color:var(--text-dim);margin-bottom:4px;font-family:var(--mono)}
+  .field input,.field select{width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:7px 9px;font-size:12px;font-family:var(--mono)}
+  .srcrow{display:flex;align-items:center;gap:9px;margin:7px 0;padding:8px 10px;border:1px solid var(--line);border-radius:8px}
+  .srcrow .tog{width:38px;height:20px;border-radius:11px;background:var(--line);position:relative;cursor:pointer;flex:0 0 auto;transition:background .15s}
+  .srcrow .tog.on{background:var(--conf-hi)}
+  .srcrow .tog i{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
+  .srcrow .tog.on i{left:20px}
+  .srcrow .meta{flex:1} .srcrow .meta b{font-size:12px} .srcrow .meta small{display:block;color:var(--text-faint);font-family:var(--mono);font-size:10px;word-break:break-all}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .mfoot{display:flex;gap:9px;padding:12px 16px;border-top:1px solid var(--line)}
+  .btn{flex:1;padding:9px;border-radius:7px;border:1px solid var(--line);background:var(--panel-2);color:var(--text);font-size:13px;cursor:pointer;font-weight:600}
+  .btn.go{background:var(--accent);color:#04181a;border-color:var(--accent)}
+  .btn:hover{border-color:var(--accent)}
+  .banner{font-size:11px;color:var(--lit);background:rgba(245,196,81,.08);border:1px solid rgba(245,196,81,.3);border-radius:7px;padding:8px 11px;margin:0 0 6px;font-family:var(--mono);line-height:1.5}
+  @media(max-width:860px){.app{grid-template-columns:1fr;grid-template-rows:auto auto 42vh 1fr}.ooda{grid-template-columns:repeat(2,1fr)}.map-wrap{grid-column:1}.side{grid-column:1}.clock{margin-left:0}}
+</style>
+
+<div class="app">
+  <header>
+    <div class="brand"><span class="mk">PD-UY</span>
+      <div><h1 data-i18n="app_title">NEO Watch</h1><div class="sub" data-i18n="app_sub">Planetary defense &middot; near-Earth object risk picture</div></div></div>
+    <div class="clock" id="clock">--</div>
+    <div class="controls">
+      <select id="citySel" data-i18n-ti="ti_city" title="Observer city"></select>
+      <select id="rateSel" data-i18n-ti="ti_rate" title="Time acceleration"></select>
+      <button id="playBtn" data-i18n="btn_pause">Pause</button>
+      <button id="nowBtn" data-i18n="btn_now">Now</button>
+      <button id="histBtn" class="on" data-i18n-ti="ti_history" title="Toggle historical data"><span data-i18n="btn_history">History</span></button>
+      <button id="refreshBtn" data-i18n-ti="ti_refresh" title="Fetch current data">&#8635; <span data-i18n="btn_refresh">Fetch</span></button>
+      <button id="reportBtn" data-i18n="btn_report">Report</button>
+      <button id="alertBtn" data-i18n-ti="ti_alerts" title="Alert console">&#128276;<span class="abadge" id="alertCount" style="display:none">0</span></button>
+      <button id="triageBtn" data-i18n-ti="ti_triage" title="Triage queue">&#9636;<span class="abadge" id="triageBadge" style="display:none">0</span></button>
+      <button id="cfgBtn" data-i18n-ti="ti_settings" title="Data sources &amp; settings">&#9881;</button>
+      <a id="lnkHub" href="/" class="xlink" data-i18n-ti="ti_hub" title="newspace.live home">&#8962; Hub</a>
+      <a id="lnkSsa" href="ssa_visor.html" class="xlink" data-i18n-ti="ti_ssa" title="Open SSA satellite visor">SSA &#8599;</a>
+      <a id="authChip" href="admin.html" class="xlink" title="Session" style="font-family:var(--mono);font-size:11px">&#9675;</a>
+      <button id="helpBtn" data-i18n-ti="ti_help" title="Quick help / Ayuda r&aacute;pida">?</button>
+      <button id="langBtn" class="lang" title="Switch to Spanish">&#127466;&#127480;</button>
+    </div>
+  </header>
+
+  <div class="ooda" id="ooda">
+    <div class="stage on" data-stage="observe"><span class="ltr">O</span><div><div class="nm" data-i18n="ooda_o">Observe</div><div class="dsc" data-i18n="ooda_o_d">incoming &amp; recent</div></div><span class="cnt" id="cntO">0</span></div>
+    <div class="stage" data-stage="orient"><span class="ltr">O</span><div><div class="nm" data-i18n="ooda_or">Orient</div><div class="dsc" data-i18n="ooda_or_d">risk &amp; meaning</div></div><span class="cnt" id="cntR">0</span></div>
+    <div class="stage" data-stage="decide"><span class="ltr">D</span><div><div class="nm" data-i18n="ooda_d">Decide</div><div class="dsc" data-i18n="ooda_d_d">priorities &amp; COA</div></div><span class="cnt" id="cntD">0</span></div>
+    <div class="stage" data-stage="act"><span class="ltr">A</span><div><div class="nm" data-i18n="ooda_a">Act</div><div class="dsc" data-i18n="ooda_a_d">alerts &amp; OALM tasking</div></div><span class="cnt" id="cntA">0</span></div>
+  </div>
+
+  <div class="map-wrap">
+    <div class="scope-h">
+      <h2 data-i18n="scope_title">Approach scope</h2>
+      <span class="hint" data-i18n="scope_hint">miss distance in lunar distances &mdash; not orbital geometry</span>
+      <span class="i" data-info="scope">i</span>
+    </div>
+    <svg id="scope" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="legend" id="legend"></div>
+    <div class="timeline">
+      <div class="tl-h"><span data-i18n="tl_title">Close approaches in window</span> <span class="i" data-info="ld">i</span></div>
+      <svg id="tl" viewBox="0 0 600 60" preserveAspectRatio="none"></svg>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="sysbar">
+      <span data-i18n="sys_sources">sources</span> <span class="srcchips" id="srcUsed"></span>
+      <span data-i18n="sys_city">city</span> <b class="v" id="sysCity">OALM</b>
+      <span data-i18n="sys_rate">rate</span> <b class="v" id="sysRate">real time</b>
+    </div>
+    <div class="board-h" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line)">
+      <b data-i18n="board_title">Today's picture</b>
+      <span id="boardN" style="font-family:var(--mono);font-size:11px;color:var(--text-dim)">0</span>
+      <span class="i" data-info="board">i</span>
+      <span style="margin-left:auto;display:flex;gap:6px">
+        <button class="btn" id="calBtn" style="padding:4px 9px;font-size:11px" data-i18n-ti="ti_cal" title="Approaches calendar">&#128197;</button>
+        <button class="btn" id="boardConsole" style="padding:4px 9px;font-size:11px" data-i18n-ti="ti_alerts" title="Alert console">&#128276;</button>
+        <button class="btn" id="boardExport" style="padding:4px 9px;font-size:11px">&#8595; OALM</button>
+      </span>
+    </div>
+    <div id="board" style="max-height:264px;overflow:auto;border-bottom:2px solid var(--line)"></div>
+    <div class="sec-h"><span id="sbTitle">Observe</span><span class="note" id="sbNote"></span></div>
+    <div class="filt">
+      <input id="search" data-i18n-ph="ph_search" placeholder="Search designation / name...">
+      <select id="sortSel"></select>
+      <button id="dirBtn" data-i18n-ti="ti_dir" title="Sort direction">&#9660;</button>
+      <select id="srcFilter" data-i18n-ti="ti_srcfilter" title="Filter by source"></select>
+    </div>
+    <div class="list" id="list"></div>
+    <div id="status" data-i18n="st_start">Loading...</div>
+
+    <div class="drawer" id="drawer">
+      <div class="dh"><div><div class="dn" id="dName">&mdash;</div><div class="dd" id="dDes"></div></div><button class="x" id="dClose">&times;</button></div>
+      <div class="dbody" id="dBody"></div>
+    </div>
+  </div>
+</div>
+
+<div id="pop"></div>
+
+<div class="modal" id="cfg">
+  <div class="mcard">
+    <div class="mh"><span data-i18n="cfg_title">Data sources &amp; settings</span><button class="x" id="cfgClose">&times;</button></div>
+    <div class="mbody">
+      <div class="banner" data-i18n="cfg_note">Live data is fetched from your browser. JPL/CNEOS and NeoWs support CORS. If opened from a file:// path some browsers block requests \u2014 serve over http for live data.</div>
+      <div class="srcrow" style="border-color:var(--accent)">
+        <div class="tog" id="cfgUseBackend"><i></i></div>
+        <div class="meta"><b data-i18n="cfg_usebackend">Use backend proxy (recommended)</b><small data-i18n="cfg_backend_sub">routes JPL/NeoWs through your server \u2014 fixes CORS, caches, hides the key</small></div>
+      </div>
+      <div class="field"><label data-i18n="cfg_backend">Backend proxy URL</label><input id="cfgBackend" placeholder="https://newspace.live/neo.php"></div>
+      <div id="srcList"></div>
+      <div class="field"><label data-i18n="cfg_neokey">NeoWs API key (only for direct mode)</label><input id="cfgKey"></div>
+      <div class="two">
+        <div class="field"><label data-i18n="cfg_window">Future window (days)</label><input id="cfgDays" type="number" value="60"></div>
+        <div class="field"><label data-i18n="cfg_past">Past window (days)</label><input id="cfgPast" type="number" value="365"></div>
+      </div>
+      <div class="two">
+        <div class="field"><label data-i18n="cfg_maxld">Max distance (LD)</label><input id="cfgMaxLd" type="number" value="30"></div>
+        <div class="field"><label data-i18n="cfg_auto">Auto-refresh (min, 0=off)</label><input id="cfgAuto" type="number" value="0"></div>
+      </div>
+      <div class="field"><label data-i18n="cfg_proxy">CORS proxy for JPL (optional)</label><input id="cfgProxy" placeholder="https://corsproxy.io/?url="></div>
+      <div class="banner" data-i18n="cfg_proxy_note">JPL/CNEOS (ssd-api) often blocks direct browser requests (CORS). Paste a CORS proxy prefix here, or route through the backend. The proper fix for an institutional deployment is the server-side proxy.</div>
+      <div class="dsec" data-i18n="cfg_obs">Custom city / observer</div>
+      <div class="field"><label data-i18n="cfg_search_city">Search any city in the world</label>
+        <div style="display:flex;gap:6px"><input id="citySearch" data-i18n-ph="cfg_search_ph" placeholder="e.g. Tokyo, Nairobi, Reykjavik..." style="flex:1">
+        <button class="btn" id="cityGo" style="flex:0 0 auto;padding:7px 12px" data-i18n="cfg_search_btn">Search</button></div>
+        <div id="citySearchMsg" style="font-family:var(--mono);font-size:10px;color:var(--text-faint);margin-top:4px"></div></div>
+      <div class="two">
+        <div class="field"><label data-i18n="cfg_cityname">Custom city name</label><input id="cfgCityName" value="Custom"></div>
+        <div class="field"><label>Limit mag <span class="i" data-info="vmag">i</span></label><input id="cfgLim" type="number" step="0.5" value="18"></div>
+      </div>
+      <div class="two">
+        <div class="field"><label data-i18n="cfg_lat">Latitude</label><input id="cfgLat" type="number" step="0.0001" value="-34.90"></div>
+        <div class="field"><label data-i18n="cfg_lon">Longitude</label><input id="cfgLon" type="number" step="0.0001" value="-56.16"></div>
+      </div>
+      <div class="field"><label data-i18n="cfg_twi">Twilight (sun \u00b0 below horizon)</label><input id="cfgTwi" type="number" value="-12"></div>
+      <div class="dsec" data-i18n="cfg_alerts">Alert thresholds (Act)</div>
+      <div class="banner" data-i18n="cfg_alerts_note">When an object crosses a threshold it enters the alert console. Browser notifications and a webhook dispatch are optional; real email/Telegram/SMS relaying and multi-user acknowledgment require the server-side backend (channel secrets must stay on the server).</div>
+      <div class="two">
+        <div class="field"><label data-i18n="cfg_al_miss">Critical miss distance (LD)</label><input id="cfgAlMiss" type="number" step="0.1" value="1"></div>
+        <div class="field"><label data-i18n="cfg_al_imm">Imminent window (days)</label><input id="cfgAlImm" type="number" value="7"></div>
+      </div>
+      <div class="two">
+        <div class="field"><label data-i18n="cfg_al_pal">Palermo \u2265 (warning)</label><input id="cfgAlPal" type="number" step="0.5" value="-2"></div>
+        <div class="field"><label data-i18n="cfg_al_tor">Torino \u2265 (critical)</label><input id="cfgAlTor" type="number" value="1"></div>
+      </div>
+      <div class="two">
+        <div class="field"><label data-i18n="cfg_al_big">Large object (m)</label><input id="cfgAlBig" type="number" value="140"></div>
+        <div class="field"><label data-i18n="cfg_al_bigld">\u2026within (LD)</label><input id="cfgAlBigLd" type="number" step="0.5" value="5"></div>
+      </div>
+      <div class="two">
+        <div class="field"><label data-i18n="cfg_al_esc">Escalate after (min)</label><input id="cfgAlEsc" type="number" value="15"></div>
+        <div class="field"><label data-i18n="cfg_al_wh">Dispatch webhook (optional)</label><input id="cfgAlWh" placeholder="https://newspace.live/neo.php?src=..."></div>
+      </div>
+      <div class="srcrow"><div class="tog on" id="cfgAlNotify"><i></i></div><div class="meta"><b data-i18n="cfg_al_notify">Browser notifications</b><small data-i18n="cfg_al_notify_s">desktop pop-ups for new critical alerts</small></div></div>
+      <div class="srcrow"><div class="tog on" id="cfgAlSound"><i></i></div><div class="meta"><b data-i18n="cfg_al_sound">Alert sound</b><small data-i18n="cfg_al_sound_s">short tone on new alerts</small></div></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn go" id="cfgApply" data-i18n="cfg_apply">Apply &amp; fetch</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="alertM">
+  <div class="mcard">
+    <div class="mh"><span data-i18n="al_title">Alert console</span>
+      <button class="btn go" id="alDispatch" style="flex:0;margin-left:auto;padding:5px 12px" data-i18n="al_dispatch">Dispatch unacked</button>
+      <button class="btn" id="alAck" style="flex:0;margin-left:8px;padding:5px 12px" data-i18n="al_ackall">Ack all</button>
+      <button class="x" id="alClose" style="margin-left:10px">&times;</button></div>
+    <div class="mbody" id="alBody"></div>
+    <div class="mfoot" style="font-size:10px;color:var(--text-faint);font-family:var(--mono)"><span data-i18n="al_foot">Escalation ladder: operator \u2192 analyst \u2192 commander. Acknowledgment is stored in this browser; cross-user escalation needs the backend.</span></div>
+  </div>
+</div>
+
+<div class="modal" id="rep">
+  <div class="mcard">
+    <div class="mh"><span data-i18n="rep_title">Reentry report</span>
+      <button class="btn go" id="repDl" style="flex:0;margin-left:auto;padding:5px 12px" data-i18n="rep_download">Download</button>
+      <button class="x" id="repClose" style="margin-left:10px">&times;</button></div>
+    <div class="mbody" id="repBody"></div>
+  </div>
+</div>
+
+<div class="modal" id="help">
+  <div class="mcard">
+    <div class="mh"><span data-i18n="help_title">Quick start</span><button class="x" id="helpClose">&times;</button></div>
+    <div class="mbody" id="helpBody"></div>
+  </div>
+</div>
+
+<div class="modal" id="calM">
+  <div class="mcard" style="max-width:760px">
+    <div class="mh"><span data-i18n="cal_title">Approaches calendar</span><button class="x" id="calClose">&times;</button></div>
+    <div class="mbody" id="calBody" style="max-height:62vh;overflow:auto"></div>
+    <div class="mfoot" style="font-size:10px;color:var(--text-faint);font-family:var(--mono)"><span data-i18n="cal_foot">Upcoming close approaches grouped by day. Local time and darkness are for OALM. The dot means OALM is in darkness at that instant. Precise pointing needs the JPL Horizons ephemeris.</span></div>
+  </div>
+</div>
+
+<div class="modal" id="triageM">
+  <div class="mcard" style="max-width:980px">
+    <div class="mh"><span data-i18n="trq_title">Triage queue</span><span id="trqUser" style="margin-left:10px;font-size:10px;font-family:var(--mono)"></span>
+      <span style="display:flex;gap:8px;align-items:center;margin-left:auto">
+        <select id="trqSev" style="font-size:11px"></select>
+        <select id="trqState" style="font-size:11px"></select>
+        <button class="x" id="triageClose" style="margin-left:6px">&times;</button></span></div>
+    <div class="mbody" style="display:grid;grid-template-columns:1fr 360px;gap:1px;background:var(--line);padding:0;min-height:320px">
+      <div style="overflow:auto;background:var(--panel)" id="trqBody"></div>
+      <div style="overflow:auto;background:var(--panel-2)" id="trqDetail"></div>
+    </div>
+    <div class="mfoot" style="font-size:10px;color:var(--text-faint);font-family:var(--mono)"><span data-i18n="trq_foot">One object is one thread. Risk and observability are separate axes. Lifecycle is audited and stored in this browser.</span></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const el=id=>document.getElementById(id);
+const AU_LD=389.17, LD_KM=384400, R_EARTH=6371;
+
+/* ===== i18n ===== */
+let LANG="en";
+const I18N={en:{
+ app_title:"NEO Watch", app_sub:"Planetary defense \u00b7 near-Earth object risk picture",
+ ti_refresh:"Fetch current data", btn_refresh:"Fetch", ti_settings:"Data sources & settings", ti_ssa:"Open SSA satellite visor", ti_hub:"newspace.live home", ti_lang:"Switch to Spanish", ti_help:"Quick help", help_title:"Quick start",
+ board_title:"Today's picture", board_empty:"Nothing actionable in the window.", ti_triage:"Triage queue", trq_title:"Triage queue", trq_db:"DB \u00b7 shared", trq_local:"local only", trq_signin:"Sign in",
+ trq_open3d:"Open 3D context", c3d_title_neo:"3D scale context", c3d_moon:"1 LD (Moon)", c3d_missing:"3D context needs context3d.js, which is not loaded. Upload context3d.js into the same folder as this page and reload.", c3d_note_neo:"Schematic: the distance to Earth is real (in lunar distances), the direction is not. The true approach vector needs the JPL Horizons ephemeris. Earth is drawn to scale at the centre.", ti_cal:"Approaches calendar", cal_title:"Approaches calendar", cal_empty:"No upcoming approaches in the window.", cal_dark:"OALM dark", cal_nodark:"no full darkness", cal_foot:"Upcoming close approaches grouped by day. Local time and darkness are for OALM. The dot means OALM is in darkness at that instant. Precise pointing needs the JPL Horizons ephemeris.",
+ f_oalmwin:"OALM dark window", f_local:"local", f_notatca:"(approach is outside it)", win_note:"OALM darkness is a necessary condition, not a pointing solution. When the object is actually above the horizon and where to point (alt-az) needs the JPL Horizons ephemeris.",
+ ps_risk_hi:"On the impact-risk scale.", ps_risk_el:"Worth watching.", ps_risk_lo:"No impact risk.", ps_tonight:"Observable from OALM tonight.", ps_soon:"Observable from OALM this week.", ps_notnow:"Not observable from OALM right now.", ps_act_observe:"Good astrometry target.", ps_act_escalate:"Escalate for analysis.", ps_act_monitor:"Keep monitoring.", ps_act_ignore:"No action needed.", trq_all:"All", trq_active:"Active", trq_resolved:"Resolved", trq_none:"No incidents in queue.", trq_timeline:"Timeline / audit", trq_unassigned:"unassigned", trq_autoesc:"auto-escalated (no ack)", trq_cleared:"cleared from window", trq_now:"now", trq_terminal:"terminal state",
+ trq_foot:"One object is one thread. Risk (Torino/Palermo) and observability from OALM are separate axes. Severity, priority and action come from the shared incident engine; lifecycle is audited and stored in this browser.",
+ sev_critical:"CRITICAL", sev_high:"HIGH", sev_elevated:"ELEVATED", sev_routine:"ROUTINE",
+ act_observe:"observe", act_monitor:"monitor", act_escalate:"escalate", act_ignore:"ignore",
+ q_what:"What", q_risk:"Risk", q_obs:"Observability", q_time:"Time", q_do:"Action", q_who:"Owner",
+ obs_tonight:"observable tonight", obs_soon:"observable this week", obs_notnow:"not observable now",
+ ty_neo:"NEO", alk_miss:"critical proximity", alk_imminent:"imminent pass", alk_big:"large object", alk_torino:"Torino risk", alk_palermo:"Palermo risk",
+ trq_st_new:"NEW", trq_st_acknowledged:"ACK", trq_st_in_analysis:"ANALYSIS", trq_st_escalated:"ESCALATED", trq_st_tasked:"TASKED", trq_st_resolved:"RESOLVED", trq_st_closed:"CLOSED",
+ trq_to_acknowledged:"Acknowledge", trq_to_in_analysis:"Analyze", trq_to_escalated:"Escalate", trq_to_tasked:"Task", trq_to_resolved:"Resolve", trq_to_closed:"Close", trq_to_new:"Reopen",
+ ti_city:"Observer city", ti_rate:"Time acceleration", btn_play:"Play", btn_pause:"Pause", btn_now:"Now",
+ src_demo:"sample", src_live:"live", src_part:"partial",
+ sys_city:"city", sys_rate:"rate",
+ ooda_o:"Observe", ooda_o_d:"incoming & recent", ooda_or:"Orient", ooda_or_d:"risk & meaning",
+ ooda_d:"Decide", ooda_d_d:"priorities & COA", ooda_a:"Act", ooda_a_d:"alerts & OALM tasking",
+ scope_title:"Approach scope", scope_hint:"miss distance in lunar distances \u2014 not orbital geometry",
+ tl_title:"Close approaches in window", ph_search:"Search designation / name...",
+ sb_observe:"Incoming close approaches & recent fireballs", sb_orient:"Impact-risk list (ranked)",
+ sb_decide:"Prioritized watchlist & courses of action", sb_act:"Observable from {city} \u2014 tasking",
+ note_observe:"what is out there and what just entered", note_orient:"what the numbers mean",
+ note_decide:"what to do about it", note_act:"point the telescope",
+ sort_date:"Sort: soonest", sort_dist:"Sort: closest", sort_size:"Sort: largest", sort_risk:"Sort: highest risk", sort_mag:"Sort: brightest",
+ empty:"Nothing to show. Widen the window in settings, or fetch live data.",
+ col_ld:"LD", col_when:"in", days:"d", hours:"h", ago:"ago",
+ rate_rt:"real time", rate_h:"1 h/s", rate_d:"1 day/s", rate_w:"1 week/s", rate_m:"1 month/s",
+ dsec_ca:"Close approach", dsec_phys:"Physical estimate", dsec_risk:"Impact risk", dsec_obs:"Observability from {city}", dsec_prox:"Local circumstances", dsec_prov:"Source",
+ f_date:"Date (UTC)", f_localtime:"Local time (approx)", f_dist_ld:"Miss distance", f_vrel:"Relative velocity", f_vinf:"V-infinity",
+ f_h:"Absolute magnitude H", f_diam:"Diameter (est.)", f_energy:"Impact energy (est.)", f_albedo:"Assumed albedo",
+ f_ip:"Impact probability", f_ps:"Palermo scale (cum.)", f_ts:"Torino scale", f_nimp:"Impact solutions", f_years:"Year range", f_crossflag:"Cross-listed",
+ f_vmag:"Apparent magnitude (est.)", f_night:"Night at {city}", f_detect:"Within limiting magnitude", f_citydist:"Distance from {city}",
+ yes:"yes", no:"no",
+ fireball:"Fireball (atmospheric entry)", f_fdate:"Date", f_fenergy:"Impact energy", f_floc:"Location", f_fvel:"Entry velocity", f_falt:"Altitude",
+ coa_t:"Recommended course of action",
+ coa_observe:"Observe: bright and night-visible from {city} \u2014 schedule astrometry and report to MPC (OALM code 844).",
+ coa_observe_faint:"Attempt observation: marginal brightness for the 457 mm \u2014 try at peak, longer integration.",
+ coa_monitor:"Monitor: catalogued risk \u2014 track the JPL/ESA risk pages, no field action needed.",
+ coa_report:"Report: prioritize astrometry; your measurements refine the orbit and the impact solution.",
+ coa_none:"No action: passes far, no risk listing.",
+ obs_recommend:"Recommended for tonight", obs_skip:"Not observable in window",
+ prox_note:"Miss distance is geocentric (from Earth's center); it is the same for any city. City affects observability and local timing.",
+ st_start:"Loading...", st_sample:"Sample data \u2014 illustrative values; press Fetch for current data.",
+ st_live:"Live data fetched", st_fetching:"Fetching\u2026", st_failed:"failed", st_objs:"objects", st_none:"live sources returned no objects \u2014 showing sample",
+ cfg_title:"Data sources & settings",
+ cfg_note:"Live data is fetched from your browser. JPL/CNEOS and NeoWs support CORS. If you opened this from a file:// path, some browsers block the requests \u2014 serve it over http(s) for live data.",
+ cfg_neokey:"NeoWs API key (api.nasa.gov)", cfg_window:"Window (days)", cfg_maxld:"Max distance (LD)",
+ cfg_obs:"Custom city / observer", cfg_cityname:"Custom city name", cfg_lat:"Latitude", cfg_lon:"Longitude", cfg_twi:"Twilight (sun \u00b0 below horizon)",
+ cfg_usesample:"Use sample data", cfg_apply:"Apply & fetch",
+ btn_report:"Report", sys_sources:"sources",
+ btn_history:"History", ti_history:"Toggle historical data (last 12 months)", ti_dir:"Sort direction (ascending / descending)", ti_srcfilter:"Filter by data source", srcf_all:"All sources",
+ src_seen:"Seen in", f_validated:"Multi-source validated", src_origin_note:"CAD and NeoWs both derive from NASA/JPL (not mutually independent).", validated_tip:"Independently corroborated: listed by both JPL Sentry and ESA NEOCC.", validated_tip2:"Appears in more than one feed.",
+ risk_list:"risk list", src_cache:"cache", src_errlbl:"error",
+ cfg_search_city:"Search any city in the world", cfg_search_ph:"e.g. Tokyo, Nairobi, Reykjavik...", cfg_search_btn:"Search", city_searching:"searching...", city_notfound:"city not found",
+ ti_alerts:"Alert console (Act)",
+ cfg_alerts:"Alert thresholds (Act)", cfg_alerts_note:"When an object crosses a threshold it enters the alert console. Browser notifications and a webhook dispatch are optional; real email/Telegram/SMS relaying and multi-user acknowledgment require the server-side backend (channel secrets must stay on the server).",
+ cfg_al_miss:"Critical miss distance (LD)", cfg_al_imm:"Imminent window (days)", cfg_al_pal:"Palermo \u2265 (warning)", cfg_al_tor:"Torino \u2265 (critical)", cfg_al_big:"Large object (m)", cfg_al_bigld:"\u2026within (LD)", cfg_al_esc:"Escalate after (min)", cfg_al_wh:"Dispatch webhook (optional)",
+ cfg_al_notify:"Browser notifications", cfg_al_notify_s:"desktop pop-ups for new critical alerts", cfg_al_sound:"Alert sound", cfg_al_sound_s:"short tone on new alerts",
+ al_title:"Alert console", al_dispatch:"Dispatch unacked", al_ackall:"Ack all", al_foot:"Escalation ladder: operator \u2192 analyst \u2192 commander. Acknowledgment is stored in this browser; cross-user escalation needs the backend.",
+ al_none:"No active alerts.", al_esc:"Escalation", al_acked:"acknowledged", al_ack:"Acknowledge", al_open:"Alert console", al_critical:"CRITICAL alert",
+ al_nowh:"No webhook set \u2014 alert payload (configure a backend webhook to relay to email/Telegram/SMS):", al_sent:"Alerts dispatched to webhook", al_senterr:"Dispatch failed",
+ esc_operator:"operator", esc_analyst:"analyst", esc_cmd:"commander",
+ alm_miss:"Close approach within {d} LD \u2014 critical proximity.", alm_imm:"Imminent: approach in {n} d at {d} LD.", alm_big:"Large object (~{m} m) passing within {d} LD.", alm_tor:"Torino {t} \u2014 on the impact-risk scale.", alm_pal:"Palermo {p} \u2014 elevated cumulative risk.",
+ tk_export:"Export OALM tasking", tk_title:"OALM observation tasking", tk_gen:"Generated", tk_note:"Priority-ordered. Times are close-approach instants; \u2022 = OALM is in darkness then. Approximate (no full ephemeris). Confirm against MPC/JPL before observing.",
+ tk_obj:"Object", tk_action:"Action", tk_utc:"Approach (UTC)", tk_local:"OALM local", tk_mag:"Est. mag", tk_dist:"Miss dist",
+ tk_track:"Track (priority)", tk_astrometry:"Astrometry / follow-up", tk_confirm:"Confirm", tk_monitor:"Monitor",
+ src_about:"What it is", src_provider:"Provider / origin", src_status:"Status", src_updated:"Last fetched", src_records:"Records returned", src_url:"Live endpoint", src_never:"not fetched yet", src_viaproxy:"via proxy",
+ cfg_usebackend:"Use backend proxy (recommended)", cfg_backend_sub:"routes JPL/NeoWs through your server \u2014 fixes CORS, caches, hides the key", cfg_backend:"Backend proxy URL",
+ sc_now:"now", sc_future:"future", sc_past:"past",
+ cfg_past:"Past window (days)", cfg_auto:"Auto-refresh (min, 0=off)", cfg_proxy:"CORS proxy for JPL (optional)",
+ cfg_proxy_note:"JPL/CNEOS (ssd-api) often blocks direct browser requests (CORS). Paste a CORS proxy prefix here (e.g. https://corsproxy.io/?url=), or route through the backend. For an institutional deployment the server-side proxy is the proper fix.",
+ st_empty:"No objects returned for this window. Widen it in settings.",
+ st_error:"No data \u2014 sources unreachable. Check your connection, your NeoWs key, or serve over http (file:// may block requests).",
+ rep_title:"Reentry & impact-candidate report", rep_download:"Download",
+ rep_gen:"Generated", rep_year:"Period", rep_city:"Observer", rep_sources:"Data sources used",
+ rep_source:"Source", rep_status:"Status", rep_ok:"used (live)", rep_fail:"failed", rep_off:"disabled",
+ rep_year_re:"Atmospheric entries (fireballs), last 12 months", rep_count:"Events", rep_etotal:"Total energy",
+ rep_poss:"Possible reentries / impact candidates", rep_object:"Object",
+ rep_poss_sub:"Sub-lunar close approaches in the window (very close passes; not impact predictions).",
+ rep_poss_sentry:"Catalogued impact candidates (JPL Sentry; long-term, monitored).",
+ rep_none_re:"No atmospheric entries recorded in the last 12 months (or Fireballs source not loaded).",
+ rep_none_sl:"No sub-lunar approaches in the current window.",
+ rep_none_sc:"No catalogued impact candidates loaded.",
+ rep_method:"Atmospheric entries are from JPL CNEOS Fireballs (recorded a posteriori). Possible reentries combine sub-lunar close approaches (CAD/NeoWs) and impact candidates (JPL Sentry). Small meteoroids cannot be predicted in advance; this report does not forecast individual impacts.",
+},es:{
+ app_title:"Vigilancia NEO", app_sub:"Defensa planetaria \u00b7 cuadro de riesgo de objetos cercanos",
+ ti_refresh:"Descargar datos actuales", btn_refresh:"Descargar", ti_settings:"Fuentes de datos y ajustes", ti_ssa:"Abrir el visor SSA de sat\u00e9lites", ti_hub:"Inicio de newspace.live", ti_lang:"Cambiar a ingl\u00e9s", ti_help:"Ayuda r\u00e1pida", help_title:"Gu\u00eda r\u00e1pida",
+ board_title:"La foto de hoy", board_empty:"Nada accionable en la ventana.", ti_triage:"Cola de triage", trq_title:"Cola de triage", trq_db:"BD \u00b7 compartido", trq_local:"solo local", trq_signin:"Ingresar",
+ trq_open3d:"Abrir contexto 3D", c3d_title_neo:"Contexto 3D de escala", c3d_moon:"1 DL (Luna)", c3d_missing:"El contexto 3D necesita context3d.js, que no est\u00e1 cargado. Sub\u00ed context3d.js a la misma carpeta que esta p\u00e1gina y recarg\u00e1.", c3d_note_neo:"Esquem\u00e1tico: la distancia a la Tierra es real (en distancias lunares), la direcci\u00f3n no. El vector real de acercamiento necesita la efem\u00e9ride de JPL Horizons. La Tierra est\u00e1 a escala en el centro.", ti_cal:"Calendario de aproximaciones", cal_title:"Calendario de aproximaciones", cal_empty:"Sin aproximaciones pr\u00f3ximas en la ventana.", cal_dark:"OALM oscuro", cal_nodark:"sin oscuridad total", cal_foot:"Aproximaciones cercanas pr\u00f3ximas agrupadas por d\u00eda. La hora local y la oscuridad son de OALM. El punto indica que OALM est\u00e1 en oscuridad en ese instante. El apuntado preciso necesita la efem\u00e9ride de JPL Horizons.",
+ f_oalmwin:"Ventana oscura OALM", f_local:"local", f_notatca:"(el acercamiento queda fuera)", win_note:"La oscuridad de OALM es condici\u00f3n necesaria, no una soluci\u00f3n de apuntado. Cu\u00e1ndo el objeto est\u00e1 realmente sobre el horizonte y hacia d\u00f3nde apuntar (alt-az) requiere la efem\u00e9ride de JPL Horizons.",
+ ps_risk_hi:"En la escala de riesgo de impacto.", ps_risk_el:"Para vigilar.", ps_risk_lo:"Sin riesgo de impacto.", ps_tonight:"Observable desde OALM esta noche.", ps_soon:"Observable desde OALM esta semana.", ps_notnow:"No observable desde OALM ahora.", ps_act_observe:"Buen blanco de astrometr\u00eda.", ps_act_escalate:"Escalar para an\u00e1lisis.", ps_act_monitor:"Seguir monitoreando.", ps_act_ignore:"Sin acci\u00f3n necesaria.", trq_all:"Todos", trq_active:"Activos", trq_resolved:"Resueltos", trq_none:"Sin incidentes en cola.", trq_timeline:"L\u00ednea de tiempo / auditor\u00eda", trq_unassigned:"sin asignar", trq_autoesc:"auto-escalado (sin acuse)", trq_cleared:"sali\u00f3 de la ventana", trq_now:"ahora", trq_terminal:"estado terminal",
+ trq_foot:"Un objeto es un hilo. El riesgo (Torino/Palermo) y la observabilidad desde OALM son ejes separados. Severidad, prioridad y acci\u00f3n vienen del motor de incidentes compartido; el ciclo de vida se audita y se guarda en este navegador.",
+ sev_critical:"CR\u00cdTICO", sev_high:"ALTO", sev_elevated:"ELEVADO", sev_routine:"RUTINA",
+ act_observe:"observar", act_monitor:"monitorear", act_escalate:"escalar", act_ignore:"ignorar",
+ q_what:"Qu\u00e9", q_risk:"Riesgo", q_obs:"Observabilidad", q_time:"Tiempo", q_do:"Acci\u00f3n", q_who:"Responsable",
+ obs_tonight:"observable esta noche", obs_soon:"observable esta semana", obs_notnow:"no observable ahora",
+ ty_neo:"NEO", alk_miss:"proximidad cr\u00edtica", alk_imminent:"paso inminente", alk_big:"objeto grande", alk_torino:"riesgo Torino", alk_palermo:"riesgo Palermo",
+ trq_st_new:"NUEVO", trq_st_acknowledged:"ACUSADO", trq_st_in_analysis:"AN\u00c1LISIS", trq_st_escalated:"ESCALADO", trq_st_tasked:"TASKING", trq_st_resolved:"RESUELTO", trq_st_closed:"CERRADO",
+ trq_to_acknowledged:"Acusar", trq_to_in_analysis:"Analizar", trq_to_escalated:"Escalar", trq_to_tasked:"Tasking", trq_to_resolved:"Resolver", trq_to_closed:"Cerrar", trq_to_new:"Reabrir",
+ ti_city:"Ciudad del observador", ti_rate:"Aceleraci\u00f3n de tiempo", btn_play:"Reproducir", btn_pause:"Pausar", btn_now:"Ahora",
+ src_demo:"muestra", src_live:"en vivo", src_part:"parcial",
+ sys_city:"ciudad", sys_rate:"ritmo",
+ ooda_o:"Observar", ooda_o_d:"entrantes y recientes", ooda_or:"Orientar", ooda_or_d:"riesgo y sentido",
+ ooda_d:"Decidir", ooda_d_d:"prioridades y CdA", ooda_a:"Actuar", ooda_a_d:"alertas y tasking OALM",
+ scope_title:"Scope de aproximaci\u00f3n", scope_hint:"distancia de paso en distancias lunares \u2014 no es la \u00f3rbita",
+ tl_title:"Aproximaciones en la ventana", ph_search:"Buscar designaci\u00f3n / nombre...",
+ sb_observe:"Aproximaciones entrantes y b\u00f3lidos recientes", sb_orient:"Lista de riesgo de impacto (ordenada)",
+ sb_decide:"Lista priorizada y cursos de acci\u00f3n", sb_act:"Observables desde {city} \u2014 asignaci\u00f3n",
+ note_observe:"qu\u00e9 hay ah\u00ed afuera y qu\u00e9 acaba de entrar", note_orient:"qu\u00e9 significan los n\u00fameros",
+ note_decide:"qu\u00e9 hacer al respecto", note_act:"apuntar el telescopio",
+ sort_date:"Orden: m\u00e1s pr\u00f3ximo", sort_dist:"Orden: m\u00e1s cercano", sort_size:"Orden: m\u00e1s grande", sort_risk:"Orden: mayor riesgo", sort_mag:"Orden: m\u00e1s brillante",
+ empty:"Nada que mostrar. Ampli\u00e1 la ventana en ajustes o descarg\u00e1 datos en vivo.",
+ col_ld:"DL", col_when:"en", days:"d", hours:"h", ago:"atr\u00e1s",
+ rate_rt:"tiempo real", rate_h:"1 h/s", rate_d:"1 d\u00eda/s", rate_w:"1 sem/s", rate_m:"1 mes/s",
+ dsec_ca:"Aproximaci\u00f3n", dsec_phys:"Estimaci\u00f3n f\u00edsica", dsec_risk:"Riesgo de impacto", dsec_obs:"Observabilidad desde {city}", dsec_prox:"Circunstancias locales", dsec_prov:"Fuente",
+ f_date:"Fecha (UTC)", f_localtime:"Hora local (aprox)", f_dist_ld:"Distancia de paso", f_vrel:"Velocidad relativa", f_vinf:"V-infinito",
+ f_h:"Magnitud absoluta H", f_diam:"Di\u00e1metro (est.)", f_energy:"Energ\u00eda de impacto (est.)", f_albedo:"Albedo asumido",
+ f_ip:"Probabilidad de impacto", f_ps:"Escala de Palermo (cum.)", f_ts:"Escala de Torino", f_nimp:"Soluciones de impacto", f_years:"Rango de a\u00f1os", f_crossflag:"Listado cruzado",
+ f_vmag:"Magnitud aparente (est.)", f_night:"Noche en {city}", f_detect:"Dentro de magnitud l\u00edmite", f_citydist:"Distancia desde {city}",
+ yes:"s\u00ed", no:"no",
+ fireball:"B\u00f3lido (entrada atmosf\u00e9rica)", f_fdate:"Fecha", f_fenergy:"Energ\u00eda de impacto", f_floc:"Ubicaci\u00f3n", f_fvel:"Velocidad de entrada", f_falt:"Altitud",
+ coa_t:"Curso de acci\u00f3n recomendado",
+ coa_observe:"Observar: brillante y visible de noche desde {city} \u2014 agendar astrometr\u00eda y reportar al MPC (OALM c\u00f3digo 844).",
+ coa_observe_faint:"Intentar observaci\u00f3n: brillo marginal para el 457 mm \u2014 probar en el pico, integraci\u00f3n larga.",
+ coa_monitor:"Monitorear: riesgo catalogado \u2014 seguir las p\u00e1ginas de riesgo de JPL/ESA, sin acci\u00f3n de campo.",
+ coa_report:"Reportar: priorizar astrometr\u00eda; tus medidas refinan la \u00f3rbita y la soluci\u00f3n de impacto.",
+ coa_none:"Sin acci\u00f3n: pasa lejos, sin listado de riesgo.",
+ obs_recommend:"Recomendado para esta noche", obs_skip:"No observable en la ventana",
+ prox_note:"La distancia de paso es geoc\u00e9ntrica (desde el centro de la Tierra); es la misma para cualquier ciudad. La ciudad afecta la observabilidad y el horario local.",
+ st_start:"Cargando...", st_sample:"Datos de muestra \u2014 valores ilustrativos; toc\u00e1 Descargar para datos actuales.",
+ st_live:"Datos en vivo descargados", st_fetching:"Descargando\u2026", st_failed:"fall\u00f3", st_objs:"objetos", st_none:"las fuentes en vivo no devolvieron objetos \u2014 muestro datos de muestra",
+ cfg_title:"Fuentes de datos y ajustes",
+ cfg_note:"Los datos en vivo se descargan desde tu navegador. JPL/CNEOS y NeoWs soportan CORS. Si abriste esto desde una ruta file://, algunos navegadores bloquean las solicitudes \u2014 servilo por http(s) para datos en vivo.",
+ cfg_neokey:"Clave API de NeoWs (api.nasa.gov)", cfg_window:"Ventana (d\u00edas)", cfg_maxld:"Distancia m\u00e1x. (DL)",
+ cfg_obs:"Ciudad / observador personalizado", cfg_cityname:"Nombre de ciudad", cfg_lat:"Latitud", cfg_lon:"Longitud", cfg_twi:"Crep\u00fasculo (sol \u00b0 bajo horizonte)",
+ cfg_usesample:"Usar datos de muestra", cfg_apply:"Aplicar y descargar",
+ btn_report:"Reporte", sys_sources:"fuentes",
+ btn_history:"Hist\u00f3rico", ti_history:"Activar/desactivar datos hist\u00f3ricos (\u00faltimos 12 meses)", ti_dir:"Direcci\u00f3n de orden (ascendente / descendente)", ti_srcfilter:"Filtrar por fuente de datos", srcf_all:"Todas las fuentes",
+ src_seen:"Visto en", f_validated:"Validado por varias fuentes", src_origin_note:"CAD y NeoWs derivan ambos de NASA/JPL (no son mutuamente independientes).", validated_tip:"Corroborado de forma independiente: listado por JPL Sentry y por ESA NEOCC.", validated_tip2:"Aparece en m\u00e1s de un feed.",
+ risk_list:"lista de riesgo", src_cache:"cach\u00e9", src_errlbl:"error",
+ cfg_search_city:"Buscar cualquier ciudad del mundo", cfg_search_ph:"ej. Tokio, Nairobi, Reikiavik...", cfg_search_btn:"Buscar", city_searching:"buscando...", city_notfound:"ciudad no encontrada",
+ ti_alerts:"Consola de alertas (Actuar)",
+ cfg_alerts:"Umbrales de alerta (Actuar)", cfg_alerts_note:"Cuando un objeto cruza un umbral entra en la consola de alertas. Las notificaciones del navegador y el despacho por webhook son opcionales; el relay real a correo/Telegram/SMS y el acuse multiusuario requieren el backend del servidor (los secretos de canal deben quedar en el servidor).",
+ cfg_al_miss:"Distancia de paso cr\u00edtica (LD)", cfg_al_imm:"Ventana inminente (d\u00edas)", cfg_al_pal:"Palermo \u2265 (aviso)", cfg_al_tor:"Torino \u2265 (cr\u00edtico)", cfg_al_big:"Objeto grande (m)", cfg_al_bigld:"\u2026dentro de (LD)", cfg_al_esc:"Escalar tras (min)", cfg_al_wh:"Webhook de despacho (opcional)",
+ cfg_al_notify:"Notificaciones del navegador", cfg_al_notify_s:"pop-ups de escritorio para nuevas alertas cr\u00edticas", cfg_al_sound:"Sonido de alerta", cfg_al_sound_s:"tono breve en nuevas alertas",
+ al_title:"Consola de alertas", al_dispatch:"Despachar sin acusar", al_ackall:"Acusar todo", al_foot:"Cadena de escalamiento: operador \u2192 analista \u2192 comandante. El acuse se guarda en este navegador; el escalamiento entre usuarios necesita el backend.",
+ al_none:"Sin alertas activas.", al_esc:"Escalamiento", al_acked:"acusada", al_ack:"Acusar", al_open:"Consola de alertas", al_critical:"alerta CR\u00cdTICA",
+ al_nowh:"Sin webhook configurado \u2014 carga de la alerta (config\u00fara un webhook al backend para relayar a correo/Telegram/SMS):", al_sent:"Alertas despachadas al webhook", al_senterr:"Fall\u00f3 el despacho",
+ esc_operator:"operador", esc_analyst:"analista", esc_cmd:"comandante",
+ alm_miss:"Aproximaci\u00f3n dentro de {d} LD \u2014 proximidad cr\u00edtica.", alm_imm:"Inminente: paso en {n} d a {d} LD.", alm_big:"Objeto grande (~{m} m) pasando dentro de {d} LD.", alm_tor:"Torino {t} \u2014 en la escala de riesgo de impacto.", alm_pal:"Palermo {p} \u2014 riesgo acumulado elevado.",
+ tk_export:"Exportar tasking OALM", tk_title:"Tasking de observaci\u00f3n OALM", tk_gen:"Generado", tk_note:"Ordenado por prioridad. Los tiempos son instantes de m\u00e1xima aproximaci\u00f3n; \u2022 = OALM est\u00e1 en oscuridad entonces. Aproximado (sin efem\u00e9rides completas). Confirmar contra MPC/JPL antes de observar.",
+ tk_obj:"Objeto", tk_action:"Acci\u00f3n", tk_utc:"Aproximaci\u00f3n (UTC)", tk_local:"Local OALM", tk_mag:"Mag. est.", tk_dist:"Dist. paso",
+ tk_track:"Seguir (prioridad)", tk_astrometry:"Astrometr\u00eda / seguimiento", tk_confirm:"Confirmar", tk_monitor:"Monitorear",
+ src_about:"Qu\u00e9 es", src_provider:"Proveedor / origen", src_status:"Estado", src_updated:"\u00daltima descarga", src_records:"Registros recibidos", src_url:"Endpoint en vivo", src_never:"a\u00fan sin descargar", src_viaproxy:"v\u00eda proxy",
+ cfg_usebackend:"Usar backend proxy (recomendado)", cfg_backend_sub:"rutea JPL/NeoWs por tu servidor \u2014 resuelve CORS, cachea, oculta la clave", cfg_backend:"URL del backend proxy",
+ sc_now:"ahora", sc_future:"futuro", sc_past:"pasado",
+ cfg_past:"Ventana pasada (d\u00edas)", cfg_auto:"Autoactualizar (min, 0=off)", cfg_proxy:"Proxy CORS para JPL (opcional)",
+ cfg_proxy_note:"JPL/CNEOS (ssd-api) suele bloquear las solicitudes directas del navegador (CORS). Peg\u00e1 ac\u00e1 un prefijo de proxy CORS (ej. https://corsproxy.io/?url=) o ruteá por el backend. Para un despliegue institucional, el proxy del lado servidor es la soluci\u00f3n correcta.",
+ st_empty:"No hay objetos para esta ventana. Ampli\u00e1la en ajustes.",
+ st_error:"Sin datos \u2014 fuentes inalcanzables. Revis\u00e1 tu conexi\u00f3n, tu clave de NeoWs, o serv\u00ed por http (file:// puede bloquear las solicitudes).",
+ rep_title:"Reporte de reingresos y candidatos a impacto", rep_download:"Descargar",
+ rep_gen:"Generado", rep_year:"Per\u00edodo", rep_city:"Observador", rep_sources:"Fuentes de datos utilizadas",
+ rep_source:"Fuente", rep_status:"Estado", rep_ok:"usada (en vivo)", rep_fail:"fall\u00f3", rep_off:"desactivada",
+ rep_year_re:"Entradas atmosf\u00e9ricas (b\u00f3lidos), \u00faltimos 12 meses", rep_count:"Eventos", rep_etotal:"Energ\u00eda total",
+ rep_poss:"Posibles reingresos / candidatos a impacto", rep_object:"Objeto",
+ rep_poss_sub:"Aproximaciones sub-lunares en la ventana (pasos muy cercanos; no son predicciones de impacto).",
+ rep_poss_sentry:"Candidatos a impacto catalogados (JPL Sentry; largo plazo, monitoreados).",
+ rep_none_re:"Sin entradas atmosf\u00e9ricas registradas en los \u00faltimos 12 meses (o la fuente Fireballs no carg\u00f3).",
+ rep_none_sl:"Sin aproximaciones sub-lunares en la ventana actual.",
+ rep_none_sc:"Sin candidatos a impacto catalogados cargados.",
+ rep_method:"Las entradas atmosf\u00e9ricas provienen de JPL CNEOS Fireballs (registradas a posteriori). Los posibles reingresos combinan aproximaciones sub-lunares (CAD/NeoWs) y candidatos a impacto (JPL Sentry). Los meteoroides peque\u00f1os no se pueden predecir; este reporte no pronostica impactos individuales.",
+}};
+function t(k){return (I18N[LANG]&&I18N[LANG][k])||I18N.en[k]||k;}
+function tc(k){return t(k).replace("{city}",state.city.name);}
+function applyI18n(){
+ document.querySelectorAll("[data-i18n]").forEach(e=>e.textContent=t(e.getAttribute("data-i18n")));
+ document.querySelectorAll("[data-i18n-ph]").forEach(e=>e.setAttribute("placeholder",t(e.getAttribute("data-i18n-ph"))));
+ document.querySelectorAll("[data-i18n-ti]").forEach(e=>e.setAttribute("title",t(e.getAttribute("data-i18n-ti"))));
+ const lb=el("langBtn"); if(lb){lb.textContent=LANG==="en"?"\ud83c\uddea\ud83c\uddf8":"\ud83c\uddec\ud83c\udde7"; lb.title=t("ti_lang");}
+ buildRate(); buildSort(); buildSrcFilter();
+}
+function setLang(l){LANG=l;document.documentElement.lang=l;applyI18n();render();}
+
+/* ===== glossary ===== */
+const GLOSSARY={
+ scope:{en:["Approach scope","Each dot is a near-Earth object plotted by how close it passes (radius, in lunar distances) and how soon (angle, driven by the simulation clock). It shows miss distance \u2014 a real value \u2014 not the object's true orbit. The inner dashed ring is the Moon's distance."],
+        es:["Scope de aproximaci\u00f3n","Cada punto es un objeto cercano ubicado por cu\u00e1n cerca pasa (radio, en distancias lunares) y cu\u00e1n pronto (\u00e1ngulo, seg\u00fan el reloj de simulaci\u00f3n). Muestra la distancia de paso \u2014 un valor real \u2014 no la \u00f3rbita real. El anillo punteado interno es la distancia de la Luna."]},
+ ld:{en:["Lunar distance (LD)","Average Earth\u2013Moon distance, ~384,400 km. A handy yardstick: 1 LD is the Moon's orbit; passing under ~1 LD is notably close."],
+     es:["Distancia lunar (DL)","Distancia media Tierra\u2013Luna, ~384.400 km. Una vara c\u00f3moda: 1 DL es la \u00f3rbita lunar; pasar bajo ~1 DL es notablemente cerca."]},
+ h:{en:["Absolute magnitude (H)","Brightness an asteroid would have at a standard distance. Smaller H = bigger/brighter. It is the basis for the size estimate."],
+    es:["Magnitud absoluta (H)","Brillo a una distancia est\u00e1ndar. H menor = m\u00e1s grande/brillante. Base de la estimaci\u00f3n de tama\u00f1o."]},
+ board:{en:["Today's picture","Top objects ranked by a composite priority (risk severity, time pressure, size). Risk (Torino/Palermo) and observability from OALM are shown separately. A dot before the local time means OALM is in darkness then. The action tag is the recommended next step."],
+        es:["La foto de hoy","Objetos rankeados por una prioridad compuesta (severidad de riesgo, urgencia, tama\u00f1o). El riesgo (Torino/Palermo) y la observabilidad desde OALM se muestran por separado. Un punto antes de la hora local indica que OALM est\u00e1 en oscuridad entonces. La etiqueta de acci\u00f3n es el paso recomendado."]},
+ diam:{en:["Diameter estimate","From H and an assumed albedo. Real size can differ by ~2\u00d7 unless measured by radar or thermal infrared."],
+       es:["Estimaci\u00f3n de di\u00e1metro","De H y un albedo asumido. El tama\u00f1o real puede diferir ~2\u00d7 salvo medici\u00f3n por radar o infrarrojo t\u00e9rmico."]},
+ ip:{en:["Impact probability","Cumulative chance of an Earth impact from JPL Sentry / ESA. Tiny values are normal and usually shrink to zero as the orbit is refined."],
+     es:["Probabilidad de impacto","Probabilidad acumulada de impacto, de JPL Sentry / ESA. Valores diminutos son normales y suelen caer a cero al refinar la \u00f3rbita."]},
+ ts:{en:["Torino scale","Public 0\u201310 hazard scale (probability \u00d7 energy). 0 = none; 1 = routine monitoring; 8\u201310 = certain collision. Most objects are 0."],
+     es:["Escala de Torino","Escala p\u00fablica 0\u201310 (probabilidad \u00d7 energ\u00eda). 0 = ninguno; 1 = seguimiento de rutina; 8\u201310 = colisi\u00f3n segura. La mayor\u00eda son 0."]},
+ ps:{en:["Palermo scale","Technical log scale vs. the background impact risk. Below \u22122 = no concern; 0 = equal to background; positive warrants attention."],
+     es:["Escala de Palermo","Escala t\u00e9cnica logar\u00edtmica vs. el riesgo de fondo. Bajo \u22122 = sin preocupaci\u00f3n; 0 = igual al fondo; positivo amerita atenci\u00f3n."]},
+ energy:{en:["Impact energy","Kinetic energy if it struck, in megatons of TNT (from size + assumed density + velocity). For scale: Chelyabinsk 2013 was ~0.5 MT."],
+         es:["Energ\u00eda de impacto","Energ\u00eda cin\u00e9tica si impactara, en megatones de TNT. Para escala: Chel\u00edabinsk 2013 fue ~0,5 MT."]},
+ vmag:{en:["Apparent magnitude (V~)","Rough estimate of brightness from Earth near approach (from H and distance). Lower = brighter. Used to flag whether the OALM 457 mm could detect it; precise pointing needs the JPL Horizons ephemeris."],
+       es:["Magnitud aparente (V~)","Estimaci\u00f3n gruesa de brillo desde la Tierra cerca del acercamiento. Menor = m\u00e1s brillante. Indica si el 457 mm del OALM podr\u00eda detectarlo; el apuntado preciso requiere la efem\u00e9ride de JPL Horizons."]},
+ method:{en:["How this works","NEOs orbit the Sun. This module reads pre-computed data (close approaches, impact risk, fireballs) from JPL CNEOS, NeoWs and ESA \u2014 it does not propagate asteroid orbits. Small meteoroids cannot be predicted; only catalogued objects appear."],
+         es:["C\u00f3mo funciona","Los NEO orbitan el Sol. Este m\u00f3dulo lee datos pre-calculados (aproximaciones, riesgo, b\u00f3lidos) de JPL CNEOS, NeoWs y ESA \u2014 no propaga \u00f3rbitas. Los meteoroides peque\u00f1os no se pueden predecir; solo aparecen objetos catalogados."]},
+};
+
+/* ===== cities ===== */
+const CITIES=[
+ {id:"oalm",name:"OALM (Los Molinos)",lat:-34.7553,lon:-56.1881},
+ {id:"montevideo",name:"Montevideo",lat:-34.9011,lon:-56.1645},
+ {id:"salto",name:"Salto",lat:-31.3833,lon:-57.9667},
+ {id:"paysandu",name:"Paysand\u00fa",lat:-32.3214,lon:-58.0756},
+ {id:"maldonado",name:"Maldonado",lat:-34.9087,lon:-54.9586},
+ {id:"rivera",name:"Rivera",lat:-30.9056,lon:-55.5508},
+ {id:"madrid",name:"Madrid",lat:40.4168,lon:-3.7038},
+ {id:"bogota",name:"Bogot\u00e1",lat:4.7110,lon:-74.0721},
+ {id:"custom",name:"Custom",lat:-34.90,lon:-56.16},
+];
+
+/* ===== state ===== */
+const RATES=[["rate_rt",1],["rate_h",3600],["rate_d",86400],["rate_w",604800],["rate_m",2592000]];
+const state={
+ stage:"observe", sort:"date", sortDir:"desc", showHistory:true, srcFilter:"all", mode:"live", selected:null, srcStatus:{},
+ sim:new Date(), playing:true, rate:1, _last:0, _lastDraw:0,
+ city:CITIES[0],
+ cfg:{ days:60, daysPast:365, maxLd:30, key:"uyg14nwC1dx8FO09gKYkoXhc5NKMxAe6SO3NcblB", lim:18, twi:-12,
+       useBackend:true, backend:"https://newspace.live/neo.php",
+       proxy:"", autoMin:0, customName:"Custom", customLat:-34.90, customLon:-56.16,
+       alert:{missLd:1, imminent:7, palermo:-2, torino:1, bigM:140, bigLd:5, escalateMin:15, webhook:"", notify:true, sound:true} },
+ approaches:[], sentry:[], fireballs:[], srcErr:{}, srcMeta:{}, esaRisk:[],
+ alerts:[], alertState:{}, acks:{}, incidents:{},
+};
+const SOURCES=[
+ {id:"jpl_cad",ps:"cad",name:"JPL/CNEOS Close Approach",url:"https://ssd-api.jpl.nasa.gov/cad.api",on:true},
+ {id:"jpl_sentry",ps:"sentry",name:"JPL/CNEOS Sentry (risk)",url:"https://ssd-api.jpl.nasa.gov/sentry.api",on:true},
+ {id:"jpl_fireball",ps:"fireball",name:"JPL/CNEOS Fireballs",url:"https://ssd-api.jpl.nasa.gov/fireball.api",on:true},
+ {id:"neows",ps:"neows",name:"NASA NeoWs Feed",url:"https://api.nasa.gov/neo/rest/v1/feed",on:true},
+ {id:"esa_neocc",ps:"esa_risk",name:"ESA NEOCC (risk list)",url:"https://neo.ssa.esa.int/PSDB-portlet/download?file=esa_risk_list",on:true},
+];
+/* Construye la URL de una fuente: por backend (newspace.live/neo.php?src=...) o directa (con proxy opcional). */
+function apiUrl(id, params){
+ const src=SOURCES.find(s=>s.id===id), P=new URLSearchParams();
+ if(state.cfg.useBackend && src.ps){
+  P.set("src",src.ps);
+  for(const k in params){ if(params[k]!=null&&params[k]!=="") P.set(k,params[k]); }
+  return state.cfg.backend.replace(/\?+$/,"")+"?"+P.toString(); // la key de NeoWs la pone el servidor
+ }
+ for(const k in params){ if(params[k]!=null&&params[k]!=="") P.set(k,params[k]); }
+ if(id==="neows") P.set("api_key", state.cfg.key||"DEMO_KEY");
+ const u=src.url+(P.toString()?("?"+P.toString()):"");
+ return state.cfg.proxy ? state.cfg.proxy+encodeURIComponent(u) : u;
+}
+
+const SOURCE_INFO={
+ jpl_cad:{en:{provider:"NASA JPL \u00b7 CNEOS (Center for Near-Earth Object Studies), Caltech",
+   about:"Close Approach Data: the catalogue of computed close approaches of near-Earth asteroids and comets to Earth, with date, nominal miss distance, relative velocity and absolute magnitude. Orbits are computed by JPL from the observational record \u2014 these are not predictions made by this tool."},
+  es:{provider:"NASA JPL \u00b7 CNEOS (Centro de Estudios de Objetos Cercanos), Caltech",
+   about:"Close Approach Data: el cat\u00e1logo de aproximaciones calculadas de asteroides y cometas cercanos a la Tierra, con fecha, distancia m\u00ednima nominal, velocidad relativa y magnitud absoluta. Las \u00f3rbitas las calcula JPL a partir de las observaciones \u2014 no son predicciones de esta herramienta."}},
+ jpl_sentry:{en:{provider:"NASA JPL \u00b7 CNEOS",
+   about:"Sentry is JPL's automated impact-monitoring system. It continuously scans the catalogue for objects with a non-zero probability of Earth impact over the next ~100 years, reporting the Palermo and Torino hazard scales, impact energy and cumulative probability."},
+  es:{provider:"NASA JPL \u00b7 CNEOS",
+   about:"Sentry es el sistema automatizado de monitoreo de impactos de JPL. Escanea el cat\u00e1logo de forma continua buscando objetos con probabilidad de impacto no nula en los pr\u00f3ximos ~100 a\u00f1os, e informa las escalas de Palermo y Torino, la energ\u00eda y la probabilidad acumulada."}},
+ jpl_fireball:{en:{provider:"NASA JPL \u00b7 CNEOS (data reported from U.S. Government sensors)",
+   about:"Records of bright meteors (bolides / fireballs) that entered the atmosphere, with date, total impact energy, location, velocity and altitude. These are recorded after the event \u2014 atmospheric entries cannot be predicted in advance."},
+  es:{provider:"NASA JPL \u00b7 CNEOS (datos de sensores del gobierno de EE.UU.)",
+   about:"Registros de meteoros brillantes (b\u00f3lidos) que entraron en la atm\u00f3sfera, con fecha, energ\u00eda de impacto total, ubicaci\u00f3n, velocidad y altitud. Se registran despu\u00e9s del evento \u2014 las entradas atmosf\u00e9ricas no se pueden predecir por adelantado."}},
+ neows:{en:{provider:"NASA \u00b7 JPL, served via api.nasa.gov",
+   about:"Near Earth Object Web Service: a REST feed of NEO close approaches by date, including estimated diameter, relative velocity, miss distance and the potentially-hazardous flag. Used here for the next few days."},
+  es:{provider:"NASA \u00b7 JPL, servido por api.nasa.gov",
+   about:"Near Earth Object Web Service: un feed REST de aproximaciones de NEO por fecha, con di\u00e1metro estimado, velocidad relativa, distancia de paso y la marca de potencialmente peligroso. Ac\u00e1 se usa para los pr\u00f3ximos d\u00edas."}},
+ esa_neocc:{en:{provider:"ESA \u00b7 NEOCC (Near-Earth Object Coordination Centre), ESRIN, Italy",
+   about:"ESA's independent risk list of asteroids with a non-zero impact probability \u2014 the European counterpart to JPL Sentry. It is a fixed-width text product, parsed here best-effort to cross-flag objects that ESA also lists (independent corroboration of the JPL risk list). Numeric fields may be approximate; designations are reliable."},
+  es:{provider:"ESA \u00b7 NEOCC (Centro de Coordinaci\u00f3n de Objetos Cercanos), ESRIN, Italia",
+   about:"La lista de riesgo independiente de ESA, de asteroides con probabilidad de impacto no nula \u2014 la contraparte europea de JPL Sentry. Es un producto de texto de ancho fijo, parseado ac\u00e1 de forma best-effort para marcar de forma cruzada los objetos que ESA tambi\u00e9n lista (corroboraci\u00f3n independiente de la lista de JPL). Los campos num\u00e9ricos pueden ser aproximados; las designaciones son confiables."}},
+};
+
+/* ===== compute ===== */
+function diamFromH(h,a){return 1329/Math.sqrt(a)*Math.pow(10,-0.2*h)*1000;}
+function energyMt(d,v,rho){const r=d/2,m=4/3*Math.PI*r*r*r*(rho||2600);return 0.5*m*Math.pow(v*1000,2)/4.184e15;}
+function appMag(h,au){return h+5*Math.log10(Math.max(1e-4,au));}
+function sunElev(date,lat,lon){
+ const D2R=Math.PI/180,jd=date.getTime()/86400000+2440587.5,n=jd-2451545.0;
+ const L=(280.460+0.9856474*n)%360,g=((357.528+0.9856003*n)%360)*D2R;
+ const lam=(L+1.915*Math.sin(g)+0.020*Math.sin(2*g))*D2R,eps=(23.439-4e-7*n)*D2R;
+ const ra=Math.atan2(Math.cos(eps)*Math.sin(lam),Math.cos(lam)),dec=Math.asin(Math.sin(eps)*Math.sin(lam));
+ const gmst=(280.46061837+360.98564736629*n)%360,lst=(gmst+lon)*D2R,H=lst-ra,la=lat*D2R;
+ return Math.asin(Math.sin(la)*Math.sin(dec)+Math.cos(la)*Math.cos(dec)*Math.cos(H))/D2R;
+}
+function localHour(date,lon){let h=date.getUTCHours()+date.getUTCMinutes()/60+lon/15;h=((h%24)+24)%24;const hh=Math.floor(h),mm=Math.round((h-hh)*60);return String(hh).padStart(2,"0")+":"+String(mm%60).padStart(2,"0");}
+function haversine(a,b,c,d){const R=6371,r=Math.PI/180,dla=(c-a)*r,dlo=(d-b)*r,x=Math.sin(dla/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin(dlo/2)**2;return 2*R*Math.asin(Math.min(1,Math.sqrt(x)));}
+function enrich(a){
+ const albedo=0.14;
+ a.dateObj=new Date(a.date);
+ a.dist_au=a.dist_au!=null?a.dist_au:a.dist_ld/AU_LD;
+ a.dist_ld=a.dist_ld!=null?a.dist_ld:a.dist_au*AU_LD;
+ a.diam_m=a.diam_m!=null?a.diam_m:(a.h!=null?diamFromH(a.h,albedo):null);
+ a.energy=a.diam_m!=null?energyMt(a.diam_m,a.vinf||a.vrel||12):null;
+ a.vmag=a.h!=null?appMag(a.h,a.dist_au):null;
+ a.albedo=albedo;
+ const base=a.des.split(" (")[0];
+ a.risk=state.sentry.find(s=>s.des===a.des||s.des.startsWith(base)||a.des.startsWith(s.des))||null;
+ computeObs(a);
+ return a;
+}
+function computeObs(a){ // depende de la ciudad seleccionada
+ if(isNaN(a.dateObj)){a.night=false;a.detect=false;a.observable=false;return;}
+ const elv=sunElev(a.dateObj,state.city.lat,state.city.lon);
+ a.night=elv<state.cfg.twi;
+ a.detect=a.vmag!=null?a.vmag<=state.cfg.lim:false;
+ a.observable=a.night&&a.detect;
+}
+
+/* ===== fetch + normalize ===== */
+function srcOn(id){const s=SOURCES.find(x=>x.id===id);return s&&s.on;}
+async function fetchJSON(u){const r=await fetch(u,{mode:"cors"});if(!r.ok)throw new Error("HTTP "+r.status);return r.json();}
+async function fetchSrc(id,u){const r=await fetch(u,{mode:"cors"});if(!r.ok)throw new Error("HTTP "+r.status);
+ const j=await r.json();
+ state.srcMeta[id]={fetchedAt:Date.now(),cache:r.headers.get("X-Cache"),age:r.headers.get("X-Cache-Age"),count:null};
+ return j;}
+async function fetchSrcText(id,u){const r=await fetch(u,{mode:"cors"});if(!r.ok)throw new Error("HTTP "+r.status);
+ const txt=await r.text();
+ state.srcMeta[id]={fetchedAt:Date.now(),cache:r.headers.get("X-Cache"),age:r.headers.get("X-Cache-Age"),count:null};
+ return txt;}
+/* Parser best-effort de la lista de riesgo de ESA (texto de ancho fijo). */
+function parseEsaRisk(text){
+ const out=[]; if(!text)return out;
+ for(const ln of text.split(/\r?\n/)){
+  const s=ln.trim();
+  if(!s||/object|designation|----|====|risk\s*list|^#/i.test(s))continue;
+  const m=/^(.+?)\s+(-?\d[\d.]*(?:[eE][+-]?\d+)?)/.exec(s);
+  if(!m)continue;
+  const des=m[1].trim().replace(/\s+/g," ");
+  if(!des||des.length>30)continue;
+  let ip=null,ps=null;
+  s.slice(m[1].length).trim().split(/\s+/).forEach(tk=>{
+   if(ip==null&&/^\d(\.\d+)?[eE][+-]?\d+$/.test(tk))ip=parseFloat(tk);
+   else if(ps==null&&/^-\d(\.\d+)?$/.test(tk))ps=parseFloat(tk);
+  });
+  out.push({des,ip,ps});
+ }
+ return out;
+}
+function normDes(d){return String(d||"").toLowerCase().replace(/[()]/g,"").replace(/\s+/g," ").trim();}
+function esaFlag(des){if(!state.esaRisk||!state.esaRisk.length)return false;const n=normDes(des);if(n.length<3)return false;return state.esaRisk.some(e=>{const en=normDes(e.des);return en.length>=3&&(n.includes(en)||en.includes(n));});}
+const MON={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+function parseCadDate(s){ // "2025-Jan-15 03:42" (CAD y NeoWs usan este formato)
+ const x=/(\d{4})-(\w{3})-(\d{2})[ T](\d{2}):?(\d{2})?/.exec(String(s));
+ if(!x)return new Date(s);
+ return new Date(Date.UTC(+x[1],MON[x[2]]||0,+x[3],+(x[4]||0),+(x[5]||0)));
+}
+async function loadLive(){
+ const failed=[]; const days=state.cfg.days,back=state.cfg.daysPast||365,maxLd=state.cfg.maxLd;
+ const today=new Date(),end=new Date(Date.now()+days*86400000),start=new Date(Date.now()-back*86400000);
+ const iso=d=>d.toISOString().slice(0,10);
+ let approaches=[];
+ state.srcStatus={}; state.srcErr={}; SOURCES.forEach(s=>state.srcStatus[s.id]=s.on?"pending":"off");
+ state.fireballs=[]; state.sentry=[]; state.esaRisk=[];
+ if(srcOn("jpl_sentry")){
+  try{const j=await fetchSrc("jpl_sentry",apiUrl("jpl_sentry",{}));
+   state.sentry=(j.data||[]).map(d=>({des:(d.des||d.fullname||"").trim(),ip:+d.ip||0,ps:+(d.ps_cum!=null?d.ps_cum:d.ps)||0,ts:+d.ts_max||0,energy:d.energy!=null?+d.energy:null,diam_km:d.diameter!=null?+d.diameter:null,nimp:+d.n_imp||0,years:d.range||"\u2014",h:d.h!=null?+d.h:null,vinf:d.v_inf!=null?+d.v_inf:null}));
+   state.srcStatus.jpl_sentry="ok"; if(state.srcMeta.jpl_sentry)state.srcMeta.jpl_sentry.count=state.sentry.length;
+  }catch(e){failed.push("Sentry");state.srcStatus.jpl_sentry="fail";state.srcErr.jpl_sentry=errTxt(e);}
+ }
+ if(srcOn("jpl_cad")){
+  try{const j=await fetchSrc("jpl_cad",apiUrl("jpl_cad",{"date-min":iso(start),"date-max":iso(end),"dist-max":maxLd+"LD",sort:"date",fullname:"true"})),f=j.fields||[],ix=n=>f.indexOf(n);
+   (j.data||[]).forEach(r=>approaches.push({des:(r[ix("fullname")]||r[ix("des")]||"").trim(),date:parseCadDate(r[ix("cd")]).toISOString(),dist_au:+r[ix("dist")],vrel:+r[ix("v_rel")],vinf:+r[ix("v_inf")],h:r[ix("h")]!=null?+r[ix("h")]:null,_src:"CAD"}));
+   state.srcStatus.jpl_cad="ok"; if(state.srcMeta.jpl_cad)state.srcMeta.jpl_cad.count=(j.data||[]).length;
+  }catch(e){failed.push("Close Approach");state.srcStatus.jpl_cad="fail";state.srcErr.jpl_cad=errTxt(e);}
+ }
+ if(srcOn("neows")){
+  try{const j=await fetchSrc("neows",apiUrl("neows",{start_date:iso(today),end_date:iso(new Date(Date.now()+7*86400000))})),neo=j.near_earth_objects||{};let nc=0;
+   Object.values(neo).forEach(arr=>arr.forEach(o=>{const ca=(o.close_approach_data||[])[0];if(!ca)return;nc++;
+    approaches.push({des:o.name.trim(),date:parseCadDate(ca.close_approach_date_full||ca.close_approach_date).toISOString(),dist_au:+ca.miss_distance.astronomical,vrel:+ca.relative_velocity.kilometers_per_second,vinf:+ca.relative_velocity.kilometers_per_second,h:o.absolute_magnitude_h!=null?+o.absolute_magnitude_h:null,_src:"NeoWs"});}));
+   state.srcStatus.neows="ok"; if(state.srcMeta.neows)state.srcMeta.neows.count=nc;
+  }catch(e){failed.push("NeoWs");state.srcStatus.neows="fail";state.srcErr.neows=errTxt(e);}
+ }
+ if(srcOn("jpl_fireball")){
+  try{const j=await fetchSrc("jpl_fireball",apiUrl("jpl_fireball",{"date-min":iso(start),limit:"200",sort:"-date"})),f=j.fields||[],ix=n=>f.indexOf(n);
+   state.fireballs=(j.data||[]).map(r=>({date:parseCadDate(r[ix("date")]).toISOString(),energy_kt:+(r[ix("impact-e")]||r[ix("energy")])||0,lat:r[ix("lat")]!=null?(+r[ix("lat")])*(r[ix("lat-dir")]==="S"?-1:1):null,lon:r[ix("lon")]!=null?(+r[ix("lon")])*(r[ix("lon-dir")]==="W"?-1:1):null,vel:r[ix("vel")]!=null?+r[ix("vel")]:null,alt:r[ix("alt")]!=null?+r[ix("alt")]:null}));
+   state.srcStatus.jpl_fireball="ok"; if(state.srcMeta.jpl_fireball)state.srcMeta.jpl_fireball.count=state.fireballs.length;
+  }catch(e){failed.push("Fireballs");state.srcStatus.jpl_fireball="fail";state.srcErr.jpl_fireball=errTxt(e);}
+ }
+ if(srcOn("esa_neocc")){
+  try{const txt=await fetchSrcText("esa_neocc",apiUrl("esa_neocc",{}));
+   state.esaRisk=parseEsaRisk(txt);
+   state.srcStatus.esa_neocc="ok"; if(state.srcMeta.esa_neocc)state.srcMeta.esa_neocc.count=state.esaRisk.length;
+  }catch(e){failed.push("ESA");state.srcStatus.esa_neocc="fail";state.srcErr.esa_neocc=errTxt(e);}
+ }
+ const seen={};approaches.forEach(a=>{const k=a.des+"|"+a.date.slice(0,10);if(!seen[k]){a.sources=[a._src];seen[k]=a;}else if(a._src&&!seen[k].sources.includes(a._src))seen[k].sources.push(a._src);});
+ state.approaches=Object.values(seen);
+ return {failed, n:state.approaches.length+state.sentry.length+state.fireballs.length};
+}
+function errTxt(e){const m=String(e&&e.message||e);return /Failed to fetch|NetworkError|CORS/i.test(m)?"CORS/red":m;}
+async function refresh(){
+ setStatus(t("st_fetching")); setSysFetching();
+ let res; try{res=await loadLive();}catch(e){res={failed:["all"],n:0};}
+ const okCount=Object.values(state.srcStatus||{}).filter(v=>v==="ok").length;
+ state.mode=okCount===0?"error":res.failed.length?"partial":"live";
+ finish(res.failed);
+}
+function finish(failed){
+ state.approaches.forEach(enrich);
+ state.approaches=state.approaches.filter(a=>!isNaN(a.dateObj));
+ renderSources(); evalAlerts(); render();
+ const n=state.approaches.length;
+ if(state.mode==="error") setStatus(t("st_error"));
+ else if(!n&&!state.sentry.length&&!state.fireballs.length) setStatus(t("st_empty"));
+ else setStatus((failed&&failed.length?failed.join(", ")+" "+t("st_failed"):t("st_live"))+" \u00b7 "+n+" "+t("st_objs"));
+}
+
+/* ===== time acceleration ===== */
+function loop(now){
+ if(state.playing){const dt=(now-state._last)/1000;if(state._last)state.sim=new Date(state.sim.getTime()+dt*1000*state.rate);}
+ state._last=now;
+ if(now-state._lastDraw>80){ updateClock(); renderScope(); renderTimeline(); state._lastDraw=now; }
+ requestAnimationFrame(loop);
+}
+function updateClock(){el("clock").textContent=state.sim.toUTCString().slice(5,22)+" UTC"; renderAlertBell();}
+function simNow(){return state.sim.getTime();}
+
+/* ===== render ===== */
+function buildRate(){const sel=el("rateSel");if(!sel)return;sel.innerHTML=RATES.map(([k,v])=>`<option value="${v}"${v===state.rate?" selected":""}>${t(k)}</option>`).join("");}
+function buildSort(){const sel=el("sortSel");if(!sel)return;const cur=state.sort;
+ const opts=state.stage==="orient"?[["risk","sort_risk"],["size","sort_size"],["mag","sort_mag"]]:[["date","sort_date"],["dist","sort_dist"],["size","sort_size"],["mag","sort_mag"]];
+ sel.innerHTML=opts.map(([v,k])=>`<option value="${v}"${v===cur?" selected":""}>${t(k)}</option>`).join("");
+ if(!opts.some(o=>o[0]===cur)){state.sort=opts[0][0];}
+ const db=el("dirBtn");if(db)db.innerHTML=state.sortDir==="asc"?"&#9650;":"&#9660;";
+}
+function buildSrcFilter(){const sel=el("srcFilter");if(!sel)return;
+ let opts=[["all","srcf_all"]];
+ if(state.stage==="orient"){opts.push(["Sentry","Sentry"],["ESA","ESA"]);}
+ else{opts.push(["CAD","CAD"],["NeoWs","NeoWs"]);if(state.stage==="observe")opts.push(["Fireball","Fireball"]);}
+ if(!opts.some(o=>o[0]===state.srcFilter))state.srcFilter="all";
+ sel.innerHTML=opts.map(([v,k])=>`<option value="${v}"${v===state.srcFilter?" selected":""}>${v==="all"?t("srcf_all"):k}</option>`).join("");
+}
+function srcMatch(a){const f=state.srcFilter;if(f==="all")return true;return a.sources&&a.sources.includes(f);}
+function filteredStage(){return stageObjects().filter(srcMatch);}
+function isValidated(a){return a.sources&&a.sources.length>=2;}
+function histBack(){return state.showHistory?Math.max(1,state.cfg.daysPast||365):0;}
+function riskColor(s){if(!s)return "var(--text-faint)";if(s.ts>=1||s.ps>=-2)return "var(--alert)";if(s.ps>=-4||s.ip>1e-4)return "var(--lit)";return "var(--accent)";}
+function torinoColor(ts){return ts>=8?"#ff6b4a":ts>=5?"#ff8a4a":ts>=1?"#f5c451":"#46d39a";}
+function dotColor(a){
+ if(state.stage==="act")return a.observable?"var(--conf-hi)":"var(--text-faint)";
+ if(state.stage==="decide")return (a.risk||a.observable)?"var(--lit)":"var(--text-faint)";
+ if(state.stage==="orient")return riskColor(a.risk);
+ return a.dist_ld<1?"var(--alert)":a.dist_ld<5?"var(--lit)":"var(--accent)";
+}
+function scopeR(ld){const m=state.cfg.maxLd,rIn=26,rOut=270;return rIn+(rOut-rIn)*Math.sqrt(Math.min(ld,m)/m);}
+function renderScope(){
+ const cx=300,cy=300,svg=el("scope"),m=state.cfg.maxLd;
+ const fwd=Math.max(1,state.cfg.days),back=histBack(),rad=scopeR(m);
+ let defs=`<defs><radialGradient id="eg" cx="50%" cy="40%"><stop offset="0%" stop-color="#5aa9ff"/><stop offset="100%" stop-color="#0b3a6f"/></radialGradient>`+
+   `<radialGradient id="sw" cx="50%" cy="50%"><stop offset="0%" stop-color="#3fd0c8" stop-opacity="0.18"/><stop offset="100%" stop-color="#3fd0c8" stop-opacity="0"/></radialGradient></defs>`;
+ let d="";
+ const A=(performance.now()/9000*360)%360, a1=A*Math.PI/180, a0=(A-55)*Math.PI/180;
+ d+=`<path d="M${cx} ${cy} L${cx+Math.cos(a0)*rad} ${cy+Math.sin(a0)*rad} A${rad} ${rad} 0 0 1 ${cx+Math.cos(a1)*rad} ${cy+Math.sin(a1)*rad} Z" fill="url(#sw)"/>`;
+ d+=`<line x1="${cx}" y1="${cy}" x2="${cx+Math.cos(a1)*rad}" y2="${cy+Math.sin(a1)*rad}" stroke="#3fd0c8" stroke-opacity="0.45"/>`;
+ const rings=[1,5,10,20,30].filter(v=>v<=m);if(!rings.includes(m))rings.push(m);
+ rings.forEach(v=>{const r=scopeR(v);d+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#173347"/><text x="${cx+4}" y="${cy-r+12}" fill="#456478" font-family="ui-monospace,monospace" font-size="10">${v} ${t("col_ld")}</text>`;});
+ const rm=scopeR(1);d+=`<circle cx="${cx}" cy="${cy}" r="${rm}" fill="none" stroke="#2f6076" stroke-dasharray="3 4"/><circle cx="${cx}" cy="${cy-rm}" r="3" fill="#b8c4dd"/><text x="${cx+6}" y="${cy-rm-4}" fill="#6f93a6" font-family="ui-monospace,monospace" font-size="10">Moon</text>`;
+ d+=`<line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy-rad}" stroke="#2f6076" stroke-dasharray="2 3"/>`;
+ d+=`<text x="${cx}" y="${cy-rad-4}" fill="#3fd0c8" font-family="ui-monospace,monospace" font-size="10" text-anchor="middle">${t("sc_now")}</text>`;
+ d+=`<text x="${cx+rad*0.62}" y="${cy+rad*0.66}" fill="#456478" font-family="ui-monospace,monospace" font-size="9" text-anchor="middle">${t("sc_future")} \u2192</text>`;
+ if(back>0)d+=`<text x="${cx-rad*0.62}" y="${cy+rad*0.66}" fill="#456478" font-family="ui-monospace,monospace" font-size="9" text-anchor="middle">\u2190 ${t("sc_past")}</text>`;
+ d+=`<circle cx="${cx}" cy="${cy}" r="11" fill="url(#eg)"/><circle cx="${cx}" cy="${cy}" r="11" fill="none" stroke="#3fd0c8"/>`;
+ let objs="";
+ filteredStage().forEach(a=>{ if(isNaN(a.dateObj))return; const dt=(a.dateObj.getTime()-simNow())/86400000; if(dt>fwd||dt<-back)return;
+  const ang=(dt>=0?-90+Math.min(dt/fwd,1)*168:-90-Math.min(-dt/back,1)*168)*Math.PI/180;
+  const beyond=a.dist_ld>m, r=scopeR(Math.min(a.dist_ld,m)), x=cx+Math.cos(ang)*r, y=cy+Math.sin(ang)*r;
+  const sz=a.diam_m?Math.max(1.6,Math.min(6.5,1.5+Math.log10(a.diam_m)*1.5)):2.2, c=dotColor(a), sel=state.selected&&state.selected.des===a.des;
+  const op=dt>=0?0.92:Math.max(0.18,0.7-0.55*Math.min(-dt/back,1));
+  const tip=`${a.des} \u00b7 ${a.dist_ld.toFixed(2)} ${t("col_ld")} \u00b7 ${t("col_when")} ${fmtWhen(a.dateObj)}`;
+  if(sel)objs+=`<circle cx="${x}" cy="${y}" r="${sz+4}" fill="none" stroke="#d6e6f0" stroke-width="1.2" pointer-events="none"/>`;
+  if(beyond)objs+=`<circle class="obj" data-des="${esc(a.des)}" cx="${x}" cy="${y}" r="${sz}" fill="none" stroke="${c}" stroke-width="1.3" stroke-dasharray="2 2" fill-opacity="${op}" style="cursor:pointer"><title>${esc(tip)} (&gt;${m} ${t("col_ld")})</title></circle>`;
+  else objs+=`<circle class="obj" data-des="${esc(a.des)}" cx="${x}" cy="${y}" r="${sz}" fill="${c}" fill-opacity="${op}" style="cursor:pointer"><title>${esc(tip)}</title></circle>`;
+ });
+ svg.innerHTML=defs+`<g pointer-events="none">${d}</g>`+objs;
+ svg.querySelectorAll(".obj").forEach(o=>o.addEventListener("click",()=>selectByDes(o.getAttribute("data-des"))));
+}
+function renderTimeline(){
+ const svg=el("tl"),W=600,H=60,pad=8;
+ const fwd=Math.max(1,state.cfg.days),back=histBack(),span=Math.max(1,fwd+back);
+ const xOf=dt=>pad+((dt+back)/span)*(W-2*pad);
+ let s=`<line x1="${pad}" y1="${H-13}" x2="${W-pad}" y2="${H-13}" stroke="#173347" pointer-events="none"/>`;
+ const ticks=back>0?[-back,-Math.round(back/2),0,fwd]:[0,Math.round(fwd/2),fwd];
+ ticks.forEach(dd=>{const x=xOf(dd);s+=`<line x1="${x}" y1="${H-17}" x2="${x}" y2="${H-9}" stroke="${dd===0?"#3fd0c8":"#2f6076"}" pointer-events="none"/><text x="${x}" y="${H-1}" fill="${dd===0?"#3fd0c8":"#456478"}" font-family="ui-monospace,monospace" font-size="9" text-anchor="middle" pointer-events="none">${dd===0?t("sc_now"):(dd>0?"+"+dd:dd)+"d"}</text>`;});
+ const nx=xOf(0);s+=`<line x1="${nx}" y1="2" x2="${nx}" y2="${H-13}" stroke="#3fd0c8" stroke-opacity="0.4" stroke-dasharray="2 3" pointer-events="none"/>`;
+ filteredStage().forEach(a=>{ if(isNaN(a.dateObj))return; const dt=(a.dateObj.getTime()-simNow())/86400000; if(dt>fwd||dt<-back)return;
+  const x=xOf(dt),h=Math.max(5,18-Math.min(a.dist_ld,30)*0.55),op=dt>=0?0.95:Math.max(0.25,0.8-0.5*Math.min(-dt/back,1));
+  s+=`<line class="obj" data-des="${esc(a.des)}" x1="${x}" y1="${H-13}" x2="${x}" y2="${H-13-h}" stroke="${dotColor(a)}" stroke-width="1.6" stroke-opacity="${op}" style="cursor:pointer"/><circle class="obj" data-des="${esc(a.des)}" cx="${x}" cy="${H-13-h}" r="2.4" fill="${dotColor(a)}" fill-opacity="${op}" style="cursor:pointer"><title>${esc(a.des)}</title></circle>`;
+ });
+ svg.innerHTML=s; svg.querySelectorAll(".obj").forEach(o=>o.addEventListener("click",()=>selectByDes(o.getAttribute("data-des"))));
+}
+function renderLegend(){
+ const items=state.stage==="act"?[["var(--conf-hi)",t("obs_recommend")],["var(--text-faint)",t("obs_skip")]]
+  :state.stage==="orient"?[["var(--alert)","Torino\u22651"],["var(--lit)","Palermo\u2265\u22124"],["var(--accent)","prob."]]
+  :[["var(--alert)","<1 "+t("col_ld")],["var(--lit)","1\u20135 "+t("col_ld")],["var(--accent)",">5 "+t("col_ld")]];
+ el("legend").innerHTML=items.map(([c,lbl])=>`<span class="it"><span class="dotc" style="background:${c}"></span>${lbl}</span>`).join("");
+}
+function stageObjects(){
+ if(state.stage==="act")return state.approaches.filter(a=>a.observable);
+ if(state.stage==="decide")return state.approaches.filter(a=>a.risk||a.observable);
+ return state.approaches;
+}
+function sortList(arr){const s=state.sort,dir=state.sortDir==="asc"?1:-1,c=[...arr];
+ const key=a=> s==="date"?a.dateObj.getTime() : s==="dist"?a.dist_ld : s==="size"?(a.diam_m||0) : s==="mag"?(a.vmag==null?999:a.vmag) : 0;
+ c.sort((a,b)=>(key(a)-key(b))*dir);
+ return c;}
+function render(){
+ el("cntO").textContent=state.approaches.length;
+ el("cntR").textContent=state.sentry.length;
+ el("cntD").textContent=state.approaches.filter(a=>a.risk||a.observable).length;
+ el("cntA").textContent=activeAlerts().length;
+ const map={observe:["sb_observe","note_observe"],orient:["sb_orient","note_orient"],decide:["sb_decide","note_decide"],act:["sb_act","note_act"]};
+ el("sbTitle").textContent=tc(map[state.stage][0]); el("sbNote").textContent=t(map[state.stage][1]);
+ el("sysCity").textContent=state.city.name.split(" (")[0];
+ const rl=RATES.find(r=>r[1]===state.rate); el("sysRate").textContent=rl?t(rl[0]):"";
+ renderScope(); renderTimeline(); renderLegend(); renderBoard(); renderList();
+}
+/* ===== Fase 2: tablero "foto de hoy" (prioridad compuesta del motor) ===== */
+const NEO_SEVCOL={critical:"var(--alert)",high:"var(--lit)",elevated:"#6f8fd6",routine:"var(--text-dim)"};
+const NEO_ACTC={observe:"var(--conf-hi)",escalate:"var(--alert)",monitor:"var(--lit)",ignore:"var(--text-faint)"};
+const NEO_OBSC={tonight:"var(--conf-hi)",soon:"var(--lit)",not_now:"var(--text-faint)"};
+/* ---- Fase 3: contexto 3D esquemático (escala honesta vs distancia lunar) ---- */
+function cssv(n,fb){try{const v=getComputedStyle(document.documentElement).getPropertyValue(n).trim();return v||fb;}catch(e){return fb;}}
+const SEV3D={critical:"#e0653f",high:"#f3ad5e",elevated:"#6f8fd6",routine:"#93a0c2"};
+function open3DForIncidentNeo(id){
+  if(!window.Context3D){alert(t("c3d_missing"));return;} const c=state.incidents[id]; if(!c)return;
+  const a=state.approaches.find(x=>x.des===c.object); const missLd=(a&&a.dist_ld!=null)?a.dist_ld:(c.dist_ld!=null?c.dist_ld:1);
+  const LDkm=384400, missKm=Math.max(missLd,0.02)*LDkm;
+  const d=[Math.cos(0.5),Math.sin(0.35),Math.sin(0.5)],n=Math.hypot(d[0],d[1],d[2]);
+  const pos=[d[0]/n*missKm,d[1]/n*missKm,d[2]/n*missKm], col=SEV3D[c.severity]||"#e0653f", moon=cssv("--text-faint","#6b769a");
+  Context3D.open({title:t("c3d_title_neo")+": "+c.object,
+    subtitle:(missLd!=null?missLd.toFixed(2)+" "+t("col_ld"):"")+(c.tcaMs?" \u00b7 "+new Date(c.tcaMs).toISOString().slice(0,16).replace("T"," ")+"Z":""),
+    earthRadiusKm:6371,rings:[{radiusKm:LDkm,color:moon,label:t("c3d_moon")}],
+    markers:[{pos:pos,color:col,label:c.object,size:6}],vectors:[{from:[0,0,0],to:pos,color:col,label:missLd.toFixed(2)+" LD"}],
+    legend:[{color:col,label:c.object},{color:moon,label:t("c3d_moon")}],note:t("c3d_note_neo")});
+}
+function neoSignal(a){
+  const s=(a.risk&&typeof a.risk==="object")?a.risk:state.sentry.find(z=>z.des===a.des)||null;
+  const dateMs=(a.dateObj&&!isNaN(a.dateObj))?a.dateObj.getTime():null;
+  return {domain:"neo",name:a.des,torino:s?s.ts:null,palermo:s?s.ps:null,observable:a.observable===true,
+    windowH:dateMs!=null?Math.max(0,(dateMs-Date.now())/3.6e6):null,
+    diamM:(a.diam_m!=null)?a.diam_m:(s&&s.diam_km?s.diam_km*1000:null),missLd:a.dist_ld,dateMs:dateMs,nowMs:Date.now()};
+}
+function neoSeverity(a,sig){sig=sig||neoSignal(a);let sev=IE.severity(sig);
+  if(sev==="routine"){ if(a.dist_ld!=null&&a.dist_ld<=state.cfg.alert.missLd)sev="high"; else if(a.dist_ld!=null&&sig.diamM&&a.dist_ld<=state.cfg.alert.bigLd&&sig.diamM>=state.cfg.alert.bigM)sev="elevated"; }
+  return sev;}
+// Ventana de oscuridad de OALM alrededor de un instante. Honesto: condición necesaria, no apuntado preciso.
+function oalmDarkWindow(date){
+  if(!date||isNaN(date))return null; const twi=state.cfg.twi,base=date.getTime(),step=6e5,span=14*3600000;
+  const arr=[]; for(let dt=-span;dt<=span;dt+=step)arr.push({t:base+dt,dark:sunElev(new Date(base+dt),OALM_ST.lat,OALM_ST.lon)<twi});
+  const i0=Math.round(span/step); let c=i0;
+  if(!arr[c].dark){let best=-1,bd=1e18;for(let i=0;i<arr.length;i++)if(arr[i].dark){const dd=Math.abs(i-i0);if(dd<bd){bd=dd;best=i;}}if(best<0)return {none:true};c=best;}
+  let lo=c,hi=c; while(lo>0&&arr[lo-1].dark)lo--; while(hi<arr.length-1&&arr[hi+1].dark)hi++;
+  return {start:new Date(arr[lo].t),end:new Date(arr[hi].t),atInstant:arr[i0].dark};
+}
+function plainSummary(a,sev,action,obsv){
+  const risk=(sev==="critical"||sev==="high")?t("ps_risk_hi"):sev==="elevated"?t("ps_risk_el"):t("ps_risk_lo");
+  const obs=obsv==="tonight"?t("ps_tonight"):obsv==="soon"?t("ps_soon"):t("ps_notnow");
+  return risk+" "+obs+" "+t("ps_act_"+action);
+}
+function buildBoard(limit){
+  if(!IE)return [];
+  return buildTasking().map(x=>{
+    const a=state.approaches.find(z=>z.des===x.des)||{des:x.des,dist_ld:x.dist_ld,observable:x.obs,risk:state.sentry.find(z=>z.des===x.des)};
+    const sig=neoSignal(a), sev=neoSeverity(a,sig);
+    return {des:x.des,sev:sev,prio:IE.compositePriority({signal:sig,severity:sev}),action:IE.recommendedAction({signal:sig,severity:sev}),
+      obsv:IE.neoObservability(sig),torino:sig.torino,palermo:sig.palermo,whenLocal:x.whenLocal,dark:x.dark,vmag:x.vmag,dist_ld:x.dist_ld};
+  }).sort((a,b)=>a.prio-b.prio).slice(0,limit||99);
+}
+function renderBoard(){
+  const box=el("board"); if(!box||!IE)return;
+  const rows=buildBoard(8);
+  const SEVCOL=NEO_SEVCOL;
+  const ACTK={observe:"act_observe",monitor:"act_monitor",escalate:"act_escalate",ignore:"act_ignore"};
+  const ACTC=NEO_ACTC;
+  const OBSC=NEO_OBSC;
+  const bn=el("boardN"); if(bn)bn.textContent=rows.length;
+  box.innerHTML=rows.length?rows.map(x=>`<div class="brow" data-des="${esc(x.des)}" style="display:grid;grid-template-columns:9px 1fr auto;gap:8px;align-items:center;padding:7px 11px;border-bottom:1px solid var(--line);cursor:pointer">
+     <span style="width:8px;height:8px;border-radius:50%;background:${SEVCOL[x.sev]}"></span>
+     <span style="min-width:0"><b>${esc(x.des)}</b> <span style="display:inline-block;padding:0 6px;border-radius:4px;font-size:9px;font-weight:700;font-family:var(--mono);background:${ACTC[x.action]};color:#06121a;vertical-align:middle">${t(ACTK[x.action]).toUpperCase()}</span>
+       <br><span style="font-size:10px;color:var(--text-faint)">${x.torino!=null?"T"+x.torino:""}${x.palermo!=null?" P"+(+x.palermo).toFixed(1):""}${(x.torino!=null||x.palermo!=null)?" \u00b7 ":""}<span style="color:${OBSC[x.obsv]}">${t("obs_"+(x.obsv==="not_now"?"notnow":x.obsv))}</span>${x.whenLocal?" \u00b7 "+x.whenLocal+" OALM"+(x.dark?" \u2022":" \u25cb"):""}</span></span>
+     <span style="text-align:right;font-size:10px">${x.vmag!=null?"V~"+x.vmag.toFixed(1):"\u2014"}<br>${x.dist_ld!=null?x.dist_ld.toFixed(2)+" "+t("col_ld"):"\u2014"}</span>
+   </div>`).join(""):`<div class="empty" style="padding:14px">${t("board_empty")}</div>`;
+  box.querySelectorAll(".brow").forEach(r=>r.addEventListener("click",()=>selectByDes(r.dataset.des)));
+}
+/* ===== Fase 2: calendario / agenda de aproximaciones ===== */
+function buildAgenda(){
+  const now=Date.now(),out={};
+  state.approaches.forEach(a=>{ if(isNaN(a.dateObj))return; if(a.dateObj.getTime()-now< -12*3600000)return;
+    const day=a.dateObj.toISOString().slice(0,10); (out[day]=out[day]||[]).push(a); });
+  return out;
+}
+function renderAgenda(){
+  if(!IE){el("calBody").innerHTML="";return;}
+  const ag=buildAgenda(),days=Object.keys(ag).sort(); let html="";
+  for(const day of days){
+    const items=ag[day].sort((x,y)=>x.dateObj-y.dateObj);
+    const dw=oalmDarkWindow(new Date(day+"T23:30:00Z"));
+    const darkTxt=dw&&!dw.none?t("cal_dark")+" "+localHour(dw.start,OALM_ST.lon)+"\u2013"+localHour(dw.end,OALM_ST.lon):t("cal_nodark");
+    html+=`<div class="cal-day"><div class="cal-dh">${day}<span class="cal-dark">${darkTxt}</span></div>`;
+    html+=items.map(a=>{const sig=neoSignal(a),sev=neoSeverity(a,sig),action=IE.recommendedAction({signal:sig,severity:sev});
+      return `<div class="cal-it" data-des="${esc(a.des)}">
+        <span class="cdot" style="background:${NEO_SEVCOL[sev]}"></span>
+        <span class="cal-nm"><b>${esc(a.des)}</b> <span class="actpill" style="background:${NEO_ACTC[action]}">${t("act_"+action).toUpperCase()}</span></span>
+        <span class="cal-tm">${a.dateObj.toISOString().slice(11,16)}Z \u00b7 ${localHour(a.dateObj,OALM_ST.lon)} OALM ${a.night?"\u2022":"\u25cb"}</span>
+        <span class="cal-rt">${a.dist_ld!=null?a.dist_ld.toFixed(2)+" "+t("col_ld"):"\u2014"}${a.vmag!=null?" \u00b7 V~"+a.vmag.toFixed(1):""}</span>
+      </div>`;}).join("");
+    html+="</div>";
+  }
+  el("calBody").innerHTML=html||`<div class="empty" style="padding:20px">${t("cal_empty")}</div>`;
+  el("calBody").querySelectorAll("[data-des]").forEach(r=>r.addEventListener("click",()=>{el("calM").classList.remove("open");selectByDes(r.dataset.des);}));
+}
+function openAgenda(){renderAgenda();el("calM").classList.add("open");}
+function renderList(){
+ const box=el("list"),qv=(el("search").value||"").toLowerCase();let rows="";
+ const dir=state.sortDir==="asc"?1:-1;
+ if(state.stage==="act"){
+  const tk=buildTasking().filter(x=>x.des.toLowerCase().includes(qv));
+  let bar=`<div class="taskbar"><button class="btn" id="tkConsole" style="padding:5px 10px;font-size:11px">\ud83d\udd14 ${t("al_open")}</button><button class="btn" id="tkExport" style="padding:5px 10px;font-size:11px">\u2193 ${t("tk_export")}</button></div>`;
+  rows=bar+(tk.length?tk.map((x,i)=>`<div class="row" data-des="${esc(x.des)}"><span class="badge pri" style="background:${priColor(x.sev)}">${i+1}</span>
+    <div class="nm">${esc(x.des)}<small>${x.action}${x.whenLocal?" \u00b7 "+x.whenLocal+" OALM"+(x.dark?" \u2022":" \u25cb"):""}</small></div>
+    <div class="rt"><b>${x.vmag!=null?"V~"+x.vmag.toFixed(1):"\u2014"}</b><br>${x.dist_ld!=null?x.dist_ld.toFixed(2)+" "+t("col_ld"):"\u2014"}</div></div>`).join(""):`<div class="empty">${t("al_none")}</div>`);
+  box.innerHTML=rows;
+  el("tkConsole").addEventListener("click",openAlertConsole);
+  el("tkExport").addEventListener("click",downloadTasking);
+  box.querySelectorAll("[data-des]").forEach(r=>r.addEventListener("click",()=>selectByDes(r.getAttribute("data-des"))));
+  return;
+ }
+ if(state.stage==="orient"){
+  let arr=[...state.sentry];
+  const key=s=>state.sort==="size"?(s.diam_km||0):state.sort==="mag"?(s.h==null?999:s.h):(s.ps==null?-999:s.ps);
+  arr.sort((a,b)=>(key(a)-key(b))*dir);
+  arr=arr.filter(s=>s.des.toLowerCase().includes(qv));
+  if(state.srcFilter==="ESA")arr=arr.filter(s=>esaFlag(s.des));
+  rows=arr.map(s=>{const val=esaFlag(s.des);
+   return `<div class="row" data-des="${esc(s.des)}"><span class="badge" style="background:${torinoColor(s.ts)}">T${s.ts}</span>
+    <div class="nm">${esc(s.des)}<small>${s.diam_km?(s.diam_km*1000).toFixed(0)+" m":"\u2014"} \u00b7 ${s.energy!=null?fmtNum(s.energy)+" MT":"\u2014"}${val?" \u00b7 <span style='color:var(--conf-hi)' title='"+esc(t("validated_tip"))+"'>\u2713 JPL+ESA</span>":""}</small></div>
+    <div class="rt"><b style="color:${riskColor(s)}">P ${s.ps.toFixed(1)}</b><br>ip ${fmtSci(s.ip)}</div></div>`;}).join("");
+ } else {
+  let arr=sortList(filteredStage()).filter(a=>a.des.toLowerCase().includes(qv));
+  rows=arr.map(a=>{const right=state.stage==="act"
+    ?`<b>V~${a.vmag!=null?a.vmag.toFixed(1):"\u2014"}</b><br>${a.dist_ld.toFixed(2)} ${t("col_ld")}`
+    :`<b>${a.dist_ld.toFixed(2)} ${t("col_ld")}</b><br>${t("col_when")} ${fmtWhen(a.dateObj)}`;
+   const val=isValidated(a),srcTag=a.sources?a.sources.join("\u00b7"):"";
+   return `<div class="row" data-des="${esc(a.des)}"><span class="badge" style="background:${dotColor(a)}">${a.diam_m?fmtSize(a.diam_m):"?"}</span>
+    <div class="nm">${esc(a.des)}<small>${a.dateObj.toISOString().slice(0,16).replace("T"," ")}Z${a.risk?" \u00b7 \u26a0":""}${val?" \u00b7 <span style='color:var(--conf-hi)' title='"+esc(t("validated_tip2"))+"'>\u2713 "+esc(srcTag)+"</span>":(srcTag?" \u00b7 <span style='color:var(--text-faint)'>"+esc(srcTag)+"</span>":"")}</small></div>
+    <div class="rt">${right}</div></div>`;}).join("");
+  if(state.stage==="observe"&&state.fireballs.length&&(state.srcFilter==="all"||state.srcFilter==="Fireball")){
+   rows+=[...state.fireballs].sort((a,b)=>(new Date(b.date))-(new Date(a.date))).map(f=>`<div class="row" data-fb="${state.fireballs.indexOf(f)}"><span class="badge" style="background:var(--lit)">\u2604</span>
+    <div class="nm">${t("fireball")}<small>${f.date.replace("T"," ").replace("Z","").slice(0,16)} \u00b7 ${f.energy_kt} kt</small></div>
+    <div class="rt"><b>${f.energy_kt} kt</b></div></div>`).join("");
+  }
+ }
+ box.innerHTML=rows||`<div class="empty">${t("empty")}</div>`;
+ box.querySelectorAll("[data-des]").forEach(r=>r.addEventListener("click",()=>selectByDes(r.getAttribute("data-des"))));
+ box.querySelectorAll("[data-fb]").forEach(r=>r.addEventListener("click",()=>openFireball(state.fireballs[+r.getAttribute("data-fb")])));
+}
+
+/* ===== drill-down ===== */
+function selectByDes(des){
+ let a=state.approaches.find(x=>x.des===des);
+ if(!a){const s=state.sentry.find(x=>x.des===des);if(s){a=enrich({des:s.des,date:new Date().toISOString(),dist_ld:99,h:s.h,vinf:s.vinf});a._riskOnly=true;a.risk=s;}}
+ if(!a)return; state.selected=a; renderScope(); renderTimeline(); openDrawer(a);
+}
+function infoI(k){return `<span class="i" data-info="${k}">i</span>`;}
+function gline(l,v,info){return `<div class="lab">${l}${info?infoI(info):""}</div><div class="val">${v}</div>`;}
+function openDrawer(a){
+ const r=a.risk,b=[];
+ if(IE){const sig=neoSignal(a),sev=neoSeverity(a,sig),action=IE.recommendedAction({signal:sig,severity:sev}),obsv=IE.neoObservability(sig);
+  b.push(`<div class="actbar" style="border-left:4px solid ${NEO_SEVCOL[sev]}">
+    <div class="actbar-h"><span class="actpill" style="background:${NEO_ACTC[action]}">${t("act_"+action).toUpperCase()}</span><span style="color:${NEO_SEVCOL[sev]};font-weight:700;font-size:11px;font-family:var(--mono)">${t("sev_"+sev)}</span>${(sig.torino!=null)?`<span style="font-size:10px;color:var(--text-faint)">T${sig.torino}${sig.palermo!=null?" P"+(+sig.palermo).toFixed(1):""}</span>`:""}<span style="font-size:10px;color:${NEO_OBSC[obsv]};margin-left:auto">\u25c9 ${t("obs_"+(obsv==="not_now"?"notnow":obsv))}</span></div>
+    <div class="actbar-p">${plainSummary(a,sev,action,obsv)}</div></div>`);
+ }
+ if(!a._riskOnly){
+  b.push(`<div class="dsec">${t("dsec_ca")}</div><div class="dgrid">`);
+  b.push(gline(t("f_date"),a.dateObj.toISOString().slice(0,16).replace("T"," ")+"Z"));
+  b.push(gline(t("f_dist_ld"),`${a.dist_ld.toFixed(3)} ${t("col_ld")} <small style="color:var(--text-faint)">(${ldKm(a.dist_ld)} km)</small>`,"ld"));
+  b.push(gline(t("f_vrel"),(a.vrel||0).toFixed(2)+" km/s"));
+  if(a.vinf)b.push(gline(t("f_vinf"),a.vinf.toFixed(2)+" km/s"));
+  b.push(`</div>`);
+ }
+ b.push(`<div class="dsec">${t("dsec_phys")}</div><div class="dgrid">`);
+ b.push(gline(t("f_h"),a.h!=null?a.h.toFixed(1):"\u2014","h"));
+ b.push(gline(t("f_diam"),a.diam_m!=null?fmtDiam(a.diam_m):"\u2014","diam"));
+ b.push(gline(t("f_energy"),a.energy!=null?fmtNum(a.energy)+" MT":"\u2014","energy"));
+ b.push(gline(t("f_albedo"),(a.albedo||0.14).toFixed(2)));
+ b.push(`</div>`);
+ if(r){
+  b.push(`<div class="dsec">${t("dsec_risk")}</div><div class="scales">`);
+  b.push(scaleBar(t("f_ts")+infoI("ts"),r.ts/10,torinoColor(r.ts),"T"+r.ts));
+  b.push(scaleBar(t("f_ps")+infoI("ps"),clamp((r.ps+8)/10,0,1),riskColor(r),r.ps.toFixed(2)));
+  b.push(`</div><div class="dgrid">`);
+  b.push(gline(t("f_ip"),fmtSci(r.ip),"ip"));
+  b.push(gline(t("f_nimp"),r.nimp));
+  b.push(gline(t("f_years"),r.years));
+  b.push(gline(t("f_crossflag"),esaFlag(a.des)?"JPL Sentry + ESA NEOCC":"JPL Sentry"));
+  b.push(`</div>`);
+ }
+ if(!a._riskOnly){
+  b.push(`<div class="dsec">${tc("dsec_obs")}</div><div class="dgrid">`);
+  b.push(gline(t("f_vmag"),a.vmag!=null?a.vmag.toFixed(1):"\u2014","vmag"));
+  b.push(gline(tc("f_night"),`<span class="obsflag ${a.night?"ok":"no"}">${a.night?t("yes"):t("no")}</span>`));
+  b.push(gline(t("f_detect"),`<span class="obsflag ${a.detect?"ok":"no"}">${a.detect?t("yes"):t("no")}</span>`));
+  b.push(`</div><div style="padding:2px 16px 0"><span class="obsflag ${a.observable?"ok":"no"}">${a.observable?t("obs_recommend"):t("obs_skip")}</span></div>`);
+  b.push(`<div class="dsec">${t("dsec_prox")}</div><div class="dgrid">`);
+  b.push(gline(t("f_localtime")+` (${state.city.name.split(" (")[0]})`,localHour(a.dateObj,state.city.lon)));
+  const dw=oalmDarkWindow(a.dateObj);
+  if(dw&&!dw.none)b.push(gline(t("f_oalmwin"),localHour(dw.start,OALM_ST.lon)+"\u2013"+localHour(dw.end,OALM_ST.lon)+" "+t("f_local")+(dw.atInstant?"":" "+t("f_notatca"))));
+  b.push(`</div><div style="padding:0 16px 6px;font-size:10px;color:var(--text-faint);font-family:var(--mono)">${t("prox_note")}</div>`);
+  b.push(`<div style="padding:0 16px 6px;font-size:10px;color:var(--text-faint);font-family:var(--mono)">${t("win_note")}</div>`);
+  b.push(`<div class="coa"><div class="ct">${t("coa_t")}</div>${coaText(a)}</div>`);
+ }
+ b.push(`<div class="dsec">${t("dsec_prov")} ${infoI("method")}</div><div class="dgrid">`);
+ const srcs=a.sources?a.sources.slice():[];
+ if(a.risk){srcs.push("Sentry");if(esaFlag(a.des))srcs.push("ESA");}
+ b.push(gline(t("src_seen"),srcs.length?esc(srcs.join(" \u00b7 ")):"\u2014"));
+ if(isValidated(a)||esaFlag(a.des))b.push(gline(t("f_validated"),`<span class="obsflag ok">\u2713 ${t("yes")}</span>`));
+ b.push(`</div><div style="padding:0 16px 8px;font-size:10px;color:var(--text-faint);font-family:var(--mono)">${t(esaFlag(a.des)?"validated_tip":"src_origin_note")}</div>`);
+ el("dName").textContent=a.des; el("dDes").textContent=a._riskOnly?t("risk_list"):a.dateObj.toISOString().slice(0,10);
+ el("dBody").innerHTML=b.join(""); el("drawer").classList.add("open"); wireInfo(el("dBody"));
+}
+function coaText(a){
+ if(a.observable)return tc("coa_observe")+(a.risk?" "+t("coa_report"):"");
+ if(a.night&&a.vmag!=null&&a.vmag<=state.cfg.lim+1.5)return t("coa_observe_faint");
+ if(a.risk)return t("coa_monitor");
+ return t("coa_none");
+}
+/* ===== Act: alertas + escalamiento + tasking OALM ===== */
+const OALM_ST={lat:-34.7553,lon:-56.1881};
+function loadAcks(){try{return JSON.parse(localStorage.getItem("neowatch_acks")||"{}")}catch(e){return {}}}
+function saveAcks(){try{localStorage.setItem("neowatch_acks",JSON.stringify(state.acks))}catch(e){}}
+function oalmObs(a){ if(!a.dateObj||isNaN(a.dateObj))return {night:false,detect:false,observable:false};
+ const elv=sunElev(a.dateObj,OALM_ST.lat,OALM_ST.lon),night=elv<state.cfg.twi,detect=a.vmag!=null?a.vmag<=state.cfg.lim:false;
+ return {night,detect,observable:night&&detect};}
+function sevRank(s){return s==="critical"?2:s==="warning"?1:0;}
+function alertMsg(al){const o=al.obj,ld=o.dist_ld!=null?o.dist_ld.toFixed(2):"\u2014";
+ if(al.kind==="miss")return t("alm_miss").replace("{d}",ld);
+ if(al.kind==="imminent")return t("alm_imm").replace("{d}",ld).replace("{n}",al.days);
+ if(al.kind==="bigclose")return t("alm_big").replace("{m}",o.diam_m?o.diam_m.toFixed(0):"?").replace("{d}",ld);
+ if(al.kind==="torino")return t("alm_tor").replace("{t}",o.ts);
+ if(al.kind==="palermo")return t("alm_pal").replace("{p}",(o.ps!=null?o.ps.toFixed(1):"?"));
+ return "";}
+function evalAlerts(){
+ const r=state.cfg.alert,now=Date.now(),list=[];
+ const add=(obj,kind,sev,extra)=>{list.push(Object.assign({id:kind+"|"+obj.des,des:obj.des,kind,sev,obj},extra||{}));};
+ state.approaches.forEach(a=>{ if(isNaN(a.dateObj))return; const dt=(a.dateObj.getTime()-now)/86400000; if(dt<0)return;
+  if(a.dist_ld<=r.missLd) add(a,"miss","critical");
+  else if(a.diam_m!=null&&a.diam_m>=r.bigM&&a.dist_ld<=r.bigLd) add(a,"bigclose","warning");
+  if(dt<=r.imminent&&a.dist_ld<=r.bigLd) add(a,"imminent","warning",{days:Math.max(0,Math.round(dt))});
+ });
+ state.sentry.forEach(s=>{ if(r.torino>0&&s.ts>=r.torino) add(s,"torino","critical"); else if(s.ps!=null&&s.ps>=r.palermo) add(s,"palermo","warning"); });
+ const prev=state.alertState,ns={};
+ list.forEach(al=>{const p=prev[al.id]||{}; al.firstSeen=p.firstSeen||now; al.acked=!!state.acks[al.id]; al.msg=alertMsg(al);
+  ns[al.id]={firstSeen:al.firstSeen,notified:p.notified||false};
+  if(!al.acked&&al.sev==="critical"&&!ns[al.id].notified){ fireNotify(al); ns[al.id].notified=true; } });
+ state.alertState=ns;
+ list.sort((a,b)=>sevRank(b.sev)-sevRank(a.sev)||(a.firstSeen-b.firstSeen));
+ state.alerts=list; recordIncidents(); renderAlertBell();
+}
+function escLevel(al){ if(al.acked)return 0; const min=Math.max(1,state.cfg.alert.escalateMin),e=(Date.now()-al.firstSeen)/60000; return e>=2*min?2:e>=min?1:0; }
+function escLabel(l){return l===2?t("esc_cmd"):l===1?t("esc_analyst"):t("esc_operator");}
+function activeAlerts(){return state.alerts.filter(a=>!a.acked);}
+function renderAlertBell(){const b=el("alertBtn"),c=el("alertCount"); if(!b||!c)return;
+ const act=activeAlerts(); if(act.length){c.style.display="";c.textContent=act.length;}else c.style.display="none";
+ b.classList.toggle("crit",act.some(a=>a.sev==="critical"));}
+function ackAlert(id){state.acks[id]={t:Date.now()};saveAcks();evalAlerts();openAlertConsole();render();}
+function ackAll(){activeAlerts().forEach(a=>state.acks[a.id]={t:Date.now()});saveAcks();evalAlerts();openAlertConsole();render();}
+function beep(sev){ if(!state.cfg.alert.sound)return; try{const ac=new (window.AudioContext||window.webkitAudioContext)(),o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=sev==="critical"?880:560;g.gain.value=0.06;o.start();setTimeout(()=>{o.stop();ac.close();},sev==="critical"?320:180);}catch(e){} }
+function fireNotify(al){ beep(al.sev); if(state.cfg.alert.notify&&"Notification"in window&&Notification.permission==="granted"){try{new Notification("NEO Watch \u2014 "+t("al_critical"),{body:al.des+": "+al.msg});}catch(e){}} }
+function ensureNotify(){ if(state.cfg.alert.notify&&"Notification"in window&&Notification.permission==="default"){try{Notification.requestPermission();}catch(e){}} }
+async function dispatchAll(){ const wh=(state.cfg.alert.webhook||"").trim(),act=activeAlerts(); if(!act.length){setStatus(t("al_none"));return;}
+ const payload={system:"NEO-Watch",ts:new Date().toISOString(),station:"OALM (MPC 844)",alerts:act.map(a=>({id:a.id,severity:a.sev,kind:a.kind,object:a.des,message:a.msg,escalation:escLabel(escLevel(a))}))};
+ if(!wh){ const body=el("alBody"); if(body){const pre=document.createElement("pre");pre.style.cssText="white-space:pre-wrap;font-size:10px;color:var(--accent);padding:8px 14px;font-family:var(--mono);margin:0";pre.textContent=t("al_nowh")+"\n\n"+JSON.stringify(payload,null,1);body.prepend(pre);} return; }
+ try{ await fetch(wh,{method:"POST",mode:"cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}); setStatus(t("al_sent")); }
+ catch(e){ setStatus(t("al_senterr")+" ("+e.message+")"); }
+}
+/* ---- Fase 1: motor de incidentes compartido (cola de triage) ---- */
+const IE=window.IncidentEngine;
+/* ---- Fase 4: capa de backend (incidentes compartidos en BD si hay sesión) ---- */
+const Backend={on:false,csrf:"",user:null,
+  async api(file,q,method,body){const o={method:method||"GET",credentials:"include",headers:{}};if(body){o.headers["Content-Type"]="application/json";o.headers["X-CSRF"]=this.csrf;o.body=JSON.stringify(body);}const r=await fetch(file+"?"+q,o);let d={};try{d=await r.json();}catch(e){}if(!r.ok||d.ok===false)throw new Error((d&&d.error)||("HTTP "+r.status));return d;},
+  async init(){try{const d=await this.api("auth.php","action=csrf");this.csrf=d.csrf;this.user=d.user;this.on=!!d.user;}catch(e){this.on=false;this.user=null;}return this.on;},
+  async upsert(p){return this.api("incidents.php","action=upsert","POST",p);},
+  async transition(id,to,note){return this.api("incidents.php","action=transition","POST",{id:id,to:to,note:note||""});},
+  async list(){const d=await this.api("incidents.php","action=list&domain=neo&state=all");return d.incidents||[];},
+  async pushAndRefresh(computed){try{for(const d of computed){await this.upsert({id:"neo:"+d.des,domain:"neo",object:d.des,severity:d.severity,priority:d.priority,recommended_action:d.recommendedAction,kind:d.kind,metric:d.metric,tca_utc:d.tcaMs,torino:d.torino,palermo:d.palermo,obsv:d.obsv});}await this.refresh();}catch(e){}},
+  async refresh(){try{const list=await this.list(),inc={};list.forEach(r=>{inc[r.id]={id:r.id,object:r.object,domain:r.domain,state:r.state,owner:r.owner_id,severity:r.severity,priority:r.priority,recommendedAction:r.recommended_action,kind:r.kind,what:r.kind?t("alk_"+r.kind):t("ty_neo"),metric:r.metric,obsv:r.obsv,torino:r.torino,palermo:r.palermo,tcaMs:r.tca_utc?Date.parse(r.tca_utc.replace(" ","T")+"Z"):null,signalCount:1};});state.incidents=inc;renderTriageBadge();if(el("triageM").classList.contains("open"))renderTriage();}catch(e){}}
+};
+function updateAuthBadge(){var ret=location.pathname.split('/').pop()||"";var signin="admin.html"+(ret?("?return="+encodeURIComponent(ret)):"");var full=Backend.on?(esc(Backend.user.name)+" <span style='color:var(--text-faint)'>\u00b7 "+esc(Backend.user.role)+" \u00b7 "+t("trq_db")+"</span>"):("<a href='"+signin+"' style='color:var(--accent)'>"+t("trq_signin")+"</a> <span style='color:var(--text-faint)'>\u00b7 "+t("trq_local")+"</span>");var b=el("trqUser");if(b)b.innerHTML=full;var c=el("authChip");if(c){c.innerHTML=Backend.on?("\u25cf "+esc(Backend.user.name)):("\u25cb "+t("trq_signin"));c.title=Backend.on?(Backend.user.role+" \u00b7 "+t("trq_db")):t("trq_local");c.style.color=Backend.on?"var(--conf-hi)":"var(--text-faint)";c.href=Backend.on?"admin.html":signin;}}
+function computeIncidentsNeo(){
+  const out=[],byDes={};
+  for(const al of (state.alerts||[])){const d=al.obj&&al.obj.des;if(!d)continue;(byDes[d]=byDes[d]||[]).push(al);}
+  for(const des in byDes){ const als=byDes[des]; let bSig=null,bSev=null,bAl=null;
+    for(const al of als){const sig=sigFromNeoAlert(al),sev=neoTier(al,sig);if(bSev==null||IE.TIER[sev]<IE.TIER[bSev]){bSev=sev;bSig=sig;bAl=al;}}
+    out.push({des:des,severity:bSev,priority:IE.compositePriority({signal:bSig,severity:bSev}),recommendedAction:IE.recommendedAction({signal:bSig,severity:bSev}),kind:bAl.kind,what:t("alk_"+bAl.kind),metric:bAl.msg||"",obsv:IE.neoObservability(bSig),torino:bSig.torino,palermo:bSig.palermo,tcaMs:bSig.dateMs,signalCount:als.length});
+  }
+  return out;
+}
+const ACT_I18N={observe:"act_observe",monitor:"act_monitor",escalate:"act_escalate",ignore:"act_ignore"};
+const SEVCOL={critical:"var(--alert)",high:"var(--lit)",elevated:"#6f8fd6",routine:"var(--text-dim)"};
+function loadIncidents(){try{return JSON.parse(localStorage.getItem("neo_incidents")||"{}")}catch(e){return {}}}
+function saveIncidents(){try{localStorage.setItem("neo_incidents",JSON.stringify(state.incidents))}catch(e){}}
+function sigFromNeoAlert(al){
+  const o=al.obj||{},risk=(o.risk&&typeof o.risk==="object")?o.risk:o;
+  const dateMs=(o.dateObj&&!isNaN(o.dateObj))?o.dateObj.getTime():null;
+  return {domain:"neo",name:o.des,
+    torino:risk&&risk.ts!=null?risk.ts:null, palermo:risk&&risk.ps!=null?risk.ps:null,
+    observable:o.observable===true, windowH:dateMs!=null?Math.max(0,(dateMs-Date.now())/3.6e6):null,
+    diamM:o.diam_m!=null?o.diam_m:(risk&&risk.diam_km?risk.diam_km*1000:null),
+    missLd:o.dist_ld, dateMs:dateMs, nowMs:Date.now()};
+}
+function neoTier(al,sig){let sev=IE.severity(sig);if(sev==="routine"){if(al.kind==="miss"||al.kind==="imminent")sev=al.sev==="critical"?"high":"elevated";else if(al.kind==="big")sev="elevated";}return sev;}
+function recordIncidents(){
+  if(!IE)return; const computed=computeIncidentsNeo();
+  if(Backend.on){ Backend.pushAndRefresh(computed); return; }
+  const now=Date.now(),inc=state.incidents,seen={};
+  for(const d of computed){ const des=d.des; seen[des]=1; let c=inc[des];
+    if(!c)c=inc[des]={id:des,object:des,domain:"neo",state:"new",owner:null,openedUtc:now,audit:[{ts:now,actor:"system",from:null,to:"new",note:t("ty_neo")}]};
+    c.severity=d.severity;c.priority=d.priority;c.recommendedAction=d.recommendedAction;c.kind=d.kind;c.what=d.what;c.metric=d.metric;c.obsv=d.obsv;c.torino=d.torino;c.palermo=d.palermo;c.tcaMs=d.tcaMs;c.lastSeen=now;c.signalCount=d.signalCount;
+    if(IE.shouldAutoEscalate(c,state.cfg.alert.escalateMin,now))IE.applyTransition(c,"escalated","system",t("trq_autoesc"),now);
+  }
+  for(const id in inc){const c=inc[id];if(!seen[id]&&c.state!=="resolved"&&c.state!=="closed")IE.applyTransition(c,"resolved","system",t("trq_cleared"),now);}
+  saveIncidents(); renderTriageBadge();
+}
+function activeIncidents(){return Object.values(state.incidents||{}).filter(c=>c.state!=="resolved"&&c.state!=="closed");}
+function renderTriageBadge(){const b=el("triageBadge"),bt=el("triageBtn");if(!b)return;const act=activeIncidents();b.textContent=act.length;b.style.display=act.length?"inline":"none";if(bt)bt.classList.toggle("crit",act.some(c=>c.severity==="critical"));}
+function fmtCountdown(ms){if(ms==null)return "\u2014";const d=ms-Date.now();if(d<=0)return t("trq_now");const h=Math.floor(d/3.6e6),m=Math.floor((d%3.6e6)/6e4);return (h>0?h+"h ":"")+m+"m";}
+function obsBadge(o){const m={tonight:["obs_tonight","var(--conf-hi)"],soon:["obs_soon","var(--lit)"],not_now:["obs_notnow","var(--text-faint)"]}[o||"not_now"];return `<span style="color:${m[1]};font-size:10px">\u25c9 ${t(m[0])}</span>`;}
+function trqFilters(){
+  const sv=el("trqSev");if(sv&&!sv.options.length)[["all","trq_all"],["critical","sev_critical"],["high","sev_high"],["elevated","sev_elevated"]].forEach(([v,k])=>{const o=document.createElement("option");o.value=v;o.textContent=t(k);sv.appendChild(o);});
+  const st=el("trqState");if(st&&!st.options.length)[["active","trq_active"],["all","trq_all"],["resolved","trq_resolved"]].forEach(([v,k])=>{const o=document.createElement("option");o.value=v;o.textContent=t(k);st.appendChild(o);});
+}
+function openTriage(){trqFilters();updateAuthBadge();if(Backend.on){Backend.refresh().finally(()=>renderTriage());}else{recordIncidents();renderTriage();}el("triageM").classList.add("open");}
+function renderTriage(){
+  const fSev=el("trqSev")?el("trqSev").value:"all",fState=el("trqState")?el("trqState").value:"active";
+  let arr=Object.values(state.incidents);
+  if(fState==="active")arr=arr.filter(c=>c.state!=="resolved"&&c.state!=="closed");
+  else if(fState==="resolved")arr=arr.filter(c=>c.state==="resolved"||c.state==="closed");
+  if(fSev!=="all")arr=arr.filter(c=>c.severity===fSev);
+  arr.sort((a,b)=>(a.priority==null?9e9:a.priority)-(b.priority==null?9e9:b.priority));
+  el("trqBody").innerHTML=arr.length?arr.map(c=>`<div class="trow" data-id="${esc(c.id)}" style="padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer;display:grid;grid-template-columns:12px 1fr auto;gap:9px;align-items:center">
+     <span style="width:9px;height:9px;border-radius:50%;background:${SEVCOL[c.severity]}"></span>
+     <span><b>${esc(c.object)}</b> <span style="color:var(--text-dim);font-size:11px">\u00b7 ${esc(c.what)}</span><br>${obsBadge(c.obsv)} <span style="font-size:10px;color:var(--text-faint)">${c.torino!=null?"T"+c.torino:""}${c.palermo!=null?" P"+(+c.palermo).toFixed(1):""}</span></span>
+     <span style="text-align:right;font-size:10px"><span class="sbadge ${c.state}">${t("trq_st_"+c.state)}</span><br><span style="color:var(--accent);font-family:var(--mono)">${t(ACT_I18N[c.recommendedAction]||"act_monitor")}</span></span>
+   </div>`).join(""):`<div class="empty" style="padding:24px">${t("trq_none")}</div>`;
+  el("trqBody").querySelectorAll(".trow").forEach(r=>r.addEventListener("click",()=>renderIncidentDetail(r.dataset.id)));
+  if(arr.length)renderIncidentDetail(state._trqSel&&state.incidents[state._trqSel]?state._trqSel:arr[0].id); else el("trqDetail").innerHTML="";
+}
+function renderIncidentDetail(id){
+  state._trqSel=id; const c=state.incidents[id]; if(!c){el("trqDetail").innerHTML="";return;}
+  if(Backend.on){Backend.api("incidents.php","action=get&id="+encodeURIComponent(id)).then(d=>paintIncident(c,d.audit||[])).catch(()=>paintIncident(c,[]));}
+  else paintIncident(c,c.audit||[]);
+}
+function paintIncident(c,audit){
+  const fmt=ts=>ts?new Date(ts).toISOString().slice(0,16).replace("T"," ")+"Z":"\u2014";
+  const tl=(audit||[]).slice().reverse().map(a=>{const ts=typeof a.ts==="number"?a.ts:(a.ts?Date.parse(String(a.ts).replace(" ","T")+"Z"):null);return `<div style="font-size:10px;color:var(--text-faint);font-family:var(--mono)">${fmt(ts)} ${esc(a.from||a.from_state||"\u2014")}\u2192${esc(a.to||a.to_state||"")}${(a.actor||a.actor_name)?" \u00b7 "+esc(a.actor||a.actor_name):""}${a.note?" \u00b7 "+esc(a.note):""}</div>`;}).join("");
+  const btn=(IE.TRANSITIONS[c.state]||[]).map(to=>`<button class="btn" data-to="${to}" style="padding:5px 10px;margin:2px;font-size:11px">${t("trq_to_"+to)}</button>`).join("")||`<span style="font-size:10px;color:var(--text-faint)">${t("trq_terminal")}</span>`;
+  el("trqDetail").innerHTML=`<div style="padding:12px 14px">
+    <div style="display:flex;justify-content:space-between;align-items:center"><b>${esc(c.object)}</b><span class="sbadge ${c.state}">${t("trq_st_"+c.state)}</span></div>
+    <div style="margin-top:8px;font-size:12px;line-height:1.55">
+      <div><b style="color:var(--text-dim)">1 \u00b7 ${t("q_what")}:</b> ${esc(c.what||"")}${c.signalCount>1?` (${c.signalCount})`:""}</div>
+      <div><b style="color:var(--text-dim)">2 \u00b7 ${t("q_risk")}:</b> <span style="color:${SEVCOL[c.severity]}">${t("sev_"+c.severity)}</span> ${c.torino!=null?"\u00b7 T"+c.torino:""}${c.palermo!=null?" P"+(+c.palermo).toFixed(1):""}</div>
+      <div><b style="color:var(--text-dim)">2b \u00b7 ${t("q_obs")}:</b> ${obsBadge(c.obsv)}</div>
+      <div><b style="color:var(--text-dim)">3 \u00b7 ${t("q_time")}:</b> ${c.tcaMs?fmt(c.tcaMs)+" ("+fmtCountdown(c.tcaMs)+")":"\u2014"}</div>
+      <div><b style="color:var(--text-dim)">4 \u00b7 ${t("q_do")}:</b> <span style="color:var(--accent)">${t(ACT_I18N[c.recommendedAction]||"act_monitor")}</span></div>
+      <div><b style="color:var(--text-dim)">5 \u00b7 ${t("q_who")}:</b> ${esc((c.owner!=null&&c.owner!=="")?String(c.owner):t("trq_unassigned"))}</div>
+    </div>
+    <div style="margin-top:10px">${btn}</div>
+    <div style="margin-top:8px"><button class="btn" id="trqOpen3d" data-id="${esc(c.id)}" style="padding:5px 10px;font-size:11px">${t("trq_open3d")}</button></div>
+    <div style="margin-top:12px;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">${t("trq_timeline")}</div>${tl}
+  </div>`;
+  el("trqDetail").querySelectorAll("button[data-to]").forEach(b=>b.addEventListener("click",()=>{
+    if(Backend.on){Backend.transition(c.id,b.dataset.to,"").then(()=>Backend.refresh()).then(()=>renderTriage()).catch(e=>alert(e.message));}
+    else{if(b.dataset.to!=="new"&&!c.owner)c.owner="operator";IE.applyTransition(c,b.dataset.to,c.owner||"operator",null,Date.now());saveIncidents();renderTriageBadge();renderTriage();}
+  }));
+  {const o3=el("trqOpen3d");if(o3)o3.addEventListener("click",()=>open3DForIncidentNeo(o3.dataset.id));}
+}
+function openAlertConsole(){ ensureNotify();
+ const al=state.alerts,b=[];
+ if(!al.length) b.push(`<div class="empty" style="padding:24px">${t("al_none")}</div>`);
+ else al.forEach(a=>{const lv=escLevel(a);
+  b.push(`<div class="arow s-${a.sev} ${a.acked?"acked":""}"><div class="sv"></div><div class="ab">
+   <div class="an">${esc(a.des)}</div><div class="am">${esc(a.msg)}</div>
+   <div class="ae esc${lv}">${t("al_esc")}: ${escLabel(lv)}${a.acked?" \u00b7 \u2713 "+t("al_acked"):""}</div></div>
+   ${a.acked?"":`<button class="btn ackbtn" data-ack="${esc(a.id)}">${t("al_ack")}</button>`}</div>`);});
+ el("alBody").innerHTML=b.join("");
+ el("alBody").querySelectorAll("[data-ack]").forEach(x=>x.addEventListener("click",()=>ackAlert(x.getAttribute("data-ack"))));
+ el("alertM").classList.add("open");
+}
+function buildTasking(){ const now=Date.now(),out=[],seen={};
+ const addObj=(o,base)=>{ if(seen[o.des])return; seen[o.des]=1;
+  const ob=oalmObs(o),al=state.alerts.find(x=>x.des===o.des),dt=o.dateObj&&!isNaN(o.dateObj)?(o.dateObj.getTime()-now)/86400000:null;
+  let pri=base; if(al)pri+=(al.sev==="critical"?60:30); if(ob.observable)pri+=15; if(dt!=null&&dt>=0&&dt<=3)pri+=10; if(o.risk)pri+=8;
+  let action; if(al&&al.sev==="critical")action=t("tk_track"); else if(o.risk||al)action=t("tk_astrometry"); else if(ob.observable)action=t("tk_confirm"); else action=t("tk_monitor");
+  out.push({des:o.des,sev:al?al.sev:(o.risk?"warning":"info"),pri,action,dt,whenUTC:o.dateObj&&!isNaN(o.dateObj)?o.dateObj.toISOString().slice(0,16).replace("T"," ")+"Z":null,whenLocal:o.dateObj&&!isNaN(o.dateObj)?localHour(o.dateObj,OALM_ST.lon):null,dark:ob.night,vmag:o.vmag,dist_ld:o.dist_ld,obs:ob.observable}); };
+ state.approaches.forEach(a=>{ if(isNaN(a.dateObj))return; const dt=(a.dateObj.getTime()-now)/86400000; if(dt<0)return; const ob=oalmObs(a); if(ob.observable||a.risk||state.alerts.find(x=>x.des===a.des))addObj(a,10); });
+ state.sentry.forEach(s=>{ const o=state.approaches.find(a=>a.des===s.des)||{des:s.des,dateObj:new Date(NaN),vmag:null,dist_ld:null,risk:s}; addObj(o,12); });
+ out.sort((a,b)=>b.pri-a.pri||((a.dt==null?1e9:a.dt)-(b.dt==null?1e9:b.dt)));
+ return out;
+}
+function priColor(sev){return sev==="critical"?"var(--alert)":sev==="warning"?"var(--lit)":"var(--accent)";}
+function downloadTasking(){ const tk=buildTasking(),gen=new Date().toISOString();
+ const rows=tk.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.des)}</td><td>${x.action}</td><td>${x.whenUTC||"\u2014"}</td><td>${x.whenLocal?x.whenLocal+(x.dark?" \u2022":""):"\u2014"}</td><td>${x.vmag!=null?"V~"+x.vmag.toFixed(1):"\u2014"}</td><td>${x.dist_ld!=null?x.dist_ld.toFixed(2)+" LD":"\u2014"}</td></tr>`).join("");
+ const html=`<!doctype html><html lang="${LANG}"><meta charset="utf-8"><title>OALM tasking</title><style>body{font-family:system-ui,sans-serif;margin:30px;color:#0d2031}h1{font-size:17px}table{border-collapse:collapse;width:100%;font-size:12px;margin-top:10px}th,td{border:1px solid #cdd;padding:5px 7px;text-align:left}th{background:#eef}small{color:#567}</style>`+
+  `<h1>${t("tk_title")} \u2014 OALM (MPC 844)</h1><small>${t("tk_gen")}: ${gen} \u00b7 ${t("tk_note")}</small>`+
+  `<table><tr><th>#</th><th>${t("tk_obj")}</th><th>${t("tk_action")}</th><th>${t("tk_utc")}</th><th>${t("tk_local")}</th><th>${t("tk_mag")}</th><th>${t("tk_dist")}</th></tr>${rows||`<tr><td colspan=7>${t("al_none")}</td></tr>`}</table>`;
+ const blob=new Blob([html],{type:"text/html"}),a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="oalm_tasking_"+gen.slice(0,10)+".html"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function scaleBar(lab,frac,color,val){return `<div class="scale"><div class="top"><span>${lab}</span><span>${val}</span></div><div class="bar"><i style="width:${(clamp(frac,0,1)*100).toFixed(0)}%;background:${color}"></i></div></div>`;}
+function openFireball(f){
+ const dist=(f.lat!=null)?haversine(state.city.lat,state.city.lon,f.lat,f.lon):null;
+ const b=[`<div class="dsec">${t("fireball")} ${infoI("method")}</div><div class="dgrid">`];
+ b.push(gline(t("f_fdate"),f.date.replace("T"," ").replace("Z","").slice(0,16)+" UTC"));
+ b.push(gline(t("f_localtime")+` (${state.city.name.split(" (")[0]})`,localHour(new Date(f.date),state.city.lon)));
+ b.push(gline(t("f_fenergy"),f.energy_kt+" kt","energy"));
+ b.push(gline(t("f_floc"),f.lat!=null?`${f.lat.toFixed(2)}\u00b0, ${f.lon.toFixed(2)}\u00b0`:"\u2014"));
+ if(dist!=null)b.push(gline(tc("f_citydist"),fmtNum(dist)+" km"));
+ if(f.vel)b.push(gline(t("f_fvel"),f.vel.toFixed(1)+" km/s"));
+ if(f.alt)b.push(gline(t("f_falt"),f.alt.toFixed(1)+" km"));
+ b.push(`</div>`);
+ el("dName").textContent=t("fireball"); el("dDes").textContent=f.date.slice(0,10);
+ el("dBody").innerHTML=b.join(""); el("drawer").classList.add("open"); wireInfo(el("dBody"));
+}
+
+/* ===== info popover ===== */
+function wireInfo(scope){(scope||document).querySelectorAll(".i").forEach(b=>{if(b._w)return;b._w=1;b.addEventListener("click",e=>{e.stopPropagation();showPop(b,b.getAttribute("data-info"));});});}
+function showPop(anchor,key){const g=GLOSSARY[key];if(!g)return;const pop=el("pop"),pair=g[LANG]||g.en;
+ pop.innerHTML=`<span class="term">${esc(pair[0])}</span>${esc(pair[1])}`;pop.style.display="block";
+ const r=anchor.getBoundingClientRect();let left=r.left,top=r.bottom+6;
+ if(left+290>window.innerWidth)left=window.innerWidth-298;if(top+150>window.innerHeight)top=r.top-160;
+ pop.style.left=Math.max(8,left)+"px";pop.style.top=Math.max(8,top)+"px";}
+document.addEventListener("click",e=>{if(!e.target.closest(".i")&&!e.target.closest("#pop"))el("pop").style.display="none";});
+
+/* ===== utils ===== */
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function fmtNum(n){if(n==null)return"\u2014";if(n>=1e6)return (n/1e6).toFixed(1)+"M";if(n>=1e3)return (n/1e3).toFixed(1)+"k";if(n>=10)return n.toFixed(0);return n.toFixed(2);}
+function fmtSci(n){if(!n)return "0";const e=Math.floor(Math.log10(n));return (n/Math.pow(10,e)).toFixed(1)+"e"+e;}
+function fmtSize(m){return m>=1000?(m/1000).toFixed(1)+"k":m.toFixed(0);}
+function fmtDiam(m){return m>=1000?(m/1000).toFixed(2)+" km":m.toFixed(0)+" m";}
+function ldKm(ld){return (ld*LD_KM).toLocaleString("en",{maximumFractionDigits:0});}
+function fmtWhen(d){const dt=(d.getTime()-simNow())/86400000;if(dt<0)return Math.abs(dt).toFixed(0)+t("days")+" "+t("ago");if(dt<2)return (dt*24).toFixed(0)+t("hours");return dt.toFixed(0)+t("days");}
+function setStatus(s){el("status").textContent=s;}
+function renderSources(){
+ const box=el("srcUsed"); if(!box)return;
+ const names={jpl_cad:"CAD",jpl_sentry:"Sentry",jpl_fireball:"Fireball",neows:"NeoWs",esa_neocc:"ESA"};
+ box.innerHTML=SOURCES.map(s=>{const st=(state.srcStatus||{})[s.id]||(s.on?"pending":"off");
+  const err=(state.srcErr||{})[s.id];
+  return `<span class="chip ${st}" data-srcid="${s.id}" style="cursor:pointer" title="${esc(s.name)}${err?" \u2014 "+esc(err):""}">${names[s.id]||s.id}</span>`;}).join("");
+ box.querySelectorAll(".chip[data-srcid]").forEach(c=>c.addEventListener("click",()=>openSourceDrawer(c.getAttribute("data-srcid"))));
+}
+function openSourceDrawer(id){
+ const src=SOURCES.find(s=>s.id===id); if(!src)return;
+ const info=(SOURCE_INFO[id]&&(SOURCE_INFO[id][LANG]||SOURCE_INFO[id].en))||{provider:"",about:""};
+ const st=(state.srcStatus||{})[id]||(src.on?"pending":"off");
+ const stWord={ok:t("rep_ok"),fail:t("rep_fail"),off:t("rep_off"),pending:"\u2014"}[st]||st;
+ const meta=(state.srcMeta||{})[id];
+ const upd=meta&&meta.fetchedAt?new Date(meta.fetchedAt).toISOString().slice(0,16).replace("T"," ")+" UTC":t("src_never");
+ const b=[];
+ b.push(`<div class="dsec">${t("src_about")}</div><div style="padding:2px 16px 10px;font-size:12.5px;color:var(--text);line-height:1.55">${esc(info.about)}</div>`);
+ b.push(`<div class="dsec">${t("dsec_prov")}</div><div class="dgrid">`);
+ b.push(gline(t("src_provider"),esc(info.provider)));
+ b.push(gline(t("src_status"),`<span class="obsflag ${st==="ok"?"ok":"no"}">${stWord}</span>`));
+ b.push(gline(t("src_updated"),upd));
+ if(meta&&meta.count!=null)b.push(gline(t("src_records"),meta.count));
+ if(meta&&meta.cache)b.push(gline(t("src_cache"),esc(meta.cache)+(meta.age?" ("+esc(meta.age)+")":"")));
+ const err=(state.srcErr||{})[id]; if(err)b.push(gline(t("src_errlbl"),`<span style="color:var(--alert)">${esc(err)}</span>`));
+ b.push(`</div>`);
+ b.push(`<div class="dsec">${t("src_url")}</div><div style="padding:0 16px 10px;font-size:11px;color:var(--accent);font-family:var(--mono);word-break:break-all">${esc(src.url)}</div>`);
+ if(state.cfg.useBackend&&src.ps)b.push(`<div style="padding:0 16px 12px;font-size:10px;color:var(--text-faint);font-family:var(--mono);word-break:break-all">${t("src_viaproxy")}: ${esc(state.cfg.backend)}?src=${esc(src.ps)}</div>`);
+ el("dName").textContent=src.name; el("dDes").textContent=info.provider.split(",")[0];
+ el("dBody").innerHTML=b.join(""); state.selected=null; renderScope(); el("drawer").classList.add("open");
+}
+function setSysFetching(){const box=el("srcUsed");if(box)box.innerHTML=`<span class="chip pending">${t("st_fetching")}</span>`;}
+
+/* ===== settings ===== */
+function openCfg(){
+ el("srcList").innerHTML=SOURCES.map(s=>`<div class="srcrow"><div class="tog ${s.on?"on":""}" data-src="${s.id}"><i></i></div><div class="meta"><b>${esc(s.name)}</b><small>${esc(s.url)}</small></div></div>`).join("");
+ el("srcList").querySelectorAll(".tog").forEach(tg=>tg.addEventListener("click",()=>{const s=SOURCES.find(x=>x.id===tg.getAttribute("data-src"));s.on=!s.on;tg.classList.toggle("on",s.on);}));
+ el("cfgUseBackend").classList.toggle("on",state.cfg.useBackend);
+ el("cfgBackend").value=state.cfg.backend;
+ el("cfgKey").value=state.cfg.key;el("cfgDays").value=state.cfg.days;el("cfgPast").value=state.cfg.daysPast;el("cfgMaxLd").value=state.cfg.maxLd;
+ el("cfgAuto").value=state.cfg.autoMin;el("cfgProxy").value=state.cfg.proxy;
+ el("cfgCityName").value=state.cfg.customName;el("cfgLat").value=state.cfg.customLat;el("cfgLon").value=state.cfg.customLon;
+ el("cfgLim").value=state.cfg.lim;el("cfgTwi").value=state.cfg.twi;
+ const A=state.cfg.alert;
+ el("cfgAlMiss").value=A.missLd;el("cfgAlImm").value=A.imminent;el("cfgAlPal").value=A.palermo;el("cfgAlTor").value=A.torino;
+ el("cfgAlBig").value=A.bigM;el("cfgAlBigLd").value=A.bigLd;el("cfgAlEsc").value=A.escalateMin;el("cfgAlWh").value=A.webhook;
+ el("cfgAlNotify").classList.toggle("on",A.notify);el("cfgAlSound").classList.toggle("on",A.sound);
+ el("cfg").classList.add("open"); wireInfo(el("cfg"));
+}
+function applyCfg(){
+ state.cfg.useBackend=el("cfgUseBackend").classList.contains("on");
+ state.cfg.backend=el("cfgBackend").value.trim()||"https://newspace.live/neo.php";
+ state.cfg.key=el("cfgKey").value.trim()||"DEMO_KEY";
+ state.cfg.days=Math.max(1,+el("cfgDays").value||60);
+ state.cfg.daysPast=Math.max(0,+el("cfgPast").value||0);
+ state.cfg.maxLd=Math.max(0.05,+el("cfgMaxLd").value||30);
+ state.cfg.autoMin=Math.max(0,+el("cfgAuto").value||0);
+ state.cfg.proxy=el("cfgProxy").value.trim();
+ state.cfg.customName=el("cfgCityName").value.trim()||"Custom";
+ state.cfg.customLat=+el("cfgLat").value;state.cfg.customLon=+el("cfgLon").value;
+ state.cfg.lim=+el("cfgLim").value;state.cfg.twi=+el("cfgTwi").value;
+ const A=state.cfg.alert;
+ A.missLd=Math.max(0,+el("cfgAlMiss").value||1);A.imminent=Math.max(0,+el("cfgAlImm").value||7);
+ A.palermo=+el("cfgAlPal").value;A.torino=+el("cfgAlTor").value;
+ A.bigM=Math.max(0,+el("cfgAlBig").value||140);A.bigLd=Math.max(0,+el("cfgAlBigLd").value||5);
+ A.escalateMin=Math.max(1,+el("cfgAlEsc").value||15);A.webhook=el("cfgAlWh").value.trim();
+ A.notify=el("cfgAlNotify").classList.contains("on");A.sound=el("cfgAlSound").classList.contains("on");
+ const cc=CITIES.find(c=>c.id==="custom");cc.name=state.cfg.customName;cc.lat=state.cfg.customLat;cc.lon=state.cfg.customLon;
+ buildCities(); setupAuto();
+ el("cfg").classList.remove("open"); refresh();
+}
+function setupAuto(){
+ if(state._autoTimer){clearInterval(state._autoTimer);state._autoTimer=null;}
+ if(state.cfg.autoMin>0)state._autoTimer=setInterval(()=>refresh(),state.cfg.autoMin*60000);
+}
+function buildCities(){el("citySel").innerHTML=CITIES.map(c=>`<option value="${c.id}"${c.id===state.city.id?" selected":""}>${esc(c.name)}</option>`).join("");}
+async function geocodeCity(){
+ const q=el("citySearch").value.trim(); if(!q)return;
+ const msg=el("citySearchMsg"); msg.textContent=t("city_searching");
+ try{
+  const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=${LANG}&format=json`,{mode:"cors"});
+  const j=await r.json(); const c=(j.results||[])[0];
+  if(!c){msg.textContent=t("city_notfound");return;}
+  const nm=c.name+(c.country_code?", "+c.country_code:"");
+  el("cfgCityName").value=nm; el("cfgLat").value=c.latitude.toFixed(4); el("cfgLon").value=c.longitude.toFixed(4);
+  const cc=CITIES.find(x=>x.id==="custom"); cc.name=nm; cc.lat=c.latitude; cc.lon=c.longitude;
+  state.cfg.customName=nm; state.cfg.customLat=c.latitude; state.cfg.customLon=c.longitude;
+  state.city=cc; buildCities(); state.approaches.forEach(computeObs); render();
+  msg.textContent="\u2713 "+nm+" \u00b7 "+c.latitude.toFixed(2)+", "+c.longitude.toFixed(2);
+ }catch(e){msg.textContent=t("city_notfound");}
+}
+
+/* ===== reportería (reingresos) ===== */
+function currentYear(){return new Date().getUTCFullYear();}
+function range12mo(){const now=new Date();const from=new Date(now.getTime()-365*86400000);return from.toISOString().slice(0,10)+" \u2192 "+now.toISOString().slice(0,10);}
+function reentries12mo(){const cut=Date.now()-365*86400000;return state.fireballs.filter(f=>new Date(f.date).getTime()>=cut).sort((a,b)=>new Date(b.date)-new Date(a.date));}
+function possibleReentries(){
+ const subLunar=state.approaches.filter(a=>a.dist_ld<1).sort((a,b)=>a.dist_ld-b.dist_ld);
+ const sentryCand=state.sentry.filter(s=>s.ip>0).sort((a,b)=>b.ps-a.ps);
+ return {subLunar,sentryCand};
+}
+function buildReport(){
+ const srcNames={jpl_cad:"JPL/CNEOS Close Approach",jpl_sentry:"JPL/CNEOS Sentry",jpl_fireball:"JPL/CNEOS Fireballs",neows:"NASA NeoWs",esa_neocc:"ESA NEOCC"};
+ const stWord={ok:t("rep_ok"),fail:t("rep_fail"),off:t("rep_off"),pending:"\u2014"};
+ const usedRows=SOURCES.map(s=>{const st=(state.srcStatus||{})[s.id]||(s.on?"pending":"off");const err=(state.srcErr||{})[s.id];
+   return `<tr><td>${esc(srcNames[s.id]||s.id)}</td><td>${esc(s.url)}</td><td>${stWord[st]||st}${err?" ("+esc(err)+")":""}</td></tr>`;}).join("");
+ const re=reentries12mo();
+ const totE=re.reduce((s,f)=>s+(f.energy_kt||0),0);
+ const reRows=re.length?re.map(f=>`<tr><td>${f.date.replace("T"," ").replace("Z","").slice(0,16)}</td><td>${f.energy_kt} kt</td><td>${f.lat!=null?f.lat.toFixed(1)+"\u00b0, "+f.lon.toFixed(1)+"\u00b0":"\u2014"}</td><td>${f.vel!=null?f.vel.toFixed(1)+" km/s":"\u2014"}</td></tr>`).join(""):`<tr><td colspan="4" style="color:var(--text-faint)">${t("rep_none_re")}</td></tr>`;
+ const pr=possibleReentries();
+ const slRows=pr.subLunar.length?pr.subLunar.map(a=>`<tr><td>${esc(a.des)}</td><td>${a.dateObj.toISOString().slice(0,10)}</td><td>${a.dist_ld.toFixed(3)} ${t("col_ld")}</td><td>${a.diam_m?fmtDiam(a.diam_m):"\u2014"}</td></tr>`).join(""):`<tr><td colspan="4" style="color:var(--text-faint)">${t("rep_none_sl")}</td></tr>`;
+ const scRows=pr.sentryCand.length?pr.sentryCand.map(s=>`<tr><td>${esc(s.des)}</td><td>${s.years}</td><td>${fmtSci(s.ip)}</td><td>P ${s.ps.toFixed(1)}</td></tr>`).join(""):`<tr><td colspan="4" style="color:var(--text-faint)">${t("rep_none_sc")}</td></tr>`;
+ return `<div class="rep-meta">
+   <div><b>${t("rep_gen")}:</b> ${new Date().toISOString().slice(0,16).replace("T"," ")} UTC</div>
+   <div><b>${t("rep_year")}:</b> ${range12mo()} &nbsp; <b>${t("rep_city")}:</b> ${esc(state.city.name)}</div>
+  </div>
+  <div class="rep-sec">${t("rep_sources")}</div>
+  <table class="rep"><tr><th>${t("rep_source")}</th><th>URL</th><th>${t("rep_status")}</th></tr>${usedRows}</table>
+  <div class="rep-sec">${t("rep_year_re")}</div>
+  <div class="rep-meta"><b>${t("rep_count")}:</b> ${re.length} &nbsp; <b>${t("rep_etotal")}:</b> ${totE.toFixed(2)} kt</div>
+  <table class="rep"><tr><th>${t("f_fdate")} (UTC)</th><th>${t("f_fenergy")}</th><th>${t("f_floc")}</th><th>${t("f_fvel")}</th></tr>${reRows}</table>
+  <div class="rep-sec">${t("rep_poss")}</div>
+  <div class="rep-meta">${t("rep_poss_sub")}</div>
+  <table class="rep"><tr><th>${t("rep_object")}</th><th>${t("f_date")}</th><th>${t("f_dist_ld")}</th><th>${t("f_diam")}</th></tr>${slRows}</table>
+  <div class="rep-meta" style="margin-top:8px">${t("rep_poss_sentry")}</div>
+  <table class="rep"><tr><th>${t("rep_object")}</th><th>${t("f_years")}</th><th>${t("f_ip")}</th><th>${t("f_ps")}</th></tr>${scRows}</table>
+  <div class="rep-note">${t("rep_method")}</div>`;
+}
+function openReport(){el("repBody").innerHTML=buildReport();el("rep").classList.add("open");}
+function openHelp(){
+  const en=`
+    <ol style="margin:0;padding:0 0 0 18px;line-height:1.5;font-size:13px">
+      <li><b>Observe.</b> The radar and timeline show close approaches in lunar distances (LD). The History button toggles the last 12 months. Click any dot or row for detail.</li>
+      <li><b>Orient.</b> Switch to the impact-risk view (JPL Sentry + ESA NEOCC); a check mark means both catalogs corroborate the object.</li>
+      <li><b>Decide.</b> Sort and filter the list by source, then prioritize what matters.</li>
+      <li><b>Act.</b> The &#128276; alert console lists threshold-crossing objects; acknowledge them, let them escalate, and Dispatch relays to Telegram/email. OALM tasking gives a priority observation list.</li>
+      <li><b>&#9881; Settings.</b> Set the observation window, magnitude, thresholds and any city worldwide. The Report button builds a reentry/situation report.</li>
+      <li><b>Language &amp; SSA.</b> The flag toggles English/Spanish; SSA&#8599; opens the satellite visor.</li>
+    </ol>`;
+  const es=`
+    <ol style="margin:0;padding:0 0 0 18px;line-height:1.5;font-size:13px">
+      <li><b>Observar.</b> El radar y la l&iacute;nea de tiempo muestran aproximaciones en distancias lunares (LD). El bot&oacute;n Hist&oacute;rico activa los &uacute;ltimos 12 meses. Clic en un punto o fila para el detalle.</li>
+      <li><b>Orientar.</b> Cambi&aacute; a la vista de riesgo de impacto (JPL Sentry + ESA NEOCC); un tilde indica que ambos cat&aacute;logos corroboran el objeto.</li>
+      <li><b>Decidir.</b> Orden&aacute; y filtr&aacute; la lista por fuente, y prioriz&aacute; lo que importa.</li>
+      <li><b>Actuar.</b> La consola &#128276; lista los objetos que cruzan umbrales; acus&aacute;, dej&aacute; que escalen, y Despachar relaya a Telegram/correo. El tasking OALM da una lista de observaci&oacute;n priorizada.</li>
+      <li><b>&#9881; Ajustes.</b> Defin&iacute; ventana de observaci&oacute;n, magnitud, umbrales y cualquier ciudad del mundo. El bot&oacute;n Reporte arma un informe de reentrada/situaci&oacute;n.</li>
+      <li><b>Idioma y SSA.</b> La bandera alterna ingl&eacute;s/espa&ntilde;ol; SSA&#8599; abre el visor de sat&eacute;lites.</li>
+    </ol>`;
+  el("helpBody").innerHTML=LANG==="en"?en:es;
+  el("help").classList.add("open");
+}
+function downloadReport(){
+ const html=`<!doctype html><meta charset="utf-8"><title>${t("rep_title")} ${currentYear()}</title>`+
+  `<style>body{font-family:system-ui,sans-serif;background:#081420;color:#d6e6f0;padding:24px;max-width:900px;margin:auto}`+
+  `h1{color:#3fd0c8;font-size:18px}.rep-sec{color:#3fd0c8;text-transform:uppercase;letter-spacing:1.5px;font-size:12px;border-bottom:1px solid #173347;padding-bottom:4px;margin:18px 0 6px}`+
+  `table.rep{width:100%;border-collapse:collapse;font-family:ui-monospace,monospace;font-size:12px}table.rep th{text-align:left;color:#456478;padding:5px;border-bottom:1px solid #173347}table.rep td{padding:5px;border-bottom:1px solid #11283a}`+
+  `.rep-meta{font-family:ui-monospace,monospace;font-size:12px;color:#6f93a6;line-height:1.7}.rep-meta b{color:#d6e6f0}.rep-note{font-size:11px;color:#456478;margin-top:12px}</style>`+
+  `<h1>NEO Watch \u00b7 ${t("rep_title")}</h1>`+buildReport();
+ const blob=new Blob([html],{type:"text/html"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="neo_reentry_report_"+currentYear()+".html";a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+
+/* ===== wiring ===== */
+function setStage(st){state.stage=st;state.selected=null;el("drawer").classList.remove("open");
+ document.querySelectorAll(".stage").forEach(s=>s.classList.toggle("on",s.getAttribute("data-stage")===st));
+ buildSort();buildSrcFilter();render();}
+async function init(){
+ state.acks=loadAcks(); await Backend.init(); if(Backend.on){await Backend.refresh();}else{state.incidents=loadIncidents();}
+ applyI18n(); updateAuthBadge(); buildCities();
+ document.querySelectorAll(".stage").forEach(s=>s.addEventListener("click",()=>setStage(s.getAttribute("data-stage"))));
+ el("langBtn").addEventListener("click",()=>setLang(LANG==="en"?"es":"en"));
+ el("citySel").addEventListener("change",e=>{state.city=CITIES.find(c=>c.id===e.target.value)||CITIES[0];state.approaches.forEach(computeObs);render();});
+ el("rateSel").addEventListener("change",e=>{state.rate=+e.target.value;el("sysRate").textContent=(RATES.find(r=>r[1]===state.rate)||["",""])[0]?t(RATES.find(r=>r[1]===state.rate)[0]):"";});
+ el("playBtn").addEventListener("click",()=>{state.playing=!state.playing;el("playBtn").textContent=state.playing?t("btn_pause"):t("btn_play");});
+ el("nowBtn").addEventListener("click",()=>{state.sim=new Date();updateClock();render();});
+ el("histBtn").addEventListener("click",()=>{state.showHistory=!state.showHistory;el("histBtn").classList.toggle("on",state.showHistory);render();});
+ el("dirBtn").addEventListener("click",()=>{state.sortDir=state.sortDir==="asc"?"desc":"asc";buildSort();renderList();});
+ el("srcFilter").addEventListener("change",e=>{state.srcFilter=e.target.value;render();});
+ el("refreshBtn").addEventListener("click",()=>refresh());
+ el("reportBtn").addEventListener("click",openReport);
+ el("helpBtn").addEventListener("click",openHelp);
+ el("helpClose").addEventListener("click",()=>el("help").classList.remove("open"));
+ el("repClose").addEventListener("click",()=>el("rep").classList.remove("open"));
+ el("repDl").addEventListener("click",downloadReport);
+ el("cfgBtn").addEventListener("click",openCfg);
+ el("cfgUseBackend").addEventListener("click",()=>el("cfgUseBackend").classList.toggle("on"));
+ el("cfgAlNotify").addEventListener("click",()=>el("cfgAlNotify").classList.toggle("on"));
+ el("cfgAlSound").addEventListener("click",()=>el("cfgAlSound").classList.toggle("on"));
+ el("alertBtn").addEventListener("click",openAlertConsole);
+ el("triageBtn").addEventListener("click",openTriage);
+ el("boardConsole").addEventListener("click",openAlertConsole);
+ el("boardExport").addEventListener("click",downloadTasking);
+ el("calBtn").addEventListener("click",openAgenda);
+ el("calClose").addEventListener("click",()=>el("calM").classList.remove("open"));
+ el("triageClose").addEventListener("click",()=>el("triageM").classList.remove("open"));
+ el("trqSev").addEventListener("change",renderTriage);
+ el("trqState").addEventListener("change",renderTriage);
+ el("alClose").addEventListener("click",()=>el("alertM").classList.remove("open"));
+ el("alAck").addEventListener("click",ackAll);
+ el("alDispatch").addEventListener("click",dispatchAll);
+ el("cfgClose").addEventListener("click",()=>el("cfg").classList.remove("open"));
+ el("cfgApply").addEventListener("click",()=>applyCfg());
+ el("cityGo").addEventListener("click",geocodeCity);
+ el("citySearch").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();geocodeCity();}});
+ el("dClose").addEventListener("click",()=>{el("drawer").classList.remove("open");state.selected=null;renderScope();renderTimeline();});
+ el("search").addEventListener("input",renderList);
+ el("sortSel").addEventListener("change",e=>{state.sort=e.target.value;render();});
+ wireInfo(document);
+ window.addEventListener("resize",()=>{renderScope();renderTimeline();});
+ render(); refresh();
+ requestAnimationFrame(loop);
+}
+init();
+</script>

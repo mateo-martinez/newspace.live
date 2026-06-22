@@ -1,0 +1,1114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Earth &amp; Space Weather Watch — NOAA GOES, NASA &amp; SWPC</title>
+<meta name="description" content="Georeferenced multi-source satellite imagery (NOAA GOES, NASA MODIS/VIIRS, Esri, Sentinel-2) for any country or city, with precise outlines, a compare/blend layer, NOAA's recent animation loop, and real-time space weather from NOAA SWPC." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+
+<style>
+:root{
+  --void:#05060d;--cloud:#0b1020;--cloud-2:#111a30;--cloud-3:#16223e;--line:#243353;
+  --cold:#6f8fd6;--ice:#a9dcff;--warm:#f3ad5e;--ir:#e0653f;--sim:#5fd0a0;
+  --eo:#2fd4c0;
+  --text:#eaeefb;--muted:#93a0c2;--muted-2:#6b769a;
+  --ok:#5fd0a0;--watch:#f3ad5e;--alert:#e0653f;--quiet:#6f8fd6;
+  --shadow:0 18px 50px -20px rgba(0,0,0,.8);--r:16px;--maxw:1120px;
+  --display:"Space Grotesk",system-ui,sans-serif;--body:"Inter",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--void);color:var(--text);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(1100px 700px at 82% -8%, rgba(47,212,192,.10), transparent 60%),
+    radial-gradient(1000px 800px at 8% 2%, rgba(111,143,214,.12), transparent 60%),
+    radial-gradient(900px 900px at 50% 120%, rgba(243,173,94,.05), transparent 60%);}
+a{color:var(--ice);text-decoration:none}
+h1,h2,h3,h4{font-family:var(--display);font-weight:600;line-height:1.12;letter-spacing:-.01em;margin:0}
+p{margin:0 0 1em}
+.mono{font-family:var(--mono)}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+section{padding:56px 0;position:relative}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--eo);margin:0 0 14px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:26px;height:1px;background:linear-gradient(90deg,var(--eo),transparent)}
+.sec-title{font-size:clamp(1.6rem,3.6vw,2.3rem);margin-bottom:12px}
+.lede{color:var(--muted);font-size:1.04rem;max-width:720px}
+
+.topbar{position:sticky;top:0;z-index:80;backdrop-filter:blur(10px);background:rgba(5,6,13,.62);border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;padding-top:13px;padding-bottom:13px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:600;letter-spacing:-.01em}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:var(--eo);box-shadow:0 0 14px var(--eo)}
+.brand small{font-family:var(--mono);font-weight:400;color:var(--muted-2);font-size:.7rem;letter-spacing:.12em}
+.flagbtn{position:fixed;top:11px;right:16px;z-index:1200;width:34px;height:24px;border-radius:5px;border:1px solid var(--line);background:rgba(11,16,32,.8);cursor:pointer;overflow:hidden;padding:0;display:flex;align-items:center;justify-content:center}
+.flagbtn:hover{border-color:var(--eo)}
+.flagbtn svg{width:100%;height:100%;display:block}
+
+.hero{padding:46px 0 26px}
+.hero h1{font-size:clamp(2rem,5vw,3rem);margin-bottom:14px}
+.hero .lede{font-size:1.1rem}
+.src-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.src-pill{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:5px 11px;background:rgba(17,26,48,.5)}
+.src-pill b{color:var(--eo);font-weight:500}
+
+.panel{background:linear-gradient(180deg,rgba(17,26,48,.55),rgba(11,16,32,.5));border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.controls{display:flex;flex-wrap:wrap;gap:13px 18px;align-items:flex-end;padding:16px 20px;border-bottom:1px solid var(--line)}
+.field{display:flex;flex-direction:column;gap:6px;min-width:150px}
+.field.grow{flex:1;min-width:200px}
+.field label{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted-2)}
+select,input[type=text]{appearance:none;background:rgba(5,6,13,.6);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px 12px;font-family:var(--body);font-size:.92rem;width:100%}
+select:focus,input:focus{outline:2px solid var(--eo);outline-offset:1px;border-color:var(--eo)}
+.row-inline{display:flex;gap:8px;align-items:center}
+.checks{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.chk{display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--muted);cursor:pointer;user-select:none}
+.chk input{appearance:none;width:17px;height:17px;border:1px solid var(--line);border-radius:5px;background:rgba(5,6,13,.6);cursor:pointer;position:relative;flex:none}
+.chk input:checked{background:var(--eo);border-color:var(--eo)}
+.chk input:checked::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--void);font-size:.72rem;font-weight:700}
+.toggle{display:flex;align-items:center;gap:9px;font-size:.9rem;color:var(--muted)}
+.switch{position:relative;width:42px;height:23px;border-radius:999px;background:var(--cloud-3);border:1px solid var(--line);cursor:pointer;transition:background .2s;flex:none}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s}
+.switch[aria-checked=true]{background:rgba(47,212,192,.25);border-color:var(--eo)}
+.switch[aria-checked=true]::after{transform:translateX(19px);background:var(--eo)}
+.btn{font-family:var(--body);font-weight:600;font-size:.88rem;color:var(--void);background:var(--eo);border:none;border-radius:9px;padding:9px 14px;cursor:pointer;transition:filter .15s,transform .05s;white-space:nowrap}
+.btn:hover{filter:brightness(1.08)}.btn:active{transform:translateY(1px)}
+.btn.ghost{background:transparent;color:var(--eo);border:1px solid var(--eo)}
+.btn.mini{padding:8px 11px;font-size:.95rem;line-height:1}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+input[type=range]{accent-color:var(--eo)}
+.opacity-wrap{display:flex;flex-direction:column;gap:6px;min-width:150px}
+.opacity-wrap input[type=range]{width:100%}
+
+.mapbox{position:relative}
+#map{height:580px;border-radius:0;overflow:hidden;z-index:0;background:#02030a}
+.leaflet-container{background:#02030a;font-family:var(--body)}
+.leaflet-control-zoom a{background:rgba(11,16,32,.92);color:var(--text);border-color:var(--line)}
+.leaflet-control-zoom a:hover{background:var(--cloud-3);color:var(--eo)}
+.leaflet-bar{border-color:var(--line);box-shadow:var(--shadow)}
+.leaflet-control-attribution{background:rgba(5,6,13,.72)!important;color:var(--muted-2)!important;font-size:.64rem;max-width:62vw}
+.leaflet-control-attribution a{color:var(--muted)!important}
+.leaflet-control-scale-line{background:rgba(5,6,13,.6);color:var(--text);border-color:var(--line)}
+.leaflet-tooltip{background:var(--cloud-2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:.7rem;box-shadow:var(--shadow);padding:4px 8px}
+.leaflet-tooltip-top:before{border-top-color:var(--line)}
+.mapstamp{position:absolute;left:12px;bottom:10px;z-index:500;font-family:var(--mono);font-size:.72rem;color:var(--ice);background:rgba(5,6,13,.74);border:1px solid var(--line);border-radius:7px;padding:5px 9px;backdrop-filter:blur(4px);pointer-events:none;max-width:70%}
+.maperr{position:absolute;top:12px;left:12px;right:12px;z-index:600;display:none;background:rgba(20,8,8,.92);border:1px solid var(--alert);border-radius:10px;padding:11px 13px;font-size:.82rem;color:var(--text)}
+.maperr.show{display:block}
+.maperr code{font-family:var(--mono);color:var(--ice);font-size:.72rem;word-break:break-all;display:block;margin-top:5px}
+.noleaflet{display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);text-align:center;padding:30px}
+
+.timebar{display:flex;align-items:center;gap:14px;padding:14px 20px;border-top:1px solid var(--line);flex-wrap:wrap}
+.timebar.hide{display:none}
+.timebar input[type=range]{flex:1;min-width:160px}
+.timereadout{font-family:var(--mono);font-size:.74rem;color:var(--ice);min-width:175px}
+.timereadout .live{color:var(--eo)}
+.note{font-size:.85rem;color:var(--muted-2);margin-top:14px}
+.note b{color:var(--warm);font-weight:600}
+.note.src{color:var(--muted);border-left:2px solid var(--eo);padding-left:12px;margin-top:16px}
+
+/* NOAA GIF panel */
+.gifwrap{padding:0;overflow:hidden;border-radius:0 0 var(--r) var(--r)}
+.gifview{display:flex;align-items:center;justify-content:center;background:#02030a;min-height:320px;position:relative}
+.gifview img{max-width:100%;max-height:620px;display:block;transition:opacity .25s}
+.giferr{position:absolute;left:16px;right:16px;top:16px;display:none;background:rgba(20,8,8,.92);border:1px solid var(--alert);border-radius:10px;padding:11px 13px;font-size:.82rem}
+.giferr.show{display:block}
+.giferr code{font-family:var(--mono);color:var(--ice);font-size:.72rem;word-break:break-all;display:block;margin-top:5px}
+.gifcap{font-family:var(--mono);font-size:.66rem;color:var(--muted-2);padding:10px 20px;border-top:1px solid var(--line);word-break:break-all}
+
+.swgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.card{background:linear-gradient(180deg,rgba(17,26,48,.55),rgba(11,16,32,.5));border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 16px;position:relative;overflow:hidden}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--quiet)}
+.card.s-ok::before{background:var(--ok)}.card.s-watch::before{background:var(--watch)}.card.s-alert::before{background:var(--alert)}
+.card .ttl{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted-2);margin-bottom:8px;display:flex;align-items:center;gap:7px}
+.card .big{font-family:var(--display);font-size:2.1rem;font-weight:600;line-height:1;letter-spacing:-.02em}
+.card .unit{font-size:.95rem;color:var(--muted);font-weight:400;margin-left:4px}
+.card .sub{font-size:.84rem;color:var(--muted);margin-top:8px}
+.card .badge{display:inline-block;font-family:var(--mono);font-size:.66rem;letter-spacing:.08em;padding:3px 9px;border-radius:999px;border:1px solid var(--line);margin-top:10px;color:var(--muted)}
+.card.s-ok .badge{color:var(--ok);border-color:rgba(95,208,160,.4)}
+.card.s-watch .badge{color:var(--watch);border-color:rgba(243,173,94,.4)}
+.card.s-alert .badge{color:var(--alert);border-color:rgba(224,101,63,.4)}
+.alerts{margin-top:16px}
+.alert-item{border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:10px;background:rgba(5,6,13,.4)}
+.alert-item .when{font-family:var(--mono);font-size:.68rem;color:var(--muted-2);letter-spacing:.06em}
+.alert-item .what{font-weight:600;margin:3px 0 4px;font-size:.95rem}
+.alert-item .msg{font-size:.84rem;color:var(--muted);white-space:pre-line;max-height:0;overflow:hidden;transition:max-height .25s}
+.alert-item.open .msg{max-height:340px;overflow:auto}
+.alert-item .tog{cursor:pointer;font-family:var(--mono);font-size:.7rem;color:var(--eo)}
+
+.help{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;border:1px solid var(--muted-2);color:var(--muted-2);font-size:.62rem;font-family:var(--mono);cursor:help;position:relative;vertical-align:middle}
+.help:hover{color:var(--eo);border-color:var(--eo)}
+.help .tip{visibility:hidden;opacity:0;position:absolute;bottom:150%;left:0;width:250px;background:var(--cloud-2);border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-family:var(--body);font-size:.78rem;line-height:1.45;color:var(--text);letter-spacing:0;text-transform:none;box-shadow:var(--shadow);z-index:30;transition:opacity .15s;text-align:left;font-weight:400}
+.help:hover .tip{visibility:visible;opacity:1}
+
+.relbox{margin-top:22px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.rel{border:1px solid var(--line);border-radius:12px;padding:15px 16px;background:rgba(11,16,32,.4)}
+.rel h4{font-size:.98rem;margin-bottom:6px;color:var(--eo)}
+.rel p{font-size:.85rem;color:var(--muted);margin:0}
+
+footer{border-top:1px solid var(--line);padding:34px 0 50px;color:var(--muted-2)}
+footer .wrap{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center}
+footer .lic{font-size:.8rem;max-width:680px}
+footer .mono{font-size:.74rem}
+/* environmental layers map + source drill-down */
+#envmap{height:560px;border-radius:0;overflow:hidden;z-index:0;background:#02030a}
+.srcwrap{padding:16px 20px;border-top:1px solid var(--line)}
+.srchead{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted-2);margin-bottom:10px}
+.srcitem{border:1px solid var(--line);border-radius:11px;margin-bottom:9px;background:rgba(5,6,13,.4);overflow:hidden}
+.srcitem .sh{display:flex;align-items:center;gap:10px;padding:11px 13px;cursor:pointer}
+.srcitem .dotc{width:11px;height:11px;border-radius:50%;flex:none;box-shadow:0 0 8px currentColor}
+.srcitem .nm{font-weight:600;font-size:.92rem}
+.srcitem .pv{font-family:var(--mono);font-size:.68rem;color:var(--muted);margin-left:auto;text-align:right}
+.srcitem .ar{color:var(--muted-2);transition:transform .2s;flex:none}
+.srcitem.open .ar{transform:rotate(90deg)}
+.srcitem .sb{max-height:0;overflow:hidden;transition:max-height .28s}
+.srcitem.open .sb{max-height:400px}
+.srcitem .sb .in{padding:2px 13px 13px}
+.srcitem .sb table{width:100%;border-collapse:collapse;font-size:.83rem;color:var(--muted)}
+.srcitem .sb td{padding:3px 0;vertical-align:top}
+.srcitem .sb td:first-child{color:var(--muted-2);width:32%;font-family:var(--mono);font-size:.7rem;letter-spacing:.04em}
+.srcitem .sb a{color:var(--eo)}
+.srcitem .warn{color:var(--ir);font-size:.78rem;padding:0 13px 11px}
+.envempty{color:var(--muted-2);font-size:.85rem;font-style:italic}
+.windybox{margin-top:22px}
+.windybox iframe{width:100%;height:470px;border:1px solid var(--line);border-radius:var(--r);background:#02030a;display:block}
+@media (max-width:560px){.controls{padding:14px}.field{min-width:46%}#map,#envmap{height:460px}.windybox iframe{height:380px}}
+</style>
+</head>
+<body>
+
+<button class="flagbtn" id="flagBtn" title="Cambiar idioma / Switch language" aria-label="Switch language"></button>
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand"><span class="dot"></span> newspace.live <small data-i18n="brand.tag">/ EARTH WATCH</small></div>
+    <a href="index.html" class="mono" style="font-size:.74rem;letter-spacing:.1em;color:var(--muted)" data-i18n="nav.hub">← HUB</a>
+  </div>
+</header>
+
+<div class="wrap hero">
+  <div class="eyebrow" data-i18n="hero.eyebrow">NOAA · NASA · SPACE WEATHER</div>
+  <h1 data-i18n="hero.title">Earth &amp; Space Weather Watch</h1>
+  <p class="lede" data-i18n="hero.lede">Georeferenced satellite imagery from several sources over any country or city — NOAA's GOES, NASA's MODIS and VIIRS, Esri and Sentinel-2 — with precise national outlines, a compare/blend layer, NOAA's recent animation loop, and real-time space weather from the Space Weather Prediction Center.</p>
+  <div class="src-row">
+    <span class="src-pill"><b>NOAA GOES</b> · East / West</span>
+    <span class="src-pill"><b>NASA</b> · MODIS · VIIRS · GIBS</span>
+    <span class="src-pill"><b>Esri</b> · <b>Sentinel-2</b></span>
+    <span class="src-pill"><b>SWPC</b> · space weather</span>
+    <span class="src-pill" id="localClock">Montevideo · --:--</span>
+  </div>
+</div>
+
+<!-- ============ GEOREFERENCED MAP ============ -->
+<section id="imagery">
+  <div class="wrap">
+    <div class="eyebrow" data-i18n="img.eyebrow">SATELLITE MAP</div>
+    <h2 class="sec-title" data-i18n="img.title">Georeferenced multi-source map</h2>
+    <p class="lede" data-i18n="img.lede">Pick a country to draw its outline and frame it, or search any city. Choose a satellite source, add a second source as a compare layer and blend them with the opacity slider, step back through earlier GOES frames, or play a loop.</p>
+
+    <div class="panel" style="margin-top:22px">
+      <div class="controls">
+        <div class="field grow">
+          <label data-i18n="map.lbl.layer">Imagery source <span class="help">i<span class="tip" data-i18n="map.tip.layer">GOES is geostationary (a frame every ~10 min). MODIS/VIIRS are polar daily true-colour mosaics. Esri and Sentinel-2 are high-resolution reference imagery. OpenStreetMap and the dark map are vector references that always work.</span></span></label>
+          <select id="selLayer">
+            <option value="modis_terra" data-i18n="map.opt.modis_terra">NASA MODIS Terra · True Color (daily)</option>
+            <option value="viirs_tc" data-i18n="map.opt.viirs_tc">NASA VIIRS · True Color (daily)</option>
+            <option value="esri" data-i18n="map.opt.esri">Esri World Imagery (high-res)</option>
+            <option value="eox_s2" data-i18n="map.opt.eox_s2">Sentinel-2 cloudless · EOX</option>
+            <option value="viirs_night" data-i18n="map.opt.viirs_night">NASA VIIRS · Earth at Night</option>
+            <option value="osm" data-i18n="map.opt.osm">OpenStreetMap (reference)</option>
+            <option value="dark" data-i18n="map.opt.dark">Dark map (reference)</option>
+          </select>
+        </div>
+        <div class="field grow">
+          <label data-i18n="map.lbl.compare">Compare layer</label>
+          <select id="selCompare">
+            <option value="none" data-i18n="map.compare.none">None</option>
+            <option value="modis_terra" data-i18n="map.opt.modis_terra">NASA MODIS Terra · True Color (daily)</option>
+            <option value="viirs_tc" data-i18n="map.opt.viirs_tc">NASA VIIRS · True Color (daily)</option>
+            <option value="esri" data-i18n="map.opt.esri">Esri World Imagery (high-res)</option>
+            <option value="eox_s2" data-i18n="map.opt.eox_s2">Sentinel-2 cloudless · EOX</option>
+            <option value="viirs_night" data-i18n="map.opt.viirs_night">NASA VIIRS · Earth at Night</option>
+          </select>
+        </div>
+        <div class="opacity-wrap">
+          <label data-i18n="map.opacity">Compare opacity</label>
+          <input type="range" id="opacity" min="0" max="100" step="1" value="65" />
+        </div>
+        <div class="toggle" style="margin-left:auto">
+          <span data-i18n="map.live">Live (latest)</span>
+          <div class="switch" id="liveSw" role="switch" aria-checked="true" tabindex="0"></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="field">
+          <label data-i18n="map.lbl.region">Country</label>
+          <select id="selCountry"></select>
+        </div>
+        <div class="field grow">
+          <label data-i18n="map.lbl.city">Find a city</label>
+          <div class="row-inline">
+            <input type="text" id="citySearch" data-i18n-ph="map.city.ph" placeholder="e.g. Montevideo, Bogotá, Madrid…" />
+            <button class="btn" id="btnCity" data-i18n="map.city.go">Go</button>
+          </div>
+        </div>
+        <div class="field" style="min-width:auto">
+          <label data-i18n="map.lbl.over">Overlays</label>
+          <div class="checks">
+            <label class="chk"><input type="checkbox" id="ckOutline" checked> <span data-i18n="map.outline">Country outline</span></label>
+            <label class="chk"><input type="checkbox" id="ckSites" checked> <span data-i18n="map.sites">OALM site</span></label>
+          </div>
+        </div>
+        <div class="field" style="min-width:auto">
+          <label>&nbsp;</label>
+          <button class="btn ghost" id="btnReset" data-i18n="map.reset">Frame region</button>
+        </div>
+      </div>
+
+      <div class="mapbox">
+        <div id="map"><div class="noleaflet" id="noLeaflet" data-i18n="map.noleaflet">Loading the map…</div></div>
+        <div class="mapstamp" id="mapStamp"></div>
+        <div class="maperr" id="mapErr">
+          <span id="mapErrMsg" data-i18n="map.tileerr">This satellite layer didn't return tiles. NOAA/NASA identifiers can change (EOX Sentinel-2 layers are tagged by year). Try another source, or switch to OpenStreetMap — outlines and markers work on any base. URL tried:</span>
+          <code id="mapErrUrl"></code>
+        </div>
+      </div>
+
+      <div class="timebar hide" id="timeBar">
+        <button class="btn mini" id="btnStepBack" title="−10 min">◀</button>
+        <button class="btn mini" id="btnPlay" data-i18n="map.play">Play</button>
+        <button class="btn mini" id="btnStepFwd" title="+10 min">▶</button>
+        <input type="range" id="timeRange" min="0" max="36" step="1" value="36" />
+        <span class="timereadout" id="timeReadout"></span>
+      </div>
+    </div>
+
+    <p class="note src" data-i18n="map.sources">Cross-referenced sources: NOAA GOES via NASA GIBS (geostationary, ~10-min), NASA MODIS Terra and VIIRS daily true-colour and night-lights, Esri World Imagery, and EOX Sentinel-2 cloudless. Put any two on the map with the Compare layer and blend them with the opacity slider — e.g. live GOES cloud over a Sentinel-2 land background.</p>
+    <p class="note" data-i18n="map.note">Everything loads straight from NOAA, NASA, Esri and EOX in your browser — no key, no backend. City search uses OpenStreetMap's Nominatim (please keep it light). If a source stays blank, its identifier likely changed; they all live in one editable <b>LAYERS</b> object near the top of the script.</p>
+  </div>
+</section>
+
+<!-- ============ ENVIRONMENTAL DATA LAYERS ============ -->
+<section id="envdata" style="padding-top:8px">
+  <div class="wrap">
+    <div class="eyebrow" data-i18n="env.eyebrow">ENVIRONMENTAL LAYERS · MULTI-SOURCE</div>
+    <h2 class="sec-title" data-i18n="env.title">Environment: fires, temperature, air &amp; weather</h2>
+    <p class="lede" data-i18n="env.lede">A second map for environmental data, cross-referencing NOAA and other providers: active fires, land and sea surface temperature, aerosols/smoke, and live precipitation and clouds. Every layer you switch on is listed below with its full source — tap to drill down.</p>
+
+    <div class="panel" style="margin-top:22px">
+      <div class="controls">
+        <div class="field grow">
+          <label data-i18n="env.base">Base imagery</label>
+          <select id="envBase">
+            <option value="viirs_noaa20_tc" data-i18n="env.opt.viirs_noaa20_tc">NOAA-20 VIIRS · True Color (daily)</option>
+            <option value="modis_tc" data-i18n="env.opt.modis_tc">NASA MODIS · True Color (daily)</option>
+            <option value="dark" data-i18n="env.opt.dark">Dark reference</option>
+            <option value="osm" data-i18n="env.opt.osm">OpenStreetMap</option>
+          </select>
+        </div>
+        <div class="field grow">
+          <label data-i18n="env.layers">Data layers</label>
+          <div class="checks">
+            <label class="chk"><input type="checkbox" id="ev_fires_viirs" checked> <span data-i18n="env.lyr.fires_viirs">Active fires (NOAA-20)</span></label>
+            <label class="chk"><input type="checkbox" id="ev_fires_modis"> <span data-i18n="env.lyr.fires_modis">Active fires (MODIS)</span></label>
+            <label class="chk"><input type="checkbox" id="ev_lst"> <span data-i18n="env.lyr.lst">Land surface temp</span></label>
+            <label class="chk"><input type="checkbox" id="ev_sst"> <span data-i18n="env.lyr.sst">Sea surface temp</span></label>
+            <label class="chk"><input type="checkbox" id="ev_aod"> <span data-i18n="env.lyr.aod">Aerosols / smoke</span></label>
+            <label class="chk"><input type="checkbox" id="ev_precip"> <span data-i18n="env.lyr.precip">Precipitation (live)</span></label>
+            <label class="chk"><input type="checkbox" id="ev_clouds"> <span data-i18n="env.lyr.clouds">Clouds IR (live)</span></label>
+          </div>
+        </div>
+        <div class="opacity-wrap">
+          <label data-i18n="env.opacity">Layer opacity</label>
+          <input type="range" id="envOpacity" min="20" max="100" step="1" value="85" />
+        </div>
+        <div class="field" style="min-width:auto">
+          <label>&nbsp;</label>
+          <button class="btn ghost" id="envReset" data-i18n="env.reset">Frame Uruguay</button>
+        </div>
+      </div>
+
+      <div class="mapbox">
+        <div id="envmap"><div class="noleaflet" id="noEnv" data-i18n="map.noleaflet">Loading the map…</div></div>
+        <div class="mapstamp" id="envStamp"></div>
+      </div>
+
+      <div class="srcwrap">
+        <div class="srchead" data-i18n="env.active">Active sources — tap any to drill down</div>
+        <div id="srcList"><div class="envempty" data-i18n="env.none">Switch on a layer to see its full source here.</div></div>
+      </div>
+    </div>
+    <p class="note src" data-i18n="env.note">Fires, land/sea temperature and aerosols come from NASA/NOAA via GIBS (daily, near real-time); precipitation and infrared clouds are live from RainViewer (which aggregates national weather-service radars, including NOAA). Each layer carries its own attribution on the map and a full drill-down above. Overlay identifiers live in the editable ENV object in the script.</p>
+
+    <!-- Winds & temperature (live model) -->
+    <h3 class="sec-title" style="font-size:clamp(1.3rem,2.6vw,1.7rem);margin-top:40px" data-i18n="windy.title">Winds &amp; temperature (live model)</h3>
+    <p class="lede" data-i18n="windy.lede">Animated winds, temperature, pressure and more over Uruguay, from Windy — switchable between the NOAA GFS and ECMWF models. Click anywhere on it to read the values at that point.</p>
+    <div class="windybox">
+      <iframe title="Windy — winds and temperature over Uruguay" loading="lazy"
+        src="https://embed.windy.com/embed2.html?lat=-32.8&lon=-56.0&detailLat=-34.9&detailLon=-56.16&zoom=5&level=surface&overlay=wind&product=ecmwf&menu=&message=true&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1"></iframe>
+    </div>
+    <p class="note" data-i18n="windy.note">Source: Windy.com, rendering ECMWF and NOAA GFS forecast models. Embedded directly from Windy; interaction and values are provided by Windy.</p>
+  </div>
+</section>
+
+<!-- ============ NOAA RECENT LOOP (GIF) ============ -->
+<section id="loop" style="padding-top:8px">
+  <div class="wrap">
+    <div class="eyebrow" data-i18n="gif.eyebrow">NOAA STAR · RECENT LOOP</div>
+    <h2 class="sec-title" data-i18n="gif.title">NOAA's latest animated loop</h2>
+    <p class="lede" data-i18n="gif.lede">NOAA STAR publishes ready-made animation loops by region/sector. The newest loop is found automatically (its filename carries a timestamp, so it changes constantly). Pick a satellite, region and product, then load the latest — or paste a NOAA GIF URL directly.</p>
+
+    <div class="panel" style="margin-top:22px">
+      <div class="controls">
+        <div class="field">
+          <label data-i18n="gif.sat">Satellite</label>
+          <select id="gifSat">
+            <option value="east">GOES-East (GOES-19)</option>
+            <option value="west">GOES-West (GOES-18)</option>
+          </select>
+        </div>
+        <div class="field grow">
+          <label data-i18n="gif.sector">Region / sector</label>
+          <select id="gifSector"></select>
+        </div>
+        <div class="field">
+          <label data-i18n="gif.prod">Product</label>
+          <select id="gifProd">
+            <option value="GEOCOLOR">GeoColor</option>
+            <option value="13">Clean IR (Band 13)</option>
+            <option value="AirMass">Air Mass</option>
+            <option value="Sandwich">Sandwich</option>
+          </select>
+        </div>
+        <div class="field" style="min-width:auto">
+          <label>&nbsp;</label>
+          <button class="btn" id="btnGif" data-i18n="gif.reload">Load latest loop</button>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="field grow">
+          <label data-i18n="gif.manual">Or paste a NOAA GIF URL</label>
+          <div class="row-inline">
+            <input type="text" id="gifManual" data-i18n-ph="gif.manual.ph" placeholder="https://cdn.star.nesdis.noaa.gov/…​.gif" />
+            <button class="btn ghost" id="btnGifManual" data-i18n="gif.manual.go">Show</button>
+          </div>
+        </div>
+      </div>
+      <div class="gifwrap">
+        <div class="gifview">
+          <div class="giferr" id="gifErr"><span id="gifErrMsg" data-i18n="gif.err">That GIF URL didn't load. NOAA prunes old loops, so a timestamped link expires after a while — load the latest, or paste a current URL. URL tried:</span><code id="gifErrUrl"></code><span id="gifErrLink"></span></div>
+          <img id="gifImg" alt="NOAA GOES recent animation loop" />
+        </div>
+        <div class="gifcap" id="gifCap" data-i18n="gif.loading">Finding the latest loop…</div>
+      </div>
+    </div>
+    <p class="note" data-i18n="gif.note">Source: NOAA NESDIS STAR GOES Image Viewer. These are per-sector loops (the full disk doesn't publish a fixed-name GIF). The newest file is discovered by listing NOAA's folder; if your browser blocks that listing, open the folder, copy the newest <span class="mono">.gif</span> name and paste the URL above. Loops cover roughly the last several hours.</p>
+  </div>
+</section>
+
+<!-- ============ SPACE WEATHER ============ -->
+<section id="spaceweather" style="padding-top:8px">
+  <div class="wrap">
+    <div class="eyebrow" data-i18n="sw.eyebrow">SPACE WEATHER · SWPC</div>
+    <h2 class="sec-title" data-i18n="sw.title">Real-time space environment</h2>
+    <p class="lede" data-i18n="sw.lede">Live from NOAA's Space Weather Prediction Center. These numbers are global, but they drive the conditions that matter locally for GNSS, HF radio, satellite operations and optical observing at OALM.</p>
+
+    <div class="swgrid" style="margin-top:24px">
+      <div class="card" id="cardKp">
+        <div class="ttl" data-i18n="sw.kp">GEOMAGNETIC Kp <span class="help">i<span class="tip" data-i18n="sw.kp.tip">Planetary Kp index, 0–9. From Kp 5 a geomagnetic storm is underway (NOAA G-scale G1–G5), which can degrade GNSS accuracy and HF propagation.</span></span></div>
+        <div class="big" id="kpVal">—</div>
+        <div class="sub" id="kpSub" data-i18n="sw.kp.q">Quiet</div>
+        <div class="badge" id="kpBadge">—</div>
+      </div>
+      <div class="card" id="cardWind">
+        <div class="ttl" data-i18n="sw.wind">SOLAR WIND SPEED <span class="help">i<span class="tip" data-i18n="sw.wind.tip">Bulk speed of the solar wind measured at the L1 point by DSCOVR. Typical ≈350–450 km/s; sustained &gt;600 km/s often precedes geomagnetic activity.</span></span></div>
+        <div class="big" id="windVal">—<span class="unit">km/s</span></div>
+        <div class="sub" id="windSub">—</div>
+        <div class="badge" id="windBadge">—</div>
+      </div>
+      <div class="card" id="cardBz">
+        <div class="ttl" data-i18n="sw.bz">IMF Bz <span class="help">i<span class="tip" data-i18n="sw.bz.tip">North–south component of the interplanetary magnetic field (nT). Strongly negative (southward) Bz couples energy into the magnetosphere and is the key storm driver.</span></span></div>
+        <div class="big" id="bzVal">—<span class="unit">nT</span></div>
+        <div class="sub" id="bzSub">—</div>
+        <div class="badge" id="bzBadge">—</div>
+      </div>
+      <div class="card" id="cardXray">
+        <div class="ttl" data-i18n="sw.xray">GOES X-RAY FLUX <span class="help">i<span class="tip" data-i18n="sw.xray.tip">Soft X-ray flux (0.1–0.8 nm) from GOES. Flare classes A/B/C/M/X — each step is ×10. M and X flares can trigger daytime HF radio blackouts and ionospheric disturbances.</span></span></div>
+        <div class="big" id="xrayVal">—</div>
+        <div class="sub" id="xraySub">—</div>
+        <div class="badge" id="xrayBadge">—</div>
+      </div>
+    </div>
+
+    <div class="relbox">
+      <div class="rel"><h4 data-i18n="sw.rel.gnss.t">GNSS positioning</h4><p data-i18n="sw.rel.gnss.b">High Kp and ionospheric storms add range error and can cause loss of lock — relevant for survey, precision agriculture and any GNSS-dependent timing.</p></div>
+      <div class="rel"><h4 data-i18n="sw.rel.hf.t">HF &amp; aviation radio</h4><p data-i18n="sw.rel.hf.b">M/X-class flares ionise the dayside D-layer, causing shortwave fade-outs on the sunlit side of the Earth — including South America when the flare is in local daytime.</p></div>
+      <div class="rel"><h4 data-i18n="sw.rel.sat.t">Satellite operations</h4><p data-i18n="sw.rel.sat.b">Storms heat and expand the upper atmosphere, raising drag on LEO objects and shifting orbits — directly relevant to SSA tracking and conjunction screening.</p></div>
+      <div class="rel"><h4 data-i18n="sw.rel.obs.t">Observing at OALM</h4><p data-i18n="sw.rel.obs.b">Space weather doesn't cloud the sky, but strong geomagnetic activity raises sky brightness and, at extreme storms, faint aurora can reach unusually low southern latitudes.</p></div>
+    </div>
+
+    <div class="alerts">
+      <div class="ttl mono" style="font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted-2);margin:24px 0 12px" data-i18n="sw.alerts">LATEST SWPC ALERTS &amp; BULLETINS</div>
+      <div id="alertList"><div class="alert-item"><span class="when" data-i18n="sw.alerts.loading">Loading alerts…</span></div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="lic" data-i18n="footer.lic">Built for educational and situational-awareness use. GOES, MODIS and VIIRS imagery via NASA GIBS / NOAA NESDIS. Recent loop via NOAA STAR. High-resolution imagery © Esri, Maxar, Earthstar Geographics; Sentinel-2 cloudless © EOX (contains modified Copernicus data). Space weather via NOAA SWPC and DSCOVR. Country outlines from Natural Earth and the world.geo.json project; city search via OpenStreetMap Nominatim. Basemaps © OpenStreetMap, © CARTO. NOAA, NASA and Esri do not endorse this page.</div>
+    <div class="mono">newspace.live</div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+/* ============================================================
+   i18n — English default, Spanish flag toggle
+   ============================================================ */
+const I18N = {
+  en:{
+    "brand.tag":"/ EARTH WATCH","nav.hub":"← HUB",
+    "hero.eyebrow":"NOAA · NASA · SPACE WEATHER",
+    "hero.title":"Earth & Space Weather Watch",
+    "hero.lede":"Georeferenced satellite imagery from several sources over any country or city — NOAA's GOES, NASA's MODIS and VIIRS, Esri and Sentinel-2 — with precise national outlines, a compare/blend layer, NOAA's recent animation loop, and real-time space weather from the Space Weather Prediction Center.",
+    "img.eyebrow":"SATELLITE MAP","img.title":"Georeferenced multi-source map",
+    "img.lede":"Pick a country to draw its outline and frame it, or search any city. Choose a satellite source, add a second source as a compare layer and blend them with the opacity slider, step back through earlier GOES frames, or play a loop.",
+    "map.lbl.layer":"Imagery source","map.tip.layer":"GOES is geostationary (a frame every ~10 min). MODIS/VIIRS are polar daily true-colour mosaics. Esri and Sentinel-2 are high-resolution reference imagery. OpenStreetMap and the dark map are vector references that always work.",
+    "map.opt.geocolor_e":"NOAA GOES-East · GeoColor","map.opt.ir13_e":"NOAA GOES-East · Clean IR (B13)","map.opt.geocolor_w":"NOAA GOES-West · GeoColor",
+    "map.opt.modis_terra":"NASA MODIS Terra · True Color (daily)","map.opt.viirs_tc":"NASA VIIRS · True Color (daily)","map.opt.viirs_night":"NASA VIIRS · Earth at Night",
+    "map.opt.esri":"Esri World Imagery (high-res)","map.opt.eox_s2":"Sentinel-2 cloudless · EOX","map.opt.osm":"OpenStreetMap (reference)","map.opt.dark":"Dark map (reference)",
+    "map.lbl.compare":"Compare layer","map.compare.none":"None","map.opacity":"Compare opacity",
+    "map.lbl.region":"Country","map.lbl.city":"Find a city","map.city.ph":"e.g. Montevideo, Bogotá, Madrid…","map.city.go":"Go",
+    "map.lbl.over":"Overlays","map.outline":"Country outline","map.sites":"OALM site","map.reset":"Frame region","map.live":"Live (latest)",
+    "map.play":"Play","map.pause":"Pause","map.noleaflet":"Loading the map…",
+    "map.tileerr":"This satellite layer didn't return tiles. NOAA/NASA identifiers can change (EOX Sentinel-2 layers are tagged by year). Try another source, or switch to OpenStreetMap — outlines and markers work on any base. URL tried:",
+    "map.fellback":"That source didn't load, so the map switched to NASA MODIS Terra (a reliable daily true-colour mosaic). Pick another source any time. URL that failed:",
+    "map.sources":"Cross-referenced sources on the map: NASA MODIS Terra and VIIRS daily true-colour and night-lights, Esri World Imagery, and EOX Sentinel-2 cloudless. Put any two on the map with the Compare layer and blend them with the opacity slider. Live GOES (geostationary) isn't served as web-map tiles, so it lives in the NOAA loop section below — and the space-weather panel is GOES-fed.",
+    "map.note":"Everything loads straight from NASA, Esri and EOX in your browser — no key, no backend. City search uses OpenStreetMap's Nominatim (please keep it light). If a source stays blank the map falls back to MODIS automatically; all identifiers live in one editable LAYERS object near the top of the script.",
+    "gif.eyebrow":"NOAA STAR · RECENT LOOP","gif.title":"NOAA's latest animated loop",
+    "gif.lede":"NOAA STAR publishes ready-made animation loops by region/sector. The newest loop is found automatically (its filename carries a timestamp, so it changes constantly). Pick a satellite, region and product, then load the latest — or paste a NOAA GIF URL directly.",
+    "gif.sat":"Satellite","gif.sector":"Region / sector","gif.prod":"Product","gif.reload":"Load latest loop",
+    "gif.manual":"Or paste a NOAA GIF URL","gif.manual.ph":"https://cdn.star.nesdis.noaa.gov/…​.gif","gif.manual.go":"Show","gif.loading":"Finding the latest loop…",
+    "gif.err":"That GIF URL didn't load. NOAA prunes old loops, so a timestamped link expires after a while — load the latest, or paste a current URL. URL tried:",
+    "gif.discoverr":"Couldn't list NOAA's folder from the browser (it may block cross-origin listing). Open the folder to copy the newest .gif name, then paste its URL above. Folder:",
+    "gif.note":"Source: NOAA NESDIS STAR GOES Image Viewer. These are per-sector loops (the full disk doesn't publish a fixed-name GIF). The newest file is discovered by listing NOAA's folder; if your browser blocks that listing, open the folder, copy the newest .gif name and paste the URL above. Loops cover roughly the last several hours.",
+    "env.eyebrow":"ENVIRONMENTAL LAYERS · MULTI-SOURCE","env.title":"Environment: fires, temperature, air & weather",
+    "env.lede":"A second map for environmental data, cross-referencing NOAA and other providers: active fires, land and sea surface temperature, aerosols/smoke, and live precipitation and clouds. Every layer you switch on is listed below with its full source — tap to drill down.",
+    "env.base":"Base imagery","env.layers":"Data layers","env.opacity":"Layer opacity","env.reset":"Frame Uruguay","env.active":"Active sources — tap any to drill down","env.none":"Switch on a layer to see its full source here.",
+    "env.note":"Fires, land/sea temperature and aerosols come from NASA/NOAA via GIBS (daily, near real-time); precipitation and infrared clouds are live from RainViewer (which aggregates national weather-service radars, including NOAA). Each layer carries its own attribution on the map and a full drill-down above. Overlay identifiers live in the editable ENV object in the script.",
+    "env.opt.viirs_noaa20_tc":"NOAA-20 VIIRS · True Color (daily)","env.opt.modis_tc":"NASA MODIS · True Color (daily)","env.opt.dark":"Dark reference","env.opt.osm":"OpenStreetMap",
+    "env.lyr.fires_viirs":"Active fires (NOAA-20)","env.lyr.fires_modis":"Active fires (MODIS)","env.lyr.lst":"Land surface temp","env.lyr.sst":"Sea surface temp","env.lyr.aod":"Aerosols / smoke","env.lyr.precip":"Precipitation (live)","env.lyr.clouds":"Clouds IR (live)",
+    "env.layererr":"this layer's tiles didn't load — the source identifier may have changed",
+    "env.f.platform":"Platform / sensor","env.f.param":"Parameter","env.f.res":"Resolution","env.f.cadence":"Update","env.f.prov":"Provider","env.f.legend":"Reading it","env.f.link":"Source",
+    "windy.title":"Winds & temperature (live model)","windy.lede":"Animated winds, temperature, pressure and more over Uruguay, from Windy — switchable between the NOAA GFS and ECMWF models. Click anywhere on it to read the values at that point.","windy.note":"Source: Windy.com, rendering ECMWF and NOAA GFS forecast models. Embedded directly from Windy; interaction and values are provided by Windy.",
+    "sw.eyebrow":"SPACE WEATHER · SWPC","sw.title":"Real-time space environment",
+    "sw.lede":"Live from NOAA's Space Weather Prediction Center. These numbers are global, but they drive the conditions that matter locally for GNSS, HF radio, satellite operations and optical observing at OALM.",
+    "sw.kp":"GEOMAGNETIC Kp","sw.kp.tip":"Planetary Kp index, 0–9. From Kp 5 a geomagnetic storm is underway (NOAA G-scale G1–G5), which can degrade GNSS accuracy and HF propagation.","sw.kp.q":"Quiet",
+    "sw.wind":"SOLAR WIND SPEED","sw.wind.tip":"Bulk speed of the solar wind measured at the L1 point by DSCOVR. Typical ≈350–450 km/s; sustained >600 km/s often precedes geomagnetic activity.",
+    "sw.bz":"IMF Bz","sw.bz.tip":"North–south component of the interplanetary magnetic field (nT). Strongly negative (southward) Bz couples energy into the magnetosphere and is the key storm driver.",
+    "sw.xray":"GOES X-RAY FLUX","sw.xray.tip":"Soft X-ray flux (0.1–0.8 nm) from GOES. Flare classes A/B/C/M/X — each step is ×10. M and X flares can trigger daytime HF radio blackouts and ionospheric disturbances.",
+    "sw.rel.gnss.t":"GNSS positioning","sw.rel.gnss.b":"High Kp and ionospheric storms add range error and can cause loss of lock — relevant for survey, precision agriculture and any GNSS-dependent timing.",
+    "sw.rel.hf.t":"HF & aviation radio","sw.rel.hf.b":"M/X-class flares ionise the dayside D-layer, causing shortwave fade-outs on the sunlit side of the Earth — including South America when the flare is in local daytime.",
+    "sw.rel.sat.t":"Satellite operations","sw.rel.sat.b":"Storms heat and expand the upper atmosphere, raising drag on LEO objects and shifting orbits — directly relevant to SSA tracking and conjunction screening.",
+    "sw.rel.obs.t":"Observing at OALM","sw.rel.obs.b":"Space weather doesn't cloud the sky, but strong geomagnetic activity raises sky brightness and, at extreme storms, faint aurora can reach unusually low southern latitudes.",
+    "sw.alerts":"LATEST SWPC ALERTS & BULLETINS","sw.alerts.loading":"Loading alerts…",
+    "footer.lic":"Built for educational and situational-awareness use. GOES, MODIS and VIIRS imagery via NASA GIBS / NOAA NESDIS. Recent loop via NOAA STAR. High-resolution imagery © Esri, Maxar, Earthstar Geographics; Sentinel-2 cloudless © EOX (contains modified Copernicus data). Space weather via NOAA SWPC and DSCOVR. Country outlines from Natural Earth and the world.geo.json project; city search via OpenStreetMap Nominatim. Basemaps © OpenStreetMap, © CARTO. NOAA, NASA and Esri do not endorse this page.",
+    "u.quiet":"Quiet","u.unsettled":"Unsettled","u.storm":"Geomagnetic storm","u.slow":"Slow","u.nominal":"Nominal","u.fast":"Fast stream","u.south":"Southward — storm-favourable","u.north":"Northward — calm","u.unavail":"Data unavailable","u.more":"read more","u.less":"show less","u.live":"LIVE · latest frame","u.searching":"Searching…","u.notfound":"City not found — try adding the country."
+  },
+  es:{
+    "brand.tag":"/ EARTH WATCH","nav.hub":"← HUB",
+    "hero.eyebrow":"NOAA · NASA · CLIMA ESPACIAL",
+    "hero.title":"Observación de la Tierra y Clima Espacial",
+    "hero.lede":"Imágenes satelitales georreferenciadas de varias fuentes sobre cualquier país o ciudad — GOES de NOAA, MODIS y VIIRS de NASA, Esri y Sentinel-2 — con contornos nacionales precisos, una capa de comparación, el bucle animado reciente de NOAA y el clima espacial en tiempo real del Space Weather Prediction Center.",
+    "img.eyebrow":"MAPA SATELITAL","img.title":"Mapa georreferenciado multifuente",
+    "img.lede":"Elegí un país para dibujar su contorno y encuadrarlo, o buscá cualquier ciudad. Elegí una fuente satelital, sumá una segunda como capa de comparación y mezclalas con el control de opacidad, retrocedé por cuadros anteriores de GOES o reproducí un bucle.",
+    "map.lbl.layer":"Fuente de imagen","map.tip.layer":"GOES es geoestacionario (un cuadro cada ~10 min). MODIS/VIIRS son mosaicos polares diarios de color real. Esri y Sentinel-2 son imágenes de referencia de alta resolución. OpenStreetMap y el mapa oscuro son referencias vectoriales que siempre funcionan.",
+    "map.opt.geocolor_e":"NOAA GOES-East · GeoColor","map.opt.ir13_e":"NOAA GOES-East · IR limpio (B13)","map.opt.geocolor_w":"NOAA GOES-West · GeoColor",
+    "map.opt.modis_terra":"NASA MODIS Terra · color real (diario)","map.opt.viirs_tc":"NASA VIIRS · color real (diario)","map.opt.viirs_night":"NASA VIIRS · Tierra de noche",
+    "map.opt.esri":"Esri World Imagery (alta res.)","map.opt.eox_s2":"Sentinel-2 cloudless · EOX","map.opt.osm":"OpenStreetMap (referencia)","map.opt.dark":"Mapa oscuro (referencia)",
+    "map.lbl.compare":"Capa de comparación","map.compare.none":"Ninguna","map.opacity":"Opacidad de comparación",
+    "map.lbl.region":"País","map.lbl.city":"Buscar una ciudad","map.city.ph":"ej. Montevideo, Bogotá, Madrid…","map.city.go":"Ir",
+    "map.lbl.over":"Capas extra","map.outline":"Contorno del país","map.sites":"Sitio OALM","map.reset":"Encuadrar región","map.live":"En vivo (último)",
+    "map.play":"Reproducir","map.pause":"Pausa","map.noleaflet":"Cargando el mapa…",
+    "map.tileerr":"Esta capa satelital no devolvió teselas. Los identificadores de NOAA/NASA pueden cambiar (las capas Sentinel-2 de EOX llevan el año). Probá otra fuente, o cambiá a OpenStreetMap — los contornos y marcadores funcionan con cualquier base. URL intentada:",
+    "map.fellback":"Esa fuente no cargó, así que el mapa cambió a NASA MODIS Terra (un mosaico diario de color real confiable). Podés elegir otra fuente cuando quieras. URL que falló:",
+    "map.sources":"Fuentes cruzables en el mapa: MODIS Terra y VIIRS de NASA en color real y luces nocturnas diarias, Esri World Imagery y Sentinel-2 cloudless de EOX. Poné dos cualesquiera con la capa de comparación y mezclalas con la opacidad. El GOES en vivo (geoestacionario) no se sirve como teselas de mapa web, así que está en la sección del bucle de NOAA más abajo — y el panel de clima espacial se alimenta de GOES.",
+    "map.note":"Todo carga directo de NASA, Esri y EOX desde tu navegador — sin clave, sin backend. La búsqueda de ciudades usa Nominatim de OpenStreetMap (usalo con moderación). Si una fuente queda en blanco, el mapa cae automáticamente a MODIS; todos los identificadores están en un único objeto LAYERS editable cerca del inicio del script.",
+    "gif.eyebrow":"NOAA STAR · BUCLE RECIENTE","gif.title":"El último bucle animado de NOAA",
+    "gif.lede":"NOAA STAR publica bucles animados listos por región/sector. El bucle más reciente se busca automáticamente (su nombre lleva una marca de tiempo, así que cambia constantemente). Elegí satélite, región y producto, y cargá el último — o pegá una URL de GIF de NOAA directamente.",
+    "gif.sat":"Satélite","gif.sector":"Región / sector","gif.prod":"Producto","gif.reload":"Cargar último bucle",
+    "gif.manual":"O pegá una URL de GIF de NOAA","gif.manual.ph":"https://cdn.star.nesdis.noaa.gov/…​.gif","gif.manual.go":"Mostrar","gif.loading":"Buscando el último bucle…",
+    "gif.err":"Esa URL de GIF no cargó. NOAA borra los bucles viejos, así que un enlace con marca de tiempo expira al rato — cargá el último, o pegá una URL vigente. URL intentada:",
+    "gif.discoverr":"No se pudo listar la carpeta de NOAA desde el navegador (puede bloquear el listado cross-origin). Abrí la carpeta para copiar el nombre del .gif más nuevo y pegá su URL arriba. Carpeta:",
+    "gif.note":"Fuente: NOAA NESDIS STAR GOES Image Viewer. Son bucles por sector (el disco completo no publica un GIF de nombre fijo). El archivo más nuevo se descubre listando la carpeta de NOAA; si tu navegador bloquea ese listado, abrí la carpeta, copiá el nombre del .gif más nuevo y pegá la URL arriba. Los bucles cubren aproximadamente las últimas horas.",
+    "env.eyebrow":"CAPAS AMBIENTALES · MULTIFUENTE","env.title":"Ambiente: incendios, temperatura, aire y clima",
+    "env.lede":"Un segundo mapa para datos ambientales, cruzando NOAA y otros proveedores: incendios activos, temperatura de superficie terrestre y marina, aerosoles/humo, y precipitación y nubes en vivo. Cada capa que enciendas aparece abajo con su fuente completa — tocá para ver el detalle.",
+    "env.base":"Imagen base","env.layers":"Capas de datos","env.opacity":"Opacidad de capa","env.reset":"Encuadrar Uruguay","env.active":"Fuentes activas — tocá cualquiera para el detalle","env.none":"Encendé una capa para ver acá su fuente completa.",
+    "env.note":"Incendios, temperatura terrestre/marina y aerosoles vienen de NASA/NOAA vía GIBS (diario, casi en tiempo real); la precipitación y las nubes infrarrojas son en vivo de RainViewer (que agrega radares de servicios meteorológicos nacionales, incluido NOAA). Cada capa lleva su atribución en el mapa y un detalle completo arriba. Los identificadores están en el objeto ENV editable del script.",
+    "env.opt.viirs_noaa20_tc":"NOAA-20 VIIRS · Color real (diario)","env.opt.modis_tc":"NASA MODIS · Color real (diario)","env.opt.dark":"Referencia oscura","env.opt.osm":"OpenStreetMap",
+    "env.lyr.fires_viirs":"Incendios activos (NOAA-20)","env.lyr.fires_modis":"Incendios activos (MODIS)","env.lyr.lst":"Temp. superficie terrestre","env.lyr.sst":"Temp. superficie marina","env.lyr.aod":"Aerosoles / humo","env.lyr.precip":"Precipitación (en vivo)","env.lyr.clouds":"Nubes IR (en vivo)",
+    "env.layererr":"las teselas de esta capa no cargaron — el identificador de la fuente puede haber cambiado",
+    "env.f.platform":"Plataforma / sensor","env.f.param":"Parámetro","env.f.res":"Resolución","env.f.cadence":"Actualización","env.f.prov":"Proveedor","env.f.legend":"Cómo leerla","env.f.link":"Fuente",
+    "windy.title":"Vientos y temperatura (modelo en vivo)","windy.lede":"Vientos, temperatura, presión y más animados sobre Uruguay, de Windy — conmutable entre los modelos NOAA GFS y ECMWF. Hacé clic en cualquier punto para leer los valores ahí.","windy.note":"Fuente: Windy.com, renderizando los modelos de pronóstico ECMWF y NOAA GFS. Embebido directo de Windy; la interacción y los valores los provee Windy.",
+    "sw.eyebrow":"CLIMA ESPACIAL · SWPC","sw.title":"Entorno espacial en tiempo real",
+    "sw.lede":"En vivo desde el Space Weather Prediction Center de NOAA. Son valores globales, pero determinan las condiciones que importan localmente para GNSS, radio HF, operaciones satelitales y observación óptica en OALM.",
+    "sw.kp":"Kp GEOMAGNÉTICO","sw.kp.tip":"Índice planetario Kp, 0–9. Desde Kp 5 hay tormenta geomagnética en curso (escala G de NOAA, G1–G5), que puede degradar la precisión GNSS y la propagación HF.","sw.kp.q":"Calmo",
+    "sw.wind":"VELOCIDAD VIENTO SOLAR","sw.wind.tip":"Velocidad del viento solar medida en el punto L1 por DSCOVR. Típico ≈350–450 km/s; sostenido >600 km/s suele anteceder actividad geomagnética.",
+    "sw.bz":"Bz DEL CIM","sw.bz.tip":"Componente norte–sur del campo magnético interplanetario (nT). Bz fuertemente negativo (hacia el sur) inyecta energía en la magnetósfera y es el principal motor de tormentas.",
+    "sw.xray":"FLUJO RAYOS X GOES","sw.xray.tip":"Flujo de rayos X blandos (0.1–0.8 nm) de GOES. Clases de fulguración A/B/C/M/X — cada paso es ×10. Las clases M y X pueden causar apagones de radio HF diurnos y perturbaciones ionosféricas.",
+    "sw.rel.gnss.t":"Posicionamiento GNSS","sw.rel.gnss.b":"Kp alto y tormentas ionosféricas agregan error de rango y pueden causar pérdida de enganche — relevante para topografía, agricultura de precisión y cualquier sincronización dependiente de GNSS.",
+    "sw.rel.hf.t":"Radio HF y aeronáutica","sw.rel.hf.b":"Las fulguraciones M/X ionizan la capa D diurna y causan desvanecimientos de onda corta en el lado iluminado de la Tierra — incluida Sudamérica cuando la fulguración ocurre de día local.",
+    "sw.rel.sat.t":"Operaciones satelitales","sw.rel.sat.b":"Las tormentas calientan y expanden la alta atmósfera, aumentando el rozamiento sobre objetos en LEO y desplazando órbitas — directamente relevante para el seguimiento SSA y el cribado de conjunciones.",
+    "sw.rel.obs.t":"Observación en OALM","sw.rel.obs.b":"El clima espacial no nubla el cielo, pero la actividad geomagnética intensa aumenta el brillo del cielo y, en tormentas extremas, auroras tenues pueden alcanzar latitudes del sur inusualmente bajas.",
+    "sw.alerts":"ÚLTIMAS ALERTAS Y BOLETINES SWPC","sw.alerts.loading":"Cargando alertas…",
+    "footer.lic":"Hecho para uso educativo y de conciencia situacional. Imágenes GOES, MODIS y VIIRS vía NASA GIBS / NOAA NESDIS. Bucle reciente vía NOAA STAR. Imágenes de alta resolución © Esri, Maxar, Earthstar Geographics; Sentinel-2 cloudless © EOX (contiene datos Copernicus modificados). Clima espacial vía NOAA SWPC y DSCOVR. Contornos de países de Natural Earth y del proyecto world.geo.json; búsqueda de ciudades vía Nominatim de OpenStreetMap. Mapas base © OpenStreetMap, © CARTO. NOAA, NASA y Esri no respaldan esta página.",
+    "u.quiet":"Calmo","u.unsettled":"Inestable","u.storm":"Tormenta geomagnética","u.slow":"Lento","u.nominal":"Nominal","u.fast":"Corriente rápida","u.south":"Hacia el sur — favorable a tormenta","u.north":"Hacia el norte — calmo","u.unavail":"Datos no disponibles","u.more":"ver más","u.less":"ver menos","u.live":"EN VIVO · último cuadro","u.searching":"Buscando…","u.notfound":"Ciudad no encontrada — probá agregando el país."
+  }
+};
+let LANG = "en";
+function t(k){return (I18N[LANG] && I18N[LANG][k]) || (I18N.en[k]||k);}
+function hasTags(s){return /<[a-z][\s\S]*>/i.test(s);}
+function applyLang(){
+  document.documentElement.lang = LANG;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const k = el.getAttribute("data-i18n"); const v = t(k);
+    if(hasTags(v)){ el.innerHTML = v; return; }
+    const kids = Array.from(el.childNodes).filter(n=>n.nodeType===1);
+    if(kids.length){
+      Array.from(el.childNodes).forEach(n=>{ if(n.nodeType===3) n.remove(); });
+      el.insertBefore(document.createTextNode(v+" "), el.firstChild);
+    } else { el.textContent = v; }
+  });
+  document.querySelectorAll("[data-i18n-ph]").forEach(el=>{ el.setAttribute("placeholder", t(el.getAttribute("data-i18n-ph"))); });
+  drawFlag(); refreshSpaceWeatherLabels(); buildCountryOptions();
+  if(window.__envReady) renderSources();
+  if(window.__mapReady){ updateStamp(); document.getElementById("btnPlay").textContent = playing? t("map.pause"): t("map.play"); }
+}
+const FLAG_ES = '<svg viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg"><rect width="36" height="24" fill="#fff"/><g fill="#0038A8"><rect y="2.66" width="36" height="2.66"/><rect y="8" width="36" height="2.66"/><rect y="18.66" width="36" height="2.66"/><rect y="13.33" width="36" height="2.66"/></g><rect width="13.5" height="13.33" fill="#fff"/><circle cx="6.75" cy="6.66" r="3.4" fill="#FCD116" stroke="#9b6a00" stroke-width=".5"/></svg>';
+const FLAG_EN = '<svg viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg"><rect width="36" height="24" fill="#012169"/><path d="M0,0 36,24 M36,0 0,24" stroke="#fff" stroke-width="4.8"/><path d="M0,0 36,24 M36,0 0,24" stroke="#C8102E" stroke-width="2.4"/><path d="M18,0 V24 M0,12 H36" stroke="#fff" stroke-width="8"/><path d="M18,0 V24 M0,12 H36" stroke="#C8102E" stroke-width="4.8"/></svg>';
+function drawFlag(){ document.getElementById("flagBtn").innerHTML = (LANG==="en") ? FLAG_ES : FLAG_EN; }
+document.getElementById("flagBtn").addEventListener("click",()=>{ LANG = (LANG==="en")?"es":"en"; applyLang(); });
+
+/* ============================================================
+   IMAGERY SOURCES — edit identifiers here if a provider renames them
+   ============================================================ */
+const GIBS = "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best";
+const LAYERS = {
+  geocolor_e: {kind:"gibs", id:"GOES-East_ABI_GeoColor",             matrix:"GoogleMapsCompatible_Level7", ext:"jpg", maxNative:7, subdaily:true,  attr:"NOAA/NASA GOES-East GeoColor (GIBS)"},
+  ir13_e:     {kind:"gibs", id:"GOES-East_ABI_Band13_Clean_Infrared", matrix:"GoogleMapsCompatible_Level7", ext:"png", maxNative:7, subdaily:true,  attr:"NOAA/NASA GOES-East Band 13 (GIBS)"},
+  geocolor_w: {kind:"gibs", id:"GOES-West_ABI_GeoColor",             matrix:"GoogleMapsCompatible_Level7", ext:"jpg", maxNative:7, subdaily:true,  attr:"NOAA/NASA GOES-West GeoColor (GIBS)"},
+  modis_terra:{kind:"gibs", id:"MODIS_Terra_CorrectedReflectance_TrueColor", matrix:"GoogleMapsCompatible_Level9", ext:"jpg", maxNative:9, subdaily:false, attr:"NASA EOSDIS MODIS Terra (GIBS)"},
+  viirs_tc:   {kind:"gibs", id:"VIIRS_SNPP_CorrectedReflectance_TrueColor",  matrix:"GoogleMapsCompatible_Level9", ext:"jpg", maxNative:9, subdaily:false, attr:"NASA EOSDIS VIIRS SNPP (GIBS)"},
+  viirs_night:{kind:"gibs", id:"VIIRS_SNPP_DayNightBand_ENCC",        matrix:"GoogleMapsCompatible_Level8", ext:"png", maxNative:8, subdaily:false, attr:"NASA EOSDIS VIIRS Day/Night Band (GIBS)"},
+  esri:       {kind:"xyz",  url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", maxNative:18, subdaily:false, subdomains:"", attr:"Imagery © Esri, Maxar, Earthstar Geographics"},
+  eox_s2:     {kind:"xyz",  url:"https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2023_3857/default/g/{z}/{y}/{x}.jpg", maxNative:16, subdaily:false, subdomains:"", attr:"Sentinel-2 cloudless 2023 © EOX (modified Copernicus data)"},
+  osm:        {kind:"xyz",  url:"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", maxNative:19, subdaily:false, subdomains:"abc",  attr:"© OpenStreetMap contributors"},
+  dark:       {kind:"xyz",  url:"https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", maxNative:19, subdaily:false, subdomains:"abcd", attr:"© OpenStreetMap, © CARTO"}
+};
+
+/* Country list: outlines fetched on demand (johan/world.geo.json, 110m).
+   Uruguay uses a higher-resolution embedded outline. */
+const COUNTRIES = [
+  {iso:"URY", en:"Uruguay", es:"Uruguay"},
+  {iso:"ARG", en:"Argentina", es:"Argentina"},
+  {iso:"BRA", en:"Brazil", es:"Brasil"},
+  {iso:"PRY", en:"Paraguay", es:"Paraguay"},
+  {iso:"CHL", en:"Chile", es:"Chile"},
+  {iso:"BOL", en:"Bolivia", es:"Bolivia"},
+  {iso:"PER", en:"Peru", es:"Perú"},
+  {iso:"ECU", en:"Ecuador", es:"Ecuador"},
+  {iso:"COL", en:"Colombia", es:"Colombia"},
+  {iso:"VEN", en:"Venezuela", es:"Venezuela"},
+  {iso:"MEX", en:"Mexico", es:"México"},
+  {iso:"USA", en:"United States", es:"Estados Unidos"},
+  {iso:"ESP", en:"Spain", es:"España"},
+  {iso:"PRT", en:"Portugal", es:"Portugal"}
+];
+const URY_GEOJSON = {"type":"Feature","properties":{"name":"Uruguay"},"geometry":{"type":"Polygon","coordinates":[[[-53.3706,-33.7422],[-53.4725,-33.8493],[-53.5345,-34.0175],[-53.7429,-34.2495],[-53.7853,-34.3804],[-54.0103,-34.517],[-54.1686,-34.6707],[-54.2721,-34.6669],[-54.3653,-34.7327],[-54.9023,-34.9328],[-55.0951,-34.8951],[-55.2379,-34.8958],[-55.3706,-34.8076],[-55.6731,-34.7757],[-55.8629,-34.8109],[-56.1179,-34.9079],[-56.25,-34.9013],[-56.3878,-34.861],[-56.4631,-34.7754],[-56.8552,-34.6767],[-57.1707,-34.4523],[-57.5435,-34.448],[-57.8291,-34.4773],[-57.8732,-34.4477],[-57.9612,-34.3069],[-58.207,-34.1091],[-58.4002,-33.9124],[-58.4381,-33.7191],[-58.3534,-33.2601],[-58.3635,-33.1823],[-58.2922,-33.138],[-58.2216,-33.1291],[-58.1536,-33.0646],[-58.0927,-32.9674],[-58.0823,-32.8937],[-58.2012,-32.4717],[-58.123,-32.3219],[-58.1197,-32.2489],[-58.1648,-32.1849],[-58.177,-32.119],[-58.1563,-32.0516],[-58.1604,-31.9865],[-58.189,-31.9242],[-58.1675,-31.8727],[-58.0958,-31.8318],[-58.0423,-31.7692],[-57.9889,-31.6206],[-57.988,-31.5762],[-58.0539,-31.4949],[-58.0334,-31.4166],[-57.8934,-31.1953],[-57.8684,-31.1044],[-57.8701,-31.0311],[-57.8983,-30.9752],[-57.8863,-30.9374],[-57.8341,-30.9175],[-57.8106,-30.8586],[-57.8186,-30.712],[-57.8725,-30.591],[-57.8312,-30.4952],[-57.7127,-30.3845],[-57.6509,-30.295],[-57.6458,-30.227],[-57.6089,-30.1878],[-57.5523,-30.2612],[-57.2145,-30.2834],[-57.1869,-30.2648],[-57.1205,-30.1444],[-57.0327,-30.11],[-56.8327,-30.1072],[-56.1762,-30.6284],[-56.0448,-30.7776],[-55.999,-30.8372],[-56.0185,-30.9919],[-56.0047,-31.0792],[-55.8737,-31.0696],[-55.8078,-31.0367],[-55.6652,-30.9249],[-55.6271,-30.8581],[-55.603,-30.8508],[-55.3661,-31.0462],[-55.2546,-31.2256],[-55.1735,-31.2796],[-55.0912,-31.314],[-55.036,-31.279],[-54.896,-31.3912],[-54.5876,-31.4852],[-54.3699,-31.745],[-54.2206,-31.8552],[-53.9206,-31.9523],[-53.7617,-32.0568],[-53.6017,-32.403],[-53.4894,-32.5032],[-53.3627,-32.5812],[-53.2313,-32.6254],[-53.1573,-32.6801],[-53.1256,-32.7367],[-53.3952,-33.0104],[-53.4829,-33.0686],[-53.5313,-33.1709],[-53.5313,-33.6555],[-53.4636,-33.7099],[-53.3706,-33.7422]]]}};
+
+/* ============================================================
+   MAP
+   ============================================================ */
+let map=null, curLayer=null, overlayLayer=null, regionLayer=null, sitesLayer=null, citiesLayer=null;
+let live=true, playing=false, playTimer=null, currentBounds=null;
+const countryCache = {URY:URY_GEOJSON};
+const WINDOW_STEPS=36, LATENCY_MIN=25;
+window.__mapReady=false;
+
+function floor10(d){ const t=new Date(d); t.setUTCSeconds(0,0); t.setUTCMinutes(Math.floor(t.getUTCMinutes()/10)*10); return t; }
+function latestAvail(){ return floor10(new Date(Date.now()-LATENCY_MIN*60000)); }
+function dateForValue(v){ return new Date(latestAvail().getTime() - (WINDOW_STEPS-v)*10*60000); }
+function gibsTimeStr(d){ return d.toISOString().slice(0,19)+"Z"; }
+function scrubTime(){ const v=parseInt(document.getElementById("timeRange").value,10); return (live||v>=WINDOW_STEPS)?"default":gibsTimeStr(dateForValue(v)); }
+function dailyDate(){ return new Date(Date.now()-24*3600*1000).toISOString().slice(0,10); }
+
+function currentLayerKey(){ return document.getElementById("selLayer").value; }
+function compareKey(){ return document.getElementById("selCompare").value; }
+function anySubdaily(){ const b=LAYERS[currentLayerKey()].subdaily; const ck=compareKey(); const o=ck!=="none"&&LAYERS[ck]&&LAYERS[ck].subdaily; return b||o; }
+
+function makeLayer(key, pane){
+  const cfg = LAYERS[key];
+  if(cfg.kind==="gibs"){
+    const time = cfg.subdaily ? scrubTime() : dailyDate();
+    const url = `${GIBS}/${cfg.id}/default/${time}/${cfg.matrix}/{z}/{y}/{x}.${cfg.ext}`;
+    return {layer:L.tileLayer(url,{pane, tileSize:256, maxNativeZoom:cfg.maxNative, maxZoom:12, bounds:[[-85,-180],[85,180]], attribution:cfg.attr, crossOrigin:true}), url};
+  }
+  return {layer:L.tileLayer(cfg.url,{pane, maxNativeZoom:cfg.maxNative, maxZoom:12, subdomains:cfg.subdomains||"abc", attribution:cfg.attr}), url:cfg.url};
+}
+
+let errCount=0, errShown=false, fellBack=false;
+function attachErrorWatch(layer, url){
+  errCount=0; errShown=false; document.getElementById("mapErr").classList.remove("show");
+  layer.on("tileerror", ()=>{
+    errCount++;
+    if(errCount>=6 && !errShown){
+      errShown=true;
+      if(!fellBack && currentLayerKey()!=="modis_terra"){
+        fellBack=true;
+        document.getElementById("selLayer").value="modis_terra";
+        document.getElementById("mapErrMsg").textContent=t("map.fellback");
+        document.getElementById("mapErrUrl").textContent=url;
+        document.getElementById("mapErr").classList.add("show");
+        setLayer();
+      } else {
+        document.getElementById("mapErrMsg").textContent=t("map.tileerr");
+        document.getElementById("mapErrUrl").textContent=url;
+        document.getElementById("mapErr").classList.add("show");
+      }
+    }
+  });
+}
+function setLayer(){
+  if(curLayer) map.removeLayer(curLayer);
+  const {layer,url}=makeLayer(currentLayerKey(),"baseImg");
+  curLayer=layer; attachErrorWatch(curLayer,url); curLayer.addTo(map);
+  syncTimeUI(); updateStamp();
+}
+function setOverlay(){
+  if(overlayLayer){ map.removeLayer(overlayLayer); overlayLayer=null; }
+  const key=compareKey();
+  if(key==="none"){ updateStamp(); return; }
+  const {layer}=makeLayer(key,"cmpImg");
+  overlayLayer=layer;
+  overlayLayer.setOpacity(parseInt(document.getElementById("opacity").value,10)/100);
+  overlayLayer.addTo(map);
+  syncTimeUI(); updateStamp();
+}
+function refreshTimed(){ setLayer(); setOverlay(); }
+
+function syncTimeUI(){
+  const tb=document.getElementById("timeBar");
+  const liveRow=document.getElementById("liveSw").closest(".toggle");
+  if(anySubdaily()){ liveRow.style.visibility="visible"; tb.classList.toggle("hide", live); }
+  else { stopPlay(); liveRow.style.visibility="hidden"; tb.classList.add("hide"); }
+}
+function updateStamp(){
+  const stamp=document.getElementById("mapStamp"), readout=document.getElementById("timeReadout");
+  const baseName=document.getElementById("selLayer").selectedOptions[0].textContent.replace(/^NOAA |^NASA /,"");
+  const ck=compareKey();
+  const cmpName=ck==="none"?"":(" + "+document.getElementById("selCompare").selectedOptions[0].textContent.replace(/^NOAA |^NASA /,""));
+  if(!anySubdaily()){ stamp.textContent=baseName+cmpName; readout.textContent=""; return; }
+  const v=parseInt(document.getElementById("timeRange").value,10);
+  if(live || v>=WINDOW_STEPS){
+    stamp.innerHTML=`${baseName}${cmpName} · <span style="color:var(--eo)">${t("u.live")}</span>`;
+    readout.innerHTML=`<span class="live">${t("u.live")}</span>`;
+  } else {
+    const d=dateForValue(v);
+    const utc=d.toISOString().slice(11,16)+"Z "+d.toISOString().slice(0,10);
+    let loc=""; try{ loc=new Intl.DateTimeFormat("es-UY",{timeZone:"America/Montevideo",hour:"2-digit",minute:"2-digit"}).format(d)+" UY"; }catch(e){}
+    stamp.textContent=`${baseName}${cmpName} · ${utc}`;
+    readout.textContent=`${utc}  ·  ${loc}`;
+  }
+}
+
+function buildCountryOptions(){
+  const sel=document.getElementById("selCountry"); if(!sel) return;
+  const cur=sel.value;
+  sel.innerHTML="";
+  COUNTRIES.forEach(c=>{ const o=document.createElement("option"); o.value=c.iso; o.textContent=(LANG==="es"?c.es:c.en); sel.appendChild(o); });
+  sel.value=cur||"URY";
+}
+async function loadCountry(iso){
+  let gj=countryCache[iso];
+  if(!gj){
+    try{ const r=await fetch(`https://raw.githubusercontent.com/johan/world.geo.json/master/countries/${iso}.geo.json`,{cache:"force-cache"}); gj=await r.json(); countryCache[iso]=gj; }
+    catch(e){ return; }
+  }
+  if(regionLayer) map.removeLayer(regionLayer);
+  regionLayer=L.geoJSON(gj,{pane:"overlayPane", style:{color:"#2fd4c0", weight:2.2, opacity:.95, fillColor:"#2fd4c0", fillOpacity:.05}});
+  if(document.getElementById("ckOutline").checked) regionLayer.addTo(map);
+  try{ currentBounds=regionLayer.getBounds(); map.fitBounds(currentBounds,{padding:[26,26]}); }catch(e){}
+}
+async function searchCity(){
+  const q=document.getElementById("citySearch").value.trim(); if(!q) return;
+  const btn=document.getElementById("btnCity"); const old=btn.textContent;
+  btn.disabled=true; btn.textContent=t("u.searching");
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(q)}`,{headers:{"Accept":"application/json"}});
+    const arr=await r.json();
+    if(!arr || !arr.length){ btn.textContent=t("u.notfound"); setTimeout(()=>{btn.textContent=old;btn.disabled=false;},2200); return; }
+    const lat=+arr[0].lat, lon=+arr[0].lon, name=(arr[0].display_name||q).split(",")[0];
+    const m=L.circleMarker([lat,lon],{pane:"overlayPane", radius:5, color:"#a9dcff", weight:1.5, fillColor:"#a9dcff", fillOpacity:.85}).bindTooltip(name,{direction:"top"});
+    citiesLayer.addLayer(m); if(!map.hasLayer(citiesLayer)) citiesLayer.addTo(map);
+    map.setView([lat,lon], 9);
+    m.openTooltip();
+  }catch(e){ btn.textContent=t("u.notfound"); setTimeout(()=>{btn.textContent=old;btn.disabled=false;},2200); return; }
+  btn.textContent=old; btn.disabled=false;
+}
+
+function initMap(){
+  if(typeof L==="undefined"){ document.getElementById("noLeaflet").textContent="Leaflet failed to load — check your connection."; return; }
+  document.getElementById("noLeaflet").remove();
+  map=L.map("map",{center:[-32.7,-56.0], zoom:6, minZoom:2, maxZoom:12, worldCopyJump:false, zoomControl:true, attributionControl:true});
+  map.createPane("baseImg"); map.getPane("baseImg").style.zIndex=200;
+  map.createPane("cmpImg");  map.getPane("cmpImg").style.zIndex=250;
+  L.control.scale({imperial:false, position:"bottomright"}).addTo(map);
+
+  sitesLayer=L.layerGroup([
+    L.circleMarker([-34.7553,-56.1894],{pane:"overlayPane", radius:5, color:"#f3ad5e", weight:1.5, fillColor:"#f3ad5e", fillOpacity:.9}).bindTooltip("OALM · MPC 844",{direction:"top"})
+  ]);
+  citiesLayer=L.layerGroup();
+
+  window.__mapReady=true;
+  setLayer(); setOverlay();
+  if(document.getElementById("ckSites").checked) sitesLayer.addTo(map);
+  loadCountry("URY");
+
+  document.getElementById("selLayer").addEventListener("change", ()=>{ fellBack=false; refreshTimed(); });
+  document.getElementById("selCompare").addEventListener("change", setOverlay);
+  document.getElementById("opacity").addEventListener("input", e=>{ if(overlayLayer) overlayLayer.setOpacity(parseInt(e.target.value,10)/100); });
+  document.getElementById("ckOutline").addEventListener("change", e=>{ if(!regionLayer)return; e.target.checked? regionLayer.addTo(map):map.removeLayer(regionLayer); });
+  document.getElementById("ckSites").addEventListener("change", e=>{ e.target.checked? sitesLayer.addTo(map):map.removeLayer(sitesLayer); });
+  document.getElementById("btnReset").addEventListener("click", ()=>{ if(currentBounds) map.fitBounds(currentBounds,{padding:[26,26]}); else map.setView([-32.7,-56.0],6); });
+  document.getElementById("selCountry").addEventListener("change", e=> loadCountry(e.target.value));
+  document.getElementById("btnCity").addEventListener("click", searchCity);
+  document.getElementById("citySearch").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); searchCity(); } });
+
+  const range=document.getElementById("timeRange");
+  range.addEventListener("input", ()=>{ if(parseInt(range.value,10)<WINDOW_STEPS){ setLive(false,true); } refreshTimed(); });
+  document.getElementById("btnStepBack").addEventListener("click", ()=> stepFrame(-1));
+  document.getElementById("btnStepFwd").addEventListener("click", ()=> stepFrame(1));
+  document.getElementById("btnPlay").addEventListener("click", togglePlay);
+  const liveSw=document.getElementById("liveSw");
+  liveSw.addEventListener("click", ()=> setLive(!live,false));
+  liveSw.addEventListener("keydown", e=>{ if(e.key===" "||e.key==="Enter"){ e.preventDefault(); setLive(!live,false);} });
+}
+function setLive(on, fromScrub){
+  live=on; document.getElementById("liveSw").setAttribute("aria-checked", on);
+  if(on){ stopPlay(); document.getElementById("timeRange").value=WINDOW_STEPS; }
+  if(!fromScrub) refreshTimed(); else { syncTimeUI(); updateStamp(); }
+}
+function stepFrame(dir){
+  setLive(false,true);
+  const range=document.getElementById("timeRange");
+  let v=Math.max(0,Math.min(WINDOW_STEPS, parseInt(range.value,10)+dir));
+  range.value=v;
+  if(v>=WINDOW_STEPS){ setLive(true,false); return; }
+  refreshTimed();
+}
+function togglePlay(){ playing? stopPlay() : startPlay(); }
+function startPlay(){
+  if(!anySubdaily()) return;
+  setLive(false,true);
+  playing=true; document.getElementById("btnPlay").textContent=t("map.pause");
+  const range=document.getElementById("timeRange");
+  if(parseInt(range.value,10)>=WINDOW_STEPS) range.value=WINDOW_STEPS-12;
+  playTimer=setInterval(()=>{ let v=parseInt(range.value,10)+1; if(v>WINDOW_STEPS) v=WINDOW_STEPS-12; range.value=v; refreshTimed(); }, 750);
+}
+function stopPlay(){ playing=false; if(playTimer){clearInterval(playTimer);playTimer=null;} const b=document.getElementById("btnPlay"); if(b) b.textContent=t("map.play"); }
+
+/* ============================================================
+   NOAA STAR recent loop (GIF)
+   ============================================================ */
+const STAR="https://cdn.star.nesdis.noaa.gov";
+const GIF_SAT={east:"GOES19", west:"GOES18"};
+// Fallback sector list if NOAA's folder can't be listed from the browser.
+// "FD" = full disk; lowercase codes are STAR sector codes (path), discovery replaces these with the live list.
+const GIF_SECTOR_FALLBACK=[["eep","Sector EEP (example)"],["cam","Central America (CAM)"],["car","Caribbean (CAR)"],["taw","Tropical Atlantic (TAW)"],["FD","Full Disk (FD)"]];
+
+function gifSat(){ return GIF_SAT[document.getElementById("gifSat").value]; }
+function gifSectorDir(){
+  const sat=gifSat(), sec=document.getElementById("gifSector").value, prod=document.getElementById("gifProd").value;
+  return sec==="FD" ? `${STAR}/${sat}/ABI/FD/${prod}/` : `${STAR}/${sat}/ABI/SECTOR/${sec}/${prod}/`;
+}
+function fillSectors(list){
+  const sel=document.getElementById("gifSector"); const cur=sel.value;
+  sel.innerHTML="";
+  list.forEach(([code,label])=>{ const o=document.createElement("option"); o.value=code; o.textContent=label; sel.appendChild(o); });
+  if(cur && list.some(x=>x[0]===cur)) sel.value=cur;
+}
+async function discoverSectors(){
+  fillSectors(GIF_SECTOR_FALLBACK);
+  try{
+    const r=await fetch(`${STAR}/${gifSat()}/ABI/SECTOR/`,{cache:"no-store"});
+    if(!r.ok) throw 0;
+    const html=await r.text();
+    const codes=[...new Set([...html.matchAll(/href="[^"]*?([a-z0-9_]{2,})\/"/g)].map(m=>m[1]))].filter(c=>c!=="abi"&&c.length<=6);
+    if(codes.length){
+      const list=codes.map(c=>[c, c.toUpperCase()]); list.push(["FD","Full Disk"]);
+      // prefer a South-America-looking sector as default
+      const sa=codes.find(c=>/sam|ssa|^sa$|sur|amer/.test(c));
+      fillSectors(list);
+      if(sa) document.getElementById("gifSector").value=sa;
+    }
+  }catch(e){ /* keep fallback */ }
+}
+function fmtStarTs(s){ // YYYYDDDHHMM (11)
+  if(!/^\d{11}$/.test(s)) return s;
+  const y=+s.slice(0,4), doy=+s.slice(4,7), hh=s.slice(7,9), mm=s.slice(9,11);
+  const d=new Date(Date.UTC(y,0,1)+(doy-1)*86400000);
+  return `${d.toISOString().slice(0,10)} ${hh}:${mm}Z`;
+}
+function showGif(url, caption){
+  const img=document.getElementById("gifImg");
+  document.getElementById("gifErr").classList.remove("show");
+  img.style.opacity=".35";
+  img.onload=()=>{ img.style.opacity="1"; };
+  img.onerror=()=>{ img.style.opacity="1"; document.getElementById("gifErrMsg").textContent=t("gif.err"); document.getElementById("gifErrUrl").textContent=url; document.getElementById("gifErrLink").innerHTML=""; document.getElementById("gifErr").classList.add("show"); };
+  document.getElementById("gifCap").textContent=caption||url;
+  img.src=url;
+}
+function gifListFailed(dir){
+  document.getElementById("gifErrMsg").textContent=t("gif.discoverr");
+  document.getElementById("gifErrUrl").textContent=dir;
+  document.getElementById("gifErrLink").innerHTML=` <a href="${dir}" target="_blank" rel="noopener" style="color:var(--eo)">↗</a>`;
+  document.getElementById("gifErr").classList.add("show");
+  document.getElementById("gifCap").textContent=dir;
+}
+async function loadGif(){
+  const dir=gifSectorDir();
+  document.getElementById("gifCap").textContent=t("gif.loading");
+  document.getElementById("gifErr").classList.remove("show");
+  try{
+    const r=await fetch(dir,{cache:"no-store"});
+    if(!r.ok) throw 0;
+    const html=await r.text();
+    const gifs=[...html.matchAll(/href="([^"]+\.gif)"/g)].map(m=>m[1].split("/").pop());
+    if(!gifs.length) throw 1;
+    gifs.sort();
+    const latest=gifs[gifs.length-1];
+    const url=dir+latest;
+    const m=latest.match(/^(\d{11})-(\d{11})-.*?-(\d+x\d+)\.gif$/);
+    const cap = m ? `NOAA ${gifSat()} · ${document.getElementById("gifSector").selectedOptions[0].textContent} · ${document.getElementById("gifProd").value} · ${fmtStarTs(m[1])} → ${fmtStarTs(m[2])} · ${m[3]}` : url;
+    showGif(url, cap);
+  }catch(e){ gifListFailed(dir); }
+}
+document.getElementById("btnGif").addEventListener("click", loadGif);
+document.getElementById("gifSat").addEventListener("change", ()=>{ discoverSectors().then(loadGif); });
+document.getElementById("btnGifManual").addEventListener("click", ()=>{ const u=document.getElementById("gifManual").value.trim(); if(u) showGif(u, u.split("/").pop()); });
+document.getElementById("gifManual").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); const u=e.target.value.trim(); if(u) showGif(u,u.split("/").pop()); } });
+async function initGif(){ await discoverSectors(); loadGif(); }
+
+/* ============================================================
+   SPACE WEATHER (NOAA SWPC)
+   ============================================================ */
+const SWPC="https://services.swpc.noaa.gov";
+async function getJSON(url){ const r=await fetch(url,{cache:"no-store"}); if(!r.ok) throw new Error(r.status); return r.json(); }
+function setCard(id,cls){ const c=document.getElementById(id); c.classList.remove("s-ok","s-watch","s-alert"); if(cls) c.classList.add(cls); }
+let lastKp=null,lastWind=null,lastBz=null;
+async function loadKp(){
+  try{
+    const data=await getJSON(`${SWPC}/products/noaa-planetary-k-index.json`);
+    const head=data[0]; const kpi=head.indexOf("Kp")>=0?head.indexOf("Kp"):1;
+    const kp=parseFloat(data[data.length-1][kpi]); lastKp=kp;
+    document.getElementById("kpVal").textContent=isNaN(kp)?"—":kp.toFixed(0);
+    let cls="s-ok",st="u.quiet"; if(kp>=5){cls="s-alert";st="u.storm";} else if(kp>=4){cls="s-watch";st="u.unsettled";}
+    setCard("cardKp",cls); document.getElementById("kpSub").textContent=t(st);
+    document.getElementById("kpBadge").textContent= kp>=5?("G"+Math.min(5,Math.max(1,Math.round(kp-4)))):("Kp "+kp.toFixed(0));
+  }catch(e){ fail("cardKp","kpVal","kpSub","kpBadge"); }
+}
+async function loadWind(){
+  try{
+    const data=await getJSON(`${SWPC}/products/solar-wind/plasma-1-day.json`);
+    const speed=parseFloat(data[data.length-1][2]); lastWind=speed;
+    document.getElementById("windVal").innerHTML=(isNaN(speed)?"—":Math.round(speed))+'<span class="unit">km/s</span>';
+    let cls="s-ok",st="u.nominal"; if(speed>=600){cls="s-watch";st="u.fast";} else if(speed<350){st="u.slow";}
+    setCard("cardWind",cls); document.getElementById("windSub").textContent=t(st);
+    document.getElementById("windBadge").textContent="DSCOVR L1";
+  }catch(e){ fail("cardWind","windVal","windSub","windBadge"); }
+}
+async function loadBz(){
+  try{
+    const data=await getJSON(`${SWPC}/products/solar-wind/mag-1-day.json`);
+    const head=data[0]; const bzi=head.indexOf("bz_gsm")>=0?head.indexOf("bz_gsm"):3;
+    const bz=parseFloat(data[data.length-1][bzi]); lastBz=bz;
+    document.getElementById("bzVal").innerHTML=(isNaN(bz)?"—":bz.toFixed(1))+'<span class="unit">nT</span>';
+    let cls="s-ok",st="u.north"; if(bz<=-10){cls="s-alert";st="u.south";} else if(bz<=-5){cls="s-watch";st="u.south";}
+    setCard("cardBz",cls); document.getElementById("bzSub").textContent=t(st);
+    document.getElementById("bzBadge").textContent= bz<0?"▼ south":"▲ north";
+  }catch(e){ fail("cardBz","bzVal","bzSub","bzBadge"); }
+}
+function xrayClass(f){ if(f>=1e-4)return["X",(f/1e-4).toFixed(1)]; if(f>=1e-5)return["M",(f/1e-5).toFixed(1)]; if(f>=1e-6)return["C",(f/1e-6).toFixed(1)]; if(f>=1e-7)return["B",(f/1e-7).toFixed(1)]; return["A",(f/1e-8).toFixed(1)]; }
+async function loadXray(){
+  try{
+    const data=await getJSON(`${SWPC}/json/goes/primary/xrays-6-hour.json`);
+    const lb=data.filter(d=>(d.energy||"").indexOf("0.1-0.8")>=0);
+    const flux=parseFloat(lb[lb.length-1].flux); const [cl,mag]=xrayClass(flux);
+    document.getElementById("xrayVal").textContent=cl+mag;
+    let cls="s-ok"; if(cl==="X")cls="s-alert"; else if(cl==="M")cls="s-watch";
+    setCard("cardXray",cls);
+    document.getElementById("xraySub").textContent=flux.toExponential(1)+" W/m²";
+    document.getElementById("xrayBadge").textContent="GOES";
+  }catch(e){ fail("cardXray","xrayVal","xraySub","xrayBadge"); }
+}
+function fail(card,val,sub,badge){ setCard(card,"s-watch"); document.getElementById(val).textContent="—"; document.getElementById(sub).textContent=t("u.unavail"); document.getElementById(badge).textContent="—"; }
+async function loadAlerts(){
+  const box=document.getElementById("alertList");
+  try{
+    const data=await getJSON(`${SWPC}/products/alerts.json`);
+    box.innerHTML="";
+    data.slice(0,6).forEach((a,i)=>{
+      const msg=(a.message||"").trim();
+      const firstLine=msg.split("\n").find(l=>l.trim().length>0)||a.product_id||"SWPC";
+      const div=document.createElement("div"); div.className="alert-item";
+      div.innerHTML=`<div class="when">${a.issue_datetime||""} · ${a.product_id||""}</div>
+        <div class="what">${firstLine.replace(/^[A-Z]+\s*:?\s*/,"").slice(0,120)}</div>
+        <div class="tog" data-i="${i}">${t("u.more")}</div>
+        <div class="msg">${msg.replace(/</g,"&lt;")}</div>`;
+      box.appendChild(div);
+    });
+    box.querySelectorAll(".tog").forEach(tg=>tg.addEventListener("click",()=>{
+      const item=tg.closest(".alert-item"); const open=item.classList.toggle("open");
+      tg.textContent=open? t("u.less"): t("u.more");
+    }));
+  }catch(e){ box.innerHTML=`<div class="alert-item"><span class="when">${t("u.unavail")}</span></div>`; }
+}
+function refreshSpaceWeatherLabels(){
+  if(lastKp!=null){ let s="u.quiet"; if(lastKp>=5)s="u.storm"; else if(lastKp>=4)s="u.unsettled"; const el=document.getElementById("kpSub"); if(el)el.textContent=t(s); }
+  if(lastWind!=null){ let s="u.nominal"; if(lastWind>=600)s="u.fast"; else if(lastWind<350)s="u.slow"; const el=document.getElementById("windSub"); if(el)el.textContent=t(s); }
+  if(lastBz!=null){ const el=document.getElementById("bzSub"); if(el)el.textContent=t(lastBz<=-5?"u.south":"u.north"); }
+}
+function loadSpaceWeather(){ loadKp(); loadWind(); loadBz(); loadXray(); loadAlerts(); }
+function tickClock(){ try{ const s=new Intl.DateTimeFormat("es-UY",{timeZone:"America/Montevideo",hour:"2-digit",minute:"2-digit"}).format(new Date()); document.getElementById("localClock").innerHTML="Montevideo · "+s; }catch(e){} }
+
+/* ============================================================
+   ENVIRONMENTAL DATA LAYERS — second map, multi-source, drill-down
+   Edit identifiers/matrix sets here if a provider renames them.
+   ============================================================ */
+const ENV = {
+  viirs_noaa20_tc:{kind:"gibs", base:true, id:"VIIRS_NOAA20_CorrectedReflectance_TrueColor", matrix:"GoogleMapsCompatible_Level9", ext:"jpg", maxNative:9, color:"#a9dcff",
+    prov:"NOAA / NASA · JPSS", platform:"NOAA-20 · VIIRS", param:{en:"True-colour reflectance",es:"Reflectancia color real"}, res:"~250–750 m", cadence:{en:"Daily (one daytime pass)",es:"Diario (una pasada diurna)"}, legend:{en:"Natural daytime image; clouds white, vegetation green.",es:"Imagen diurna natural; nubes blancas, vegetación verde."}, link:"https://www.earthdata.nasa.gov/data/instruments/viirs"},
+  modis_tc:{kind:"gibs", base:true, id:"MODIS_Terra_CorrectedReflectance_TrueColor", matrix:"GoogleMapsCompatible_Level9", ext:"jpg", maxNative:9, color:"#a9dcff",
+    prov:"NASA · EOSDIS", platform:"Terra · MODIS", param:{en:"True-colour reflectance",es:"Reflectancia color real"}, res:"250 m", cadence:{en:"Daily",es:"Diario"}, legend:{en:"Daytime natural-colour mosaic.",es:"Mosaico diurno en color natural."}, link:"https://www.earthdata.nasa.gov/data/instruments/modis"},
+  dark:{kind:"xyz", base:true, url:"https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", subdomains:"abcd", maxNative:19, color:"#6b769a",
+    prov:"OpenStreetMap · CARTO", platform:"Vector basemap", param:{en:"Reference map",es:"Mapa de referencia"}, res:"—", cadence:{en:"Static",es:"Estático"}, legend:{en:"Neutral dark reference.",es:"Referencia oscura neutra."}, link:"https://carto.com/basemaps/"},
+  osm:{kind:"xyz", base:true, url:"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", subdomains:"abc", maxNative:19, color:"#6b769a",
+    prov:"OpenStreetMap", platform:"Vector basemap", param:{en:"Reference map",es:"Mapa de referencia"}, res:"—", cadence:{en:"Static",es:"Estático"}, legend:{en:"Streets and place names.",es:"Calles y nombres."}, link:"https://www.openstreetmap.org/copyright"},
+  fires_viirs:{kind:"gibs", id:"VIIRS_NOAA20_Thermal_Anomalies_375m_All", matrix:"GoogleMapsCompatible_Level7", ext:"png", maxNative:7, color:"#e0653f",
+    prov:"NOAA / NASA · FIRMS (LANCE)", platform:"NOAA-20 · VIIRS 375 m", param:{en:"Active fire / thermal anomaly",es:"Fuego activo / anomalía térmica"}, res:"375 m", cadence:{en:"Daily, near real-time",es:"Diario, casi en tiempo real"}, legend:{en:"Points = thermal anomalies detected in the last day.",es:"Puntos = anomalías térmicas detectadas en el último día."}, link:"https://firms.modaps.eosdis.nasa.gov/"},
+  fires_modis:{kind:"gibs", id:"MODIS_Terra_Thermal_Anomalies_All", matrix:"GoogleMapsCompatible_Level7", ext:"png", maxNative:7, color:"#f3ad5e",
+    prov:"NASA · FIRMS (LANCE)", platform:"Terra/Aqua · MODIS 1 km", param:{en:"Active fire / thermal anomaly",es:"Fuego activo / anomalía térmica"}, res:"1 km", cadence:{en:"Daily, near real-time",es:"Diario, casi en tiempo real"}, legend:{en:"Points = MODIS fire detections (last day).",es:"Puntos = detecciones de fuego MODIS (último día)."}, link:"https://firms.modaps.eosdis.nasa.gov/"},
+  lst:{kind:"gibs", id:"MODIS_Terra_Land_Surface_Temp_Day", matrix:"GoogleMapsCompatible_Level7", ext:"png", maxNative:7, color:"#ff86c8",
+    prov:"NASA · EOSDIS", platform:"Terra · MODIS", param:{en:"Land surface temperature (day)",es:"Temperatura de superficie terrestre (día)"}, res:"1 km", cadence:{en:"Daily",es:"Diario"}, legend:{en:"Blue cold → red hot land skin temperature.",es:"Azul frío → rojo cálido, temperatura de piel del suelo."}, link:"https://www.earthdata.nasa.gov/"},
+  sst:{kind:"gibs", id:"GHRSST_L4_MUR_Sea_Surface_Temperature", matrix:"GoogleMapsCompatible_Level7", ext:"png", maxNative:7, color:"#5fd0a0",
+    prov:"NASA JPL · PO.DAAC (GHRSST MUR)", platform:"Multi-sensor L4 analysis", param:{en:"Sea surface temperature",es:"Temperatura de superficie del mar"}, res:"~1 km", cadence:{en:"Daily",es:"Diario"}, legend:{en:"Colour scale of ocean temperature.",es:"Escala de color de temperatura del océano."}, link:"https://podaac.jpl.nasa.gov/"},
+  aod:{kind:"gibs", id:"MODIS_Combined_Value_Added_AOD", matrix:"GoogleMapsCompatible_Level6", ext:"png", maxNative:6, color:"#f3ad5e",
+    prov:"NASA · EOSDIS (MAIAC)", platform:"Terra + Aqua · MODIS", param:{en:"Aerosol optical depth (haze, smoke, dust)",es:"Profundidad óptica de aerosoles (bruma, humo, polvo)"}, res:"~1 km", cadence:{en:"Daily",es:"Diario"}, legend:{en:"Higher = more aerosol in the air column (smoke/dust/pollution).",es:"Más alto = más aerosol en la columna (humo/polvo/contaminación)."}, link:"https://www.earthdata.nasa.gov/"},
+  precip:{kind:"rv-radar", live:true, color:"#3cc9e6",
+    prov:"RainViewer (national radars + nowcast)", platform:"Radar mosaic", param:{en:"Precipitation intensity",es:"Intensidad de precipitación"}, res:"~1–2 km", cadence:{en:"Live, ~10 min",es:"En vivo, ~10 min"}, legend:{en:"Blue → green → yellow → red = light to heavy rain.",es:"Azul → verde → amarillo → rojo = lluvia leve a intensa."}, link:"https://www.rainviewer.com/"},
+  clouds:{kind:"rv-sat", live:true, color:"#93a0c2",
+    prov:"RainViewer (geostationary IR)", platform:"Infrared satellite", param:{en:"Cloud-top infrared",es:"Infrarrojo de tope de nube"}, res:"~4 km", cadence:{en:"Live, ~10 min",es:"En vivo, ~10 min"}, legend:{en:"Brighter = colder, higher cloud tops.",es:"Más brillante = topes de nube más fríos y altos."}, link:"https://www.rainviewer.com/"}
+};
+const ENV_OVERLAYS=["fires_viirs","fires_modis","lst","sst","aod","precip","clouds"];
+let emap=null, eBase=null, eLayers={}, eFell=false, eOutline=null, RV=null;
+window.__envReady=false;
+
+function envOpacity(){ return parseInt(document.getElementById("envOpacity").value,10)/100; }
+async function ensureRV(){ if(RV) return RV; const r=await fetch("https://api.rainviewer.com/public/weather-maps.json",{cache:"no-store"}); RV=await r.json(); return RV; }
+function rvHost(){ return (RV&&RV.host)||"https://tilecache.rainviewer.com"; }
+function rvRadarUrl(){ const p=RV.radar.past; const f=p[p.length-1]; return `${rvHost()}${f.path}/256/{z}/{x}/{y}/2/1_1.png`; }
+function rvSatUrl(){ const s=RV.satellite&&RV.satellite.infrared; const f=s[s.length-1]; return `${rvHost()}${f.path}/256/{z}/{x}/{y}/0/0_0.png`; }
+
+function makeEnvLayer(key, pane, isBase){
+  const c=ENV[key];
+  if(c.kind==="gibs"){
+    const url=`${GIBS}/${c.id}/default/${dailyDate()}/${c.matrix}/{z}/{y}/{x}.${c.ext}`;
+    const ly=L.tileLayer(url,{pane, maxNativeZoom:c.maxNative, maxZoom:12, bounds:[[-85,-180],[85,180]], opacity:isBase?1:envOpacity(), attribution:c.prov, crossOrigin:true});
+    let n=0; ly.on("tileerror",()=>{ n++; if(n>=6 && !c.__err){ c.__err=true; renderSources();
+      if(isBase && !eFell && document.getElementById("envBase").value!=="dark"){ eFell=true; document.getElementById("envBase").value="dark"; envSetBase(); } } });
+    return ly;
+  }
+  if(c.kind==="xyz"){ return L.tileLayer(c.url,{pane, subdomains:c.subdomains||"abc", maxNativeZoom:c.maxNative, maxZoom:12, opacity:isBase?1:envOpacity(), attribution:c.prov}); }
+  if(c.kind==="rv-radar"){ return L.tileLayer(rvRadarUrl(),{pane, maxNativeZoom:18, maxZoom:12, opacity:envOpacity(), attribution:c.prov}); }
+  if(c.kind==="rv-sat"){ return L.tileLayer(rvSatUrl(),{pane, maxNativeZoom:18, maxZoom:12, opacity:envOpacity(), attribution:c.prov}); }
+}
+function envSetBase(){
+  if(eBase) emap.removeLayer(eBase);
+  const k=document.getElementById("envBase").value; ENV[k].__err=false;
+  eBase=makeEnvLayer(k,"envBase",true); eBase.addTo(emap);
+  if(eOutline) eOutline.bringToFront();
+  renderSources();
+}
+async function envToggle(key,on){
+  ENV[key].__err=false;
+  if(on){
+    try{
+      if(ENV[key].kind.indexOf("rv")===0){ await ensureRV(); }
+      const ly=makeEnvLayer(key,"envOver",false); eLayers[key]=ly; ly.addTo(emap);
+      if(eOutline) eOutline.bringToFront();
+    }catch(e){ ENV[key].__err=true; }
+  } else { if(eLayers[key]){ emap.removeLayer(eLayers[key]); delete eLayers[key]; } }
+  renderSources();
+}
+function renderSources(){
+  const box=document.getElementById("srcList"); if(!box) return;
+  const baseKey=document.getElementById("envBase").value;
+  const active=[baseKey, ...ENV_OVERLAYS.filter(k=>eLayers[k])];
+  if(!active.length){ box.innerHTML=`<div class="envempty">${t("env.none")}</div>`; return; }
+  box.innerHTML="";
+  active.forEach(key=>{
+    const c=ENV[key];
+    const nm = key===baseKey ? document.getElementById("envBase").selectedOptions[0].textContent : t("env.lyr."+key);
+    const item=document.createElement("div"); item.className="srcitem";
+    item.innerHTML=`<div class="sh"><span class="dotc" style="color:${c.color};background:${c.color}"></span><span class="nm">${nm}</span><span class="pv">${c.prov}</span><span class="ar">▸</span></div>`+
+      `<div class="sb"><div class="in">`+
+      (c.__err?`<div class="warn">⚠ ${t("env.layererr")}</div>`:``)+
+      `<table>`+
+      `<tr><td>${t("env.f.platform")}</td><td>${c.platform}</td></tr>`+
+      `<tr><td>${t("env.f.param")}</td><td>${c.param[LANG]||c.param.en}</td></tr>`+
+      `<tr><td>${t("env.f.res")}</td><td>${c.res}</td></tr>`+
+      `<tr><td>${t("env.f.cadence")}</td><td>${c.cadence[LANG]||c.cadence.en}</td></tr>`+
+      `<tr><td>${t("env.f.prov")}</td><td>${c.prov}</td></tr>`+
+      `<tr><td>${t("env.f.legend")}</td><td>${c.legend[LANG]||c.legend.en}</td></tr>`+
+      `<tr><td>${t("env.f.link")}</td><td><a href="${c.link}" target="_blank" rel="noopener">${c.link.replace(/^https?:\/\//,"").replace(/\/$/,"")}</a></td></tr>`+
+      `</table></div></div>`;
+    item.querySelector(".sh").addEventListener("click",()=>item.classList.toggle("open"));
+    box.appendChild(item);
+  });
+}
+function initEnv(){
+  if(typeof L==="undefined"){ return; }
+  const el=document.getElementById("noEnv"); if(el) el.remove();
+  emap=L.map("envmap",{center:[-32.7,-56.0], zoom:5, minZoom:2, maxZoom:12, worldCopyJump:false, zoomControl:true, attributionControl:true});
+  emap.createPane("envBase"); emap.getPane("envBase").style.zIndex=200;
+  emap.createPane("envOver"); emap.getPane("envOver").style.zIndex=300;
+  L.control.scale({imperial:false, position:"bottomright"}).addTo(emap);
+  eOutline=L.geoJSON(URY_GEOJSON,{pane:"overlayPane", style:{color:"#2fd4c0", weight:2, opacity:.9, fill:false}}).addTo(emap);
+  window.__envReady=true;
+  envSetBase();
+  ENV_OVERLAYS.forEach(k=>{ const cb=document.getElementById("ev_"+k); if(cb) cb.addEventListener("change", e=> envToggle(k, e.target.checked)); });
+  if(document.getElementById("ev_fires_viirs").checked) envToggle("fires_viirs", true);
+  document.getElementById("envBase").addEventListener("change", ()=>{ eFell=false; envSetBase(); });
+  document.getElementById("envOpacity").addEventListener("input", e=>{ const o=parseInt(e.target.value,10)/100; Object.values(eLayers).forEach(l=>l.setOpacity(o)); });
+  document.getElementById("envReset").addEventListener("click", ()=>{ try{ emap.fitBounds(eOutline.getBounds(),{padding:[30,30]}); }catch(_){ emap.setView([-32.7,-56.0],6); } });
+  renderSources();
+}
+
+/* init */
+applyLang();
+initMap();
+initEnv();
+initGif();
+loadSpaceWeather();
+tickClock();
+setInterval(()=>{ if(live && map && anySubdaily()){ refreshTimed(); } }, 10*60*1000);
+setInterval(loadSpaceWeather, 5*60*1000);
+setInterval(tickClock, 30*1000);
+</script>
+</body>
+</html>
