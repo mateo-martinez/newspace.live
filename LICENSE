@@ -1,21 +1,90 @@
-MIT License
+PROPIETARY EVALUATION LICENSE AGREEMENT
+Version 1.0
 
-Copyright (c) 2026 mateo-martinez
+Copyright (c) 2026 Mateo Martinez
+All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+IMPORTANT: READ THIS LICENSE CAREFULLY BEFORE USING THE SOFTWARE.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+By downloading, installing, copying, accessing, or using this Software, you agree to be bound by the terms of this Agreement.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+1. DEFINITIONS
+
+"Software" means the application, source code, binaries, documentation, updates, and related materials provided by [COMPANY NAME].
+
+"Evaluation Period" means thirty (30) calendar days starting from the first installation, execution, activation, or use of the Software.
+
+"Commercial Use" means any use intended to generate revenue, support business operations, internal production activities, customer services, consulting activities, or any activity beyond evaluation.
+
+2. LICENSE GRANT
+
+Subject to the terms of this Agreement, [COMPANY NAME] grants you a limited, non-exclusive, non-transferable, revocable license to use the Software solely for internal evaluation and testing purposes during the Evaluation Period.
+
+3. EVALUATION LIMITATION
+
+You may use the Software free of charge only during the Evaluation Period.
+
+The Software may not be used for:
+- Production environments
+- Commercial activities
+- Revenue-generating operations
+- Customer-facing services
+- Resale or sublicensing
+- Benchmark publication without written authorization
+
+4. COMMERCIAL LICENSE REQUIREMENT
+
+After expiration of the Evaluation Period:
+
+(a) You must immediately cease all use of the Software; OR
+
+(b) Purchase a valid commercial license from Mateo Martinez.
+
+Continued use after expiration automatically constitutes unauthorized use and may require payment of applicable commercial licensing fees.
+
+5. RESTRICTIONS
+
+You may not:
+
+- Redistribute the Software
+- Modify and distribute derivative works
+- Reverse engineer, decompile, or disassemble except where prohibited by applicable law
+- Remove copyright notices
+- Rent, lease, sublicense, or sell access
+- Publish license bypass methods
+
+6. OWNERSHIP
+
+The Software is licensed, not sold.
+
+All intellectual property rights remain exclusively with [COMPANY NAME].
+
+No open-source rights are granted under this Agreement.
+
+7. TERMINATION
+
+This Agreement terminates automatically if you violate any term.
+
+Upon termination you must immediately:
+- Stop using the Software
+- Delete all copies
+- Destroy backups where legally permitted
+
+8. NO WARRANTY
+
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND.
+
+9. LIMITATION OF LIABILITY
+
+IN NO EVENT SHALL [COMPANY NAME] BE LIABLE FOR INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES.
+
+10. GOVERNING LAW
+
+This Agreement shall be governed by the laws of [COUNTRY].
+
+11. CONTACT
+
+Licensing inquiries:
+newspace.live
+
+END OF TERMS
