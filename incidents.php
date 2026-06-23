@@ -27,7 +27,10 @@ try {
         $domain = $_GET['domain'] ?? null;
         $stateF = $_GET['state'] ?? 'active';
         $w = []; $v = [];
-        if ($domain === 'ssa' || $domain === 'neo') { $w[] = 'domain=?'; $v[] = $domain; }
+        if ($domain) {
+            $ds = array_values(array_filter(array_map('trim', explode(',', $domain)), static fn($d) => in_array($d, ['ssa', 'neo', 'swe'], true)));
+            if ($ds) { $w[] = 'domain IN (' . implode(',', array_fill(0, count($ds), '?')) . ')'; foreach ($ds as $d) $v[] = $d; }
+        }
         if ($stateF === 'active') { $w[] = "state NOT IN ('resolved','closed')"; }
         elseif ($stateF === 'resolved') { $w[] = "state IN ('resolved','closed')"; }
         $sql = 'SELECT * FROM app_incident' . ($w ? ' WHERE ' . implode(' AND ', $w) : '') . ' ORDER BY priority IS NULL, priority ASC';

@@ -380,7 +380,7 @@ const I18N={en:{
  act_observe:"observe", act_monitor:"monitor", act_escalate:"escalate", act_ignore:"ignore",
  q_what:"What", q_risk:"Risk", q_obs:"Observability", q_time:"Time", q_do:"Action", q_who:"Owner",
  obs_tonight:"observable tonight", obs_soon:"observable this week", obs_notnow:"not observable now",
- ty_neo:"NEO", alk_miss:"critical proximity", alk_imminent:"imminent pass", alk_big:"large object", alk_torino:"Torino risk", alk_palermo:"Palermo risk",
+ ty_neo:"NEO", alk_miss:"critical proximity", alk_imminent:"imminent pass", alk_big:"large object", alk_torino:"Torino risk", alk_palermo:"Palermo risk", alk_neocp:"NEOCP follow-up", meth_title:"Accuracy & method", meth_neocp:"MPC confirmation page. Culmination altitude is the maximum possible altitude from the site (a necessary condition for observability), not a pointing solution nor a time window. NEO score is the MPC probability that it is a real NEO.", meth_risk:"Impact risk from the Torino and Palermo scales and close-approach data (NeoWs, CAD, Sentry, ESA). Observability from OALM is a necessary condition (dark window), not a pointing solution.", meth_default:"Derived from public data. Values are estimates, not guarantees.",
  trq_st_new:"NEW", trq_st_acknowledged:"ACK", trq_st_in_analysis:"ANALYSIS", trq_st_escalated:"ESCALATED", trq_st_tasked:"TASKED", trq_st_resolved:"RESOLVED", trq_st_closed:"CLOSED",
  trq_to_acknowledged:"Acknowledge", trq_to_in_analysis:"Analyze", trq_to_escalated:"Escalate", trq_to_tasked:"Task", trq_to_resolved:"Resolve", trq_to_closed:"Close", trq_to_new:"Reopen",
  ti_city:"Observer city", ti_rate:"Time acceleration", btn_play:"Play", btn_pause:"Pause", btn_now:"Now",
@@ -467,7 +467,7 @@ const I18N={en:{
  act_observe:"observar", act_monitor:"monitorear", act_escalate:"escalar", act_ignore:"ignorar",
  q_what:"Qu\u00e9", q_risk:"Riesgo", q_obs:"Observabilidad", q_time:"Tiempo", q_do:"Acci\u00f3n", q_who:"Responsable",
  obs_tonight:"observable esta noche", obs_soon:"observable esta semana", obs_notnow:"no observable ahora",
- ty_neo:"NEO", alk_miss:"proximidad cr\u00edtica", alk_imminent:"paso inminente", alk_big:"objeto grande", alk_torino:"riesgo Torino", alk_palermo:"riesgo Palermo",
+ ty_neo:"NEO", alk_miss:"proximidad cr\u00edtica", alk_imminent:"paso inminente", alk_big:"objeto grande", alk_torino:"riesgo Torino", alk_palermo:"riesgo Palermo", alk_neocp:"seguimiento NEOCP", meth_title:"Exactitud y m\u00e9todo", meth_neocp:"P\u00e1gina de confirmaci\u00f3n del MPC. La altura de culminaci\u00f3n es la altura m\u00e1xima posible desde el sitio (condici\u00f3n necesaria de observabilidad), no una soluci\u00f3n de apuntado ni una ventana horaria. El puntaje NEO es la probabilidad del MPC de que sea un NEO real.", meth_risk:"Riesgo de impacto por las escalas de Torino y Palermo y datos de aproximaci\u00f3n (NeoWs, CAD, Sentry, ESA). La observabilidad desde OALM es condici\u00f3n necesaria (ventana de oscuridad), no soluci\u00f3n de apuntado.", meth_default:"Derivado de datos p\u00fablicos. Los valores son estimaciones, no garant\u00edas.",
  trq_st_new:"NUEVO", trq_st_acknowledged:"ACUSADO", trq_st_in_analysis:"AN\u00c1LISIS", trq_st_escalated:"ESCALADO", trq_st_tasked:"TASKING", trq_st_resolved:"RESUELTO", trq_st_closed:"CERRADO",
  trq_to_acknowledged:"Acusar", trq_to_in_analysis:"Analizar", trq_to_escalated:"Escalar", trq_to_tasked:"Tasking", trq_to_resolved:"Resolver", trq_to_closed:"Cerrar", trq_to_new:"Reabrir",
  ti_city:"Ciudad del observador", ti_rate:"Aceleraci\u00f3n de tiempo", btn_play:"Reproducir", btn_pause:"Pausar", btn_now:"Ahora",
@@ -1244,8 +1244,9 @@ function paintIncident(c,audit){
       <div><b style="color:var(--text-dim)">5 \u00b7 ${t("q_who")}:</b> ${esc((c.owner!=null&&c.owner!=="")?String(c.owner):t("trq_unassigned"))}</div>
     </div>
     <div style="margin-top:10px">${btn}</div>
-    <div style="margin-top:8px"><button class="btn" id="trqOpen3d" data-id="${esc(c.id)}" style="padding:5px 10px;font-size:11px">${t("trq_open3d")}</button></div>
+    ${c.kind==="neocp"?"":`<div style="margin-top:8px"><button class="btn" id="trqOpen3d" data-id="${esc(c.id)}" style="padding:5px 10px;font-size:11px">${t("trq_open3d")}</button></div>`}
     <div style="margin-top:12px;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">${t("trq_timeline")}</div>${tl}
+    <details style="margin-top:10px"><summary style="cursor:pointer;font-size:10px;color:var(--text-dim)">${t("meth_title")}</summary><div style="font-size:10px;color:var(--text-faint);line-height:1.5;margin-top:4px">${t("meth_"+(c.kind==="neocp"?"neocp":"risk"))}</div></details>
   </div>`;
   el("trqDetail").querySelectorAll("button[data-to]").forEach(b=>b.addEventListener("click",()=>{
     if(Backend.on){Backend.transition(c.id,b.dataset.to,"").then(()=>Backend.refresh()).then(()=>renderTriage()).catch(e=>alert(e.message));}

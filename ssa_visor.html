@@ -230,6 +230,7 @@
       <a id="lnkHub" href="/" class="xlink" data-i18n-ti="ti_hub" title="newspace.live home">&#8962; Hub</a>
       <a id="lnkNeo" href="neo_watch.html" class="xlink" data-i18n-ti="ti_neo" title="Open NEO Watch (planetary defense)">NEO &#8599;</a>
       <a id="authChip" href="admin.html" class="xlink" title="Session" style="font-family:var(--mono);font-size:11px">&#9675;</a>
+      <button id="fragBtn" data-i18n-ti="ti_frag" title="Fragmentation analysis">&#128165;</button>
       <button id="helpBtn" data-i18n-ti="ti_help" title="Quick help / Ayuda r&aacute;pida">?</button>
       <button id="langBtn" title="Switch to Spanish">&#127466;&#127480;</button>
     </div>
@@ -354,6 +355,32 @@
       <div style="overflow:auto;background:var(--panel-2)" id="trqDetail"></div>
     </div>
     <div style="padding:8px 14px;font-size:10px;color:var(--text-faint);font-family:var(--mono);border-top:1px solid var(--line)" data-i18n="trq_foot">Signal vs case: one object is one thread. Severity, priority and recommended action come from the shared incident engine. Lifecycle is audited and stored in this browser.</div>
+  </div>
+</div>
+
+<div id="fragModal" class="modal" style="display:none">
+  <div class="acard" style="max-width:720px;width:94vw">
+    <div class="modal-h"><span data-i18n="frag_title">Fragmentation analysis</span><button id="fragClose">&times;</button></div>
+    <div style="padding:14px 16px;font-size:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 14px">
+        <label><span data-i18n="frag_type">Event type</span><br><select id="fgType" style="width:100%"><option value="explosion" data-i18n="frag_expl">Explosion</option><option value="collision" data-i18n="frag_coll">Collision</option></select></label>
+        <label><span data-i18n="frag_parent">Parent object</span><br><input id="fgParent" style="width:100%" value=""></label>
+        <label><span data-i18n="frag_alt">Altitude (km)</span><br><input id="fgAlt" type="number" style="width:100%" value="800"></label>
+        <label><span data-i18n="frag_incl">Inclination (deg)</span><br><input id="fgIncl" type="number" style="width:100%" value="53"></label>
+        <label><span data-i18n="frag_mass">Target mass (kg)</span><br><input id="fgMass" type="number" style="width:100%" value="1000"></label>
+        <label><span data-i18n="frag_pmass">Projectile mass (kg)</span><br><input id="fgPmass" type="number" style="width:100%" value="10"></label>
+        <label><span data-i18n="frag_vel">Impact speed (km/s)</span><br><input id="fgVel" type="number" style="width:100%" value="10"></label>
+        <label><span data-i18n="frag_dv">Spread dv (km/s)</span><br><input id="fgDv" type="number" step="0.05" style="width:100%" value="0.1"></label>
+        <label style="grid-column:1/3"><input type="checkbox" id="fgScreen"> <span data-i18n="frag_screen">Screen catalog for assets at risk</span></label>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+        <button class="mtbtn" id="fgRun" data-i18n="frag_run">Run analysis</button>
+        <button class="mtbtn" id="fgCreate" style="display:none" data-i18n="frag_create">Create incident</button>
+        <span id="fgLogin" style="display:none;color:var(--text-faint);font-size:10px" data-i18n="frag_login">Sign in to use this tool</span>
+      </div>
+      <div id="fgResult" style="margin-top:12px;font-family:var(--mono);font-size:11px;line-height:1.6"></div>
+      <div style="margin-top:10px;font-size:10px;color:var(--text-faint)" data-i18n="frag_foot">NASA standard breakup model on public data. Fragment populations and affected orbital region, not per-fragment trajectories.</div>
+    </div>
   </div>
 </div>
 
@@ -520,7 +547,7 @@ const I18N={en:{
  al_nowh:"No webhook set - alert payload (configure a backend webhook to relay to email/Telegram/SMS):",al_sent:"Alerts dispatched to webhook",al_senterr:"Dispatch failed",al_sending:"dispatching...",al_test_msg:"Relay test from the SSA console.",al_test_sent:"Test alert dispatched",
  ti_city:"Set observer to any city in the world",city_ph:"City worldwide...",city_searching:"searching city...",city_notfound:"city not found",
  ti_cases:"Case management",ti_neo:"Open NEO Watch (planetary defense)",ti_hub:"newspace.live home",ti_help:"Quick help",help_title:"Quick start",
- ti_triage:"Triage queue",trq_title:"Triage queue",trq_db:"DB \u00b7 shared",trq_local:"local only",trq_signin:"Sign in",trq_all:"All",trq_active:"Active",trq_resolved:"Resolved",trq_none:"No incidents in queue.",trq_signals:"signals",trq_timeline:"Timeline / audit",trq_unassigned:"unassigned",trq_open3d:"Open 3D context",c3d_title_ssa:"3D orbital context",c3d_note_ssa:"Real orbits sampled from current TLEs via SGP4 (ECI). Markers are positions at TCA. SGP4 accuracy degrades with TLE age; this is geometric context, not a conjunction screening.",c3d_noorbit:"No orbital elements available for this object in the current catalogue.",c3d_missing:"3D context needs context3d.js, which is not loaded. Upload context3d.js into the same folder as this page and reload.",trq_autoesc:"auto-escalated (no ack)",trq_cleared:"event cleared",trq_now:"now",trq_terminal:"terminal state",
+ ti_triage:"Triage queue",trq_title:"Triage queue",trq_db:"DB \u00b7 shared",trq_local:"local only",trq_signin:"Sign in",trq_all:"All",trq_active:"Active",trq_resolved:"Resolved",trq_none:"No incidents in queue.",trq_signals:"signals",trq_timeline:"Timeline / audit",trq_unassigned:"unassigned",trq_open3d:"Open 3D context",ty_swe:"Space weather",ty_fragmentacion:"Fragmentation",ti_frag:"Fragmentation analysis",frag_title:"Fragmentation analysis",frag_type:"Event type",frag_expl:"Explosion",frag_coll:"Collision",frag_parent:"Parent object",frag_mass:"Target mass (kg)",frag_pmass:"Projectile mass (kg)",frag_vel:"Impact speed (km/s)",frag_alt:"Altitude (km)",frag_incl:"Inclination (deg)",frag_dv:"Spread dv (km/s)",frag_screen:"Screen catalog for assets at risk",frag_run:"Run analysis",frag_create:"Create incident",frag_login:"Sign in to use this tool",frag_foot:"NASA standard breakup model on public data. Fragment populations and affected orbital region, not per-fragment trajectories.",frag_r_track:"Trackable (>10 cm)",frag_r_band:"Affected altitude",frag_r_cat:"Catastrophic",frag_r_assets:"Assets at risk",meth_title:"Accuracy & method",meth_conjuncion:"Conjunction screening. From SOCRATES the value is the MAXIMUM probability (a conservative upper bound), not a true Pc, and there is no own covariance. DSE is days since epoch: higher means less reliable. Miss distance comes from public elements.",meth_reentrada:"Order-of-magnitude estimate from perigee altitude. The real window depends on atmospheric density (space weather), attitude and area/mass. The footprint is a latitude band (+/- inclination), not an impact point.",meth_fragmentacion:"NASA standard breakup model: fragment populations by size and affected orbital region, not per-fragment trajectories.",meth_maniobra:"Indication from public element history, not certainty. A change may be a maneuver, an element error, or the onset of reentry. Delta-v is a first-order estimate from element changes.",meth_swe:"NOAA G/R/S scales translated to operational impact. The system integrates and translates; it does not generate models or forecasts.",meth_default:"Derived from public data. Values are estimates, not guarantees.",c3d_title_ssa:"3D orbital context",c3d_note_ssa:"Real orbits sampled from current TLEs via SGP4 (ECI). Markers are positions at TCA. SGP4 accuracy degrades with TLE age; this is geometric context, not a conjunction screening.",c3d_noorbit:"No orbital elements available for this object in the current catalogue.",c3d_missing:"3D context needs context3d.js, which is not loaded. Upload context3d.js into the same folder as this page and reload.",trq_autoesc:"auto-escalated (no ack)",trq_cleared:"event cleared",trq_now:"now",trq_terminal:"terminal state",
  trq_foot:"Signal vs case: one object is one thread. Severity, priority and recommended action come from the shared incident engine. Lifecycle is audited and stored in this browser.",
  sev_critical:"CRITICAL",sev_high:"HIGH",sev_elevated:"ELEVATED",sev_routine:"ROUTINE",
  act_observe:"observe",act_monitor:"monitor",act_escalate:"escalate",act_ignore:"ignore",
@@ -561,7 +588,7 @@ const I18N={en:{
  ex_doctrinal:"Doctrinal report (HTML)",ex_json:"Situation (JSON)",ex_omm:"Mean elements \u2014 OMM (CCSDS)",ex_oem:"Ephemeris \u2014 OEM (selected)",ex_cdm:"Conjunction \u2014 CDM (CCSDS)",ex_mpc:"Astrometry \u2014 MPC (selected)",ex_menu:"Exports",sun_lbl:"Sun:",st_start:"Starting...",
  k_soberano:"Sovereign",k_gnss:"GNSS/PNT",k_comms:"Communications",k_eo:"Earth obs.",
  sev_alta:"HIGH",sev_media:"MED",sev_baja:"low",sev_info:"info",
- ty_conjuncion:"Conjunction",ty_sobrevuelo:"Overflight",ty_reentrada:"Reentry",ty_anomalia:"Anomaly",ty_interes:"Interest zone",
+ ty_conjuncion:"Conjunction",ty_sobrevuelo:"Overflight",ty_reentrada:"Reentry",ty_anomalia:"Anomaly",ty_maniobra:"Maneuver",ty_interes:"Interest zone",
  st_decay:"decaying",st_conj:"conjunction",st_anom:"anomaly",st_over:"overflying",st_view:"in view",st_soon:"scheduled overflight",st_nom:"nominal",
  ph_day:"day",ph_civil:"civil twilight",ph_naut:"nautical twilight",ph_astro:"astron. twilight",ph_night:"night",
  terr_terrestre:"land",terr_maritimo:"maritime",
@@ -593,7 +620,7 @@ I18N.es={
  al_nowh:"Sin webhook configurado - carga de la alerta (config\u00fara un webhook al backend para relayar a correo/Telegram/SMS):",al_sent:"Alertas despachadas al webhook",al_senterr:"Fall\u00f3 el despacho",al_sending:"despachando...",al_test_msg:"Prueba de relay desde la consola SSA.",al_test_sent:"Alerta de prueba despachada",
  ti_city:"Fijar el observador a cualquier ciudad del mundo",city_ph:"Ciudad del mundo...",city_searching:"buscando ciudad...",city_notfound:"ciudad no encontrada",
  ti_cases:"Gesti\u00f3n de casos",ti_neo:"Abrir NEO Watch (defensa planetaria)",ti_hub:"Inicio de newspace.live",ti_help:"Ayuda r\u00e1pida",help_title:"Gu\u00eda r\u00e1pida",
- ti_triage:"Cola de triage",trq_title:"Cola de triage",trq_db:"BD \u00b7 compartido",trq_local:"solo local",trq_signin:"Ingresar",trq_all:"Todos",trq_active:"Activos",trq_resolved:"Resueltos",trq_none:"Sin incidentes en cola.",trq_signals:"se\u00f1ales",trq_timeline:"L\u00ednea de tiempo / auditor\u00eda",trq_unassigned:"sin asignar",trq_open3d:"Abrir contexto 3D",c3d_title_ssa:"Contexto orbital 3D",c3d_note_ssa:"\u00d3rbitas reales muestreadas de los TLE actuales por SGP4 (ECI). Los marcadores son posiciones en el TCA. La precisi\u00f3n de SGP4 se degrada con la edad del TLE; esto es contexto geom\u00e9trico, no un screening de conjunci\u00f3n.",c3d_noorbit:"No hay elementos orbitales para este objeto en el cat\u00e1logo actual.",c3d_missing:"El contexto 3D necesita context3d.js, que no est\u00e1 cargado. Sub\u00ed context3d.js a la misma carpeta que esta p\u00e1gina y recarg\u00e1.",trq_autoesc:"auto-escalado (sin acuse)",trq_cleared:"evento despejado",trq_now:"ahora",trq_terminal:"estado terminal",
+ ti_triage:"Cola de triage",trq_title:"Cola de triage",trq_db:"BD \u00b7 compartido",trq_local:"solo local",trq_signin:"Ingresar",trq_all:"Todos",trq_active:"Activos",trq_resolved:"Resueltos",trq_none:"Sin incidentes en cola.",trq_signals:"se\u00f1ales",trq_timeline:"L\u00ednea de tiempo / auditor\u00eda",trq_unassigned:"sin asignar",trq_open3d:"Abrir contexto 3D",ty_swe:"Clima espacial",ty_fragmentacion:"Fragmentaci\u00f3n",ti_frag:"An\u00e1lisis de fragmentaci\u00f3n",frag_title:"An\u00e1lisis de fragmentaci\u00f3n",frag_type:"Tipo de evento",frag_expl:"Explosi\u00f3n",frag_coll:"Colisi\u00f3n",frag_parent:"Objeto padre",frag_mass:"Masa del blanco (kg)",frag_pmass:"Masa del proyectil (kg)",frag_vel:"Velocidad de impacto (km/s)",frag_alt:"Altitud (km)",frag_incl:"Inclinaci\u00f3n (grados)",frag_dv:"Dispersi\u00f3n dv (km/s)",frag_screen:"Cribar cat\u00e1logo por activos en riesgo",frag_run:"Calcular",frag_create:"Crear incidente",frag_login:"Ingres\u00e1 para usar esta herramienta",frag_foot:"Modelo de ruptura est\u00e1ndar de la NASA sobre datos p\u00fablicos. Poblaciones de fragmentos y regi\u00f3n orbital afectada, no trayectorias de cada fragmento.",frag_r_track:"Rastreables (>10 cm)",frag_r_band:"Altitud afectada",frag_r_cat:"Catastr\u00f3fica",frag_r_assets:"Activos en riesgo",meth_title:"Exactitud y m\u00e9todo",meth_conjuncion:"Cribado de conjunciones. Si viene de SOCRATES, el valor es la probabilidad M\u00c1XIMA (un techo conservador), no una Pc real, y no hay covarianza propia. DSE son d\u00edas desde la \u00e9poca: m\u00e1s alto, menos confiable. La distancia m\u00ednima sale de elementos p\u00fablicos.",meth_reentrada:"Estimaci\u00f3n de orden de magnitud a partir del perigeo. La ventana real depende de la densidad atmosf\u00e9rica (clima espacial), la actitud y el \u00e1rea/masa. La huella es una banda de latitud (+/- inclinaci\u00f3n), no un punto de impacto.",meth_fragmentacion:"Modelo de ruptura est\u00e1ndar de la NASA: poblaciones de fragmentos por tama\u00f1o y regi\u00f3n orbital afectada, no trayectorias de cada fragmento.",meth_maniobra:"Indicio sobre la historia de elementos p\u00fablicos, no certeza. Un cambio puede ser maniobra, error del elemento o inicio de reentrada. El delta-v es una estimaci\u00f3n de primer orden a partir del cambio de elementos.",meth_swe:"Escalas G/R/S de NOAA traducidas a impacto operativo. El sistema integra y traduce; no genera modelos ni pron\u00f3sticos.",meth_default:"Derivado de datos p\u00fablicos. Los valores son estimaciones, no garant\u00edas.",c3d_title_ssa:"Contexto orbital 3D",c3d_note_ssa:"\u00d3rbitas reales muestreadas de los TLE actuales por SGP4 (ECI). Los marcadores son posiciones en el TCA. La precisi\u00f3n de SGP4 se degrada con la edad del TLE; esto es contexto geom\u00e9trico, no un screening de conjunci\u00f3n.",c3d_noorbit:"No hay elementos orbitales para este objeto en el cat\u00e1logo actual.",c3d_missing:"El contexto 3D necesita context3d.js, que no est\u00e1 cargado. Sub\u00ed context3d.js a la misma carpeta que esta p\u00e1gina y recarg\u00e1.",trq_autoesc:"auto-escalado (sin acuse)",trq_cleared:"evento despejado",trq_now:"ahora",trq_terminal:"estado terminal",
  trq_foot:"Se\u00f1al vs caso: un objeto es un hilo. La severidad, la prioridad y la acci\u00f3n recomendada vienen del motor de incidentes compartido. El ciclo de vida se audita y se guarda en este navegador.",
  sev_critical:"CR\u00cdTICO",sev_high:"ALTO",sev_elevated:"ELEVADO",sev_routine:"RUTINA",
  act_observe:"observar",act_monitor:"monitorear",act_escalate:"escalar",act_ignore:"ignorar",
@@ -634,7 +661,7 @@ I18N.es={
  ex_doctrinal:"Reporte doctrinal (HTML)",ex_json:"Situaci\u00f3n (JSON)",ex_omm:"Elementos medios \u2014 OMM (CCSDS)",ex_oem:"Efem\u00e9rides \u2014 OEM (seleccionado)",ex_cdm:"Conjunci\u00f3n \u2014 CDM (CCSDS)",ex_mpc:"Astrometr\u00eda \u2014 MPC (seleccionado)",ex_menu:"Exportar",sun_lbl:"Sol:",st_start:"Iniciando...",
  k_soberano:"Soberano",k_gnss:"GNSS/PNT",k_comms:"Comunicaciones",k_eo:"Observaci\u00f3n",
  sev_alta:"ALTA",sev_media:"MEDIA",sev_baja:"baja",sev_info:"info",
- ty_conjuncion:"Conjunci\u00f3n",ty_sobrevuelo:"Sobrevuelo",ty_reentrada:"Reentrada",ty_anomalia:"Anomal\u00eda",ty_interes:"Zona inter\u00e9s",
+ ty_conjuncion:"Conjunci\u00f3n",ty_sobrevuelo:"Sobrevuelo",ty_reentrada:"Reentrada",ty_anomalia:"Anomal\u00eda",ty_maniobra:"Maniobra",ty_interes:"Zona inter\u00e9s",
  st_decay:"decaimiento",st_conj:"conjunci\u00f3n",st_anom:"anomal\u00eda",st_over:"sobrevolando",st_view:"en vista",st_soon:"sobrevuelo prog.",st_nom:"nominal",
  ph_day:"d\u00eda",ph_civil:"crep\u00fasculo civil",ph_naut:"crep\u00fasculo n\u00e1utico",ph_astro:"crep\u00fasculo astron.",ph_night:"noche",
  terr_terrestre:"terrestre",terr_maritimo:"mar\u00edtimo",
@@ -1236,7 +1263,7 @@ const Backend={on:false,csrf:"",user:null,
   async init(){try{const d=await this.api("auth.php","action=csrf");this.csrf=d.csrf;this.user=d.user;this.on=!!d.user;}catch(e){this.on=false;this.user=null;}return this.on;},
   async upsert(p){return this.api("incidents.php","action=upsert","POST",p);},
   async transition(id,to,note){return this.api("incidents.php","action=transition","POST",{id:id,to:to,note:note||""});},
-  async list(){const d=await this.api("incidents.php","action=list&domain=ssa&state=all");return d.incidents||[];},
+  async list(){const d=await this.api("incidents.php","action=list&domain=ssa,swe&state=all");return d.incidents||[];},
   async pushAndRefresh(computed){try{for(const d of computed){await this.upsert({id:"ssa:"+d.object,domain:"ssa",object:d.object,severity:d.severity,priority:d.priority,recommended_action:d.recommendedAction,kind:d.kind,metric:d.metric,tca_utc:d.tcaMs});}await this.refresh();}catch(e){}},
   async refresh(){try{const list=await this.list(),inc={};list.forEach(r=>{inc[r.id]={id:r.id,object:r.object,domain:r.domain,state:r.state,owner:r.owner_id,severity:r.severity,priority:r.priority,recommendedAction:r.recommended_action,kind:r.kind,what:r.kind?t("ty_"+r.kind):"",metric:r.metric,tcaMs:r.tca_utc?Date.parse(r.tca_utc.replace(" ","T")+"Z"):null,signalCount:1,country:""};});state.incidents=inc;renderTriageBadge();if(el("triageModal").style.display==="flex")renderTriage();}catch(e){}}
 };
@@ -1289,6 +1316,9 @@ function trqFilters(){
   const sv=el("trqSev");if(sv&&!sv.options.length)[["all","trq_all"],["critical","sev_critical"],["high","sev_high"],["elevated","sev_elevated"]].forEach(([v,k])=>{const o=document.createElement("option");o.value=v;o.textContent=t(k);sv.appendChild(o);});
   const st=el("trqState");if(st&&!st.options.length)[["active","trq_active"],["all","trq_all"],["resolved","trq_resolved"]].forEach(([v,k])=>{const o=document.createElement("option");o.value=v;o.textContent=t(k);st.appendChild(o);});
 }
+function fragBody(){return{type:el("fgType").value,parent:el("fgParent").value||"UNKNOWN",mass_kg:+el("fgMass").value,proj_mass_kg:+el("fgPmass").value,vel_kms:+el("fgVel").value,alt_km:+el("fgAlt").value,incl_deg:+el("fgIncl").value,dv_kms:+el("fgDv").value,screen:el("fgScreen").checked?1:0};}
+function renderFrag(a){if(!a){el("fgResult").innerHTML="";return;}const f=a.fragments,nf=n=>Number(n).toLocaleString();let s=`${t("frag_r_track")}: ~${nf(f.gt_10cm)} &nbsp;|&nbsp; >1m ~${nf(f.gt_1m)} &nbsp;|&nbsp; >1cm ~${nf(f.gt_1cm)}<br>${t("frag_r_band")}: ${a.affected_alt_lo_km}\u2013${a.affected_alt_hi_km} km (\u00b1${a.affected_band_km})`;if(a.catastrophic!==null&&a.catastrophic!==undefined)s+=`<br>${t("frag_r_cat")}: ${a.catastrophic?"\u2713":"\u2717"}`;if(a.screen&&a.screen.screened)s+=`<br>${t("frag_r_assets")}: <b style="color:var(--accent)">${a.screen.assets_at_risk}</b> / ${a.screen.scanned}`+(a.screen.sample&&a.screen.sample.length?`<br><span style="color:var(--text-faint)">${a.screen.sample.slice(0,8).map(esc).join(", ")}${a.screen.assets_at_risk>8?" \u2026":""}</span>`:"");el("fgResult").innerHTML=s;}
+function openFrag(){const on=Backend.on;el("fgRun").style.display=on?"":"none";el("fgLogin").style.display=on?"none":"";el("fgCreate").style.display="none";el("fgResult").innerHTML="";el("fragModal").style.display="flex";}
 function openTriage(){trqFilters();updateAuthBadge();if(Backend.on){Backend.refresh().finally(()=>renderTriage());}else{recordIncidents();renderTriage();}el("triageModal").style.display="flex";}
 function renderTriage(){
   const fSev=el("trqSev")?el("trqSev").value:"all",fState=el("trqState")?el("trqState").value:"active";
@@ -1325,7 +1355,8 @@ function paintIncident(c,audit){
     </div>
     <div style="margin-top:10px">${btn}</div>
     <div class="d-sub" style="margin-top:12px">${t("trq_timeline")}</div>${tl}
-    <div style="margin-top:10px"><button class="mtbtn" id="trqOpen3d" data-id="${esc(c.id)}">${t("trq_open3d")}</button></div>
+    <details style="margin-top:10px"><summary style="cursor:pointer;font-size:10px;color:var(--text-dim)">${t("meth_title")}</summary><div style="font-size:10px;color:var(--text-faint);line-height:1.5;margin-top:4px">${t("meth_"+(["conjuncion","reentrada","fragmentacion","maniobra","swe"].includes(c.kind)?c.kind:"default"))}</div></details>
+    ${(c.kind==="swe"||c.kind==="fragmentacion")?"":`<div style="margin-top:10px"><button class="mtbtn" id="trqOpen3d" data-id="${esc(c.id)}">${t("trq_open3d")}</button></div>`}
   </div>`;
   el("trqDetail").querySelectorAll("button[data-to]").forEach(b=>b.addEventListener("click",()=>{
     if(Backend.on){Backend.transition(c.id,b.dataset.to,"").then(()=>Backend.refresh()).then(()=>renderTriage()).catch(e=>alert(e.message));}
@@ -1498,6 +1529,10 @@ function bindControls(){
   el("caseBtn").addEventListener("click",openCases);
   el("triageBtn").addEventListener("click",openTriage);
   el("triageClose").addEventListener("click",()=>{el("triageModal").style.display="none";});
+  el("fragBtn").addEventListener("click",openFrag);
+  el("fragClose").addEventListener("click",()=>{el("fragModal").style.display="none";});
+  el("fgRun").addEventListener("click",async()=>{el("fgResult").innerHTML="\u2026";el("fgCreate").style.display="none";try{const d=await Backend.api("fragmentation.php","action=analyze","POST",fragBody());renderFrag(d.analysis);el("fgCreate").style.display="";}catch(e){el("fgResult").innerHTML='<span style="color:var(--alert)">'+esc(e.message)+'</span>';}});
+  el("fgCreate").addEventListener("click",async()=>{try{await Backend.api("fragmentation.php","action=create","POST",fragBody());el("fragModal").style.display="none";Backend.refresh();}catch(e){alert(e.message);}});
   el("trqSev").addEventListener("change",renderTriage);
   el("trqState").addEventListener("change",renderTriage);
   el("helpBtn").addEventListener("click",openHelp);
