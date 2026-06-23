@@ -216,7 +216,7 @@ El sistema, sin sensores propios ni covarianza de operador, es una capa de fusi�
 
 La probabilidad de SOCRATES es de cribado y máxima, no una Pc real con covarianza. La severidad de reentrada y la fragmentación son estimaciones de orden de magnitud, con incertidumbre real, no trayectorias ni puntos de impacto. En clima espacial el sistema integra y traduce a impacto, no genera modelos ni pronósticos. La caracterización de maniobras es indicio sobre elementos públicos, no certeza ni intención. La altura de culminación y la ventana de oscuridad son condiciones necesarias de observabilidad, no soluciones de apuntado. La precisión de la propagación se degrada con la edad del elemento. Las huellas de países distintos de Uruguay son aproximaciones por caja. Las tipografías dependen de Google Fonts y los emoji de bandera pueden verse como letras en algunos Windows.
 
-Dos avisos con peso. La caracterización de comportamiento de SDA es la capa más sensible en control de exportaciones, por ser tecnología de doble uso, así que antes de ofrecerla fuera de Uruguay conviene asesoría legal específica. Y CelesTrak deja de proveer formato TLE para objetos nuevos alrededor de mediados de 2026, lo que obligará a migrar la ingesta de TLE al formato GP en CSV u OMM, algo a tener en el radar.
+CelesTrak deja de proveer formato TLE para objetos nuevos alrededor de mediados de 2026, lo que obligará a migrar la ingesta de TLE al formato GP en CSV u OMM, algo a tener en el radar.
 
 ---
 
@@ -234,13 +234,6 @@ Antes de cada cron, corré la prueba en seco del worker correspondiente para con
 
 ---
 
-<a id="licencia"></a>
-## 10. Licencia y modelo comercial
-[↑](#top)
-
-Con licencia MIT el código no es el activo defendible. El valor está en la marca, los servicios de instalación y acreditación, el soporte, la operación y la integración soberana. Para un comprador de defensa, lo que vende es la soberanía del alojamiento, la capa de decisión que unifica todo en una cola auditada, el mapeo a marcos de seguridad, y la transparencia de un sistema abierto y auditable línea por línea. La determinación de órbita independiente con sensores propios y la Pc real con covarianza quedan como extensiones premium futuras, no como requisito del núcleo.
-
----
 
 [↑ Volver arriba](#top)
 
