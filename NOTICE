@@ -1,0 +1,51 @@
+newspace.live
+Copyright 2026 Lugapel
+
+This product is licensed under the Apache License, Version 2.0 (the "License").
+You may obtain a copy of the License in the LICENSE file distributed with this
+work or at http://www.apache.org/licenses/LICENSE-2.0.
+
+----------------------------------------------------------------------
+Trademarks
+----------------------------------------------------------------------
+
+"newspace.live" and "Lugapel", and the associated names, logos, and product
+marks, are trademarks of their owner. The Apache License 2.0 does not grant
+permission to use these marks. Use of the software does not imply any right
+to use the project or company names, logos, or marks. See Section 6 of the
+License.
+
+----------------------------------------------------------------------
+Scope of this license / Layered licensing
+----------------------------------------------------------------------
+
+The Apache License 2.0 covers the OPEN CORE of this project only: the incident
+decision and triage layer, the public-data ingest workers, the shared logic
+libraries, and the bilingual front-end tools, as distributed in this
+repository.
+
+The following are NOT covered by this License and are distributed separately,
+under their own terms and subject to access controls:
+
+  - The Space Domain Awareness (SDA) behaviour-characterization capabilities.
+  - Premium capabilities such as independent orbit determination from
+    proprietary sensors and covariance-based collision probability.
+
+----------------------------------------------------------------------
+Export control notice
+----------------------------------------------------------------------
+
+A software license is not an export authorization. Independent of the terms of
+this License, the SDA behaviour-characterization capabilities may constitute
+dual-use technology and may be subject to export-control regulations. Obtain
+specific legal advice before distributing, transferring, or providing access
+to those capabilities across borders.
+
+----------------------------------------------------------------------
+Third-party data sources
+----------------------------------------------------------------------
+
+This software integrates publicly available data from third parties, including
+CelesTrak, NOAA SWPC, the IAU Minor Planet Center, NASA, JPL, and ESA. Those
+data and services are subject to their own respective terms of use. This
+project does not redistribute those data and asserts no rights over them.
